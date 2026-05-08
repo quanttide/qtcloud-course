@@ -44,14 +44,14 @@ class ClassScreen extends StatelessWidget {
                       ],
                     ),
                     trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         _ClassStatusChip(status: c.status),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Text('👥 ${c.studentCount}',
-                            style: TextStyle(color: Colors.grey[600])),
-                        const SizedBox(height: 4),
+                            style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                        const SizedBox(height: 2),
                         SizedBox(
                           width: 80,
                           child: LinearProgressIndicator(
