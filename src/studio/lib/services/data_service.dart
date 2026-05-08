@@ -23,6 +23,11 @@ class CourseDataService extends ChangeNotifier {
   int get totalStudents =>
       _classes.fold(0, (sum, c) => sum + c.studentCount);
 
+  void markLoaded() {
+    _loaded = true;
+    notifyListeners();
+  }
+
   Future<void> load() async {
     final programsJson =
         await rootBundle.loadString('assets/programs.json');

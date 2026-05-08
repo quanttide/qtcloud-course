@@ -13,7 +13,7 @@ class DashboardScreen extends StatelessWidget {
     final programs = service.programs;
     final classes = service.classes;
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,10 +62,11 @@ class DashboardScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          Expanded(
-            child: Row(
-              children: [
-                Expanded(
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 300,
                   child: _SectionPanel(
                     title: '专业列表',
                     items: programs.map((p) => _ListItem(
@@ -79,8 +80,11 @@ class DashboardScreen extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: SizedBox(
+                  height: 300,
                   child: _SectionPanel(
                     title: '班级列表',
                     items: classes.map((c) => _ListItem(
@@ -94,8 +98,8 @@ class DashboardScreen extends StatelessWidget {
                     },
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -169,13 +173,15 @@ class _SectionPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
+                Expanded(
+                  child: Text(title,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold)),
+                ),
                 if (onViewAll != null)
                   TextButton(
                     onPressed: onViewAll,
