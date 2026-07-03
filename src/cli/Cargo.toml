@@ -9,3 +9,4 @@ path = "src/main.rs"
 
 [dependencies]
 quanttide-agent = "0.1.0"
+clap = { version = "4", features = ["derive"] }

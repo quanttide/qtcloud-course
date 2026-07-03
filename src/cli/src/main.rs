@@ -1,12 +1,31 @@
+use clap::{Parser, Subcommand};
 use quanttide_agent::{Message, Settings, LLM};
-use std::env;
+use std::process;
+
+#[derive(Parser)]
+#[command(name = "qtcloud-course", version)]
+struct Cli {
+    #[command(subcommand)]
+    command: Command,
+}
+
+#[derive(Subcommand)]
+enum Command {
+    /// 生成课程蓝图
+    Blueprint {
+        /// 主题，例如 git、docker
+        topic: String,
+    },
+}
 
 fn main() {
-    let topic = env::args().nth(1).unwrap_or_else(|| {
-        eprintln!("用法：qtcloud-course <topic>");
-        std::process::exit(1);
-    });
+    let cli = Cli::parse();
+    match cli.command {
+        Command::Blueprint { topic } => blueprint(&topic),
+    }
+}
 
+fn blueprint(topic: &str) {
     let settings = Settings::from_env();
     let prompt = format!(
         "请为 {} 设计一份课程蓝图。\
@@ -27,7 +46,7 @@ fn main() {
         Ok(resp) => println!("{}", resp.content),
         Err(e) => {
             eprintln!("错误：{}", e);
-            std::process::exit(1);
+            process::exit(1);
         }
     }
 }
