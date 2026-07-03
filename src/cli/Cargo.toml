@@ -1,0 +1,11 @@
+[package]
+name = "qtcloud-course-cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "qtcloud-course"
+path = "src/main.rs"
+
+[dependencies]
+quanttide-agent = "0.1.0"
