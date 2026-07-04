@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [0.1.0-alpha.3] - 2026-07-04
+
+### Added
+- `src/lib.rs`，暴露 `blueprint` 模块作为库接口
+
 ## [0.1.0-alpha.2] - 2026-07-04
 
 ### Added
