@@ -2,7 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process;
 
-use quanttide_agent::{LLM, Message, Settings};
+use quanttide_agent::{Message, Settings, LLM};
 
 pub fn run(topic: &str, input_path: Option<PathBuf>, output_path: Option<PathBuf>) {
     let settings = Settings::from_env();
@@ -23,7 +23,11 @@ pub fn run(topic: &str, input_path: Option<PathBuf>, output_path: Option<PathBuf
         prompt.push_str(&material);
     }
 
-    let llm = LLM::new(&settings.llm_model, &settings.llm_base_url, &settings.llm_api_key);
+    let llm = LLM::new(
+        &settings.llm_model,
+        &settings.llm_base_url,
+        &settings.llm_api_key,
+    );
     let messages = vec![Message::new("user", &prompt)];
     let options = Default::default();
 

@@ -1,5 +1,3 @@
-mod blueprint;
-
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
@@ -31,8 +29,12 @@ enum Command {
 fn main() {
     let cli = Cli::parse();
     match cli.command {
-        Command::Blueprint { topic, input_path, output_path } => {
-            blueprint::run(&topic, input_path, output_path);
+        Command::Blueprint {
+            topic,
+            input_path,
+            output_path,
+        } => {
+            qtcloud_course_cli::blueprint::run(&topic, input_path, output_path);
         }
     }
 }
