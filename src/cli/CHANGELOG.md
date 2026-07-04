@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [0.1.0-alpha.2] - 2026-07-04
+
+### Added
+- `--input-path` 参数：提供原始资料作为上下文
+- `--output-path` 参数：直接写入文件
+
 ## [0.1.0-alpha.1] - 2026-07-04
 
 ### Added
