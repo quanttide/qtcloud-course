@@ -1,15 +1,5 @@
 # Changelog
 
-## [0.1.0] - 2026-07-11
-
-### Provider 服务端
-
-- 初始化 Go 语言服务端项目 `src/provider/`，零外部依赖，使用 Go 1.22+ 标准库 `net/http` 增强 ServeMux 路由
-- 实现 Program→Course→Lesson 三级嵌套数据的完整 CRUD API（`/programs/...`, `/classes/...`）
-- 实现 Class 教学单位的完整 CRUD API
-- 添加线程安全的内存存储层，可替换为持久化方案
-- 服务端口默认 `:8080`，支持 `LISTEN_ADDR` 环境变量
-
 ## [0.0.1] - 2026-05-08
 
 ### 架构设计
