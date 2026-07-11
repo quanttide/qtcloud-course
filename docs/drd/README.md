@@ -11,6 +11,10 @@
 
 ## 设计原则
 
+### 资源独立
+
+Program、Course、Lesson 均为独立资源。Program 通过 `courseIds` 引用 Course，Course 通过 `lessonIds` 引用 Lesson。引用不复制，删除上级不影响下级。
+
 ### 引用不复制
 
 Class 引用 Program/Course 的内容，不重新定义教学内容。Class 中的 refId + refType 指向课程单位的内容。

@@ -7,19 +7,19 @@ type Program struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description,omitempty"`
 	Status      string   `json:"status,omitempty"` // "draft" / "published"
-	Courses     []Course `json:"courses"`
+	CourseIDs   []string `json:"courseIds"`         // 引用的课程 ID 列表
 }
 
-// Course 是课程，教学单元。
+// Course 是课程，教学单元。可被多个 Program 引用。
 type Course struct {
 	ID          string   `json:"id"`
 	Name        string   `json:"name"`
 	Description string   `json:"description,omitempty"`
 	Status      string   `json:"status,omitempty"` // "draft" / "published"
-	Lessons     []Lesson `json:"lessons,omitempty"`
+	LessonIDs   []string `json:"lessonIds"`         // 引用的课时 ID 列表
 }
 
-// Lesson 是课时，教学内容的最小组织单元。
+// Lesson 是课时，教学内容的最小组织单元。可被多个 Course 引用。
 type Lesson struct {
 	ID          string `json:"id"`
 	Title       string `json:"title"`

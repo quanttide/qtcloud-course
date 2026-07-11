@@ -10,52 +10,52 @@ import (
 )
 
 func main() {
-	// 初始化存储层
 	programStore := store.NewProgramStore()
+	courseStore := store.NewCourseStore()
+	lessonStore := store.NewLessonStore()
 	classStore := store.NewClassStore()
 
-	// 初始化处理器
 	ph := handler.NewProgramHandler(programStore)
-	ch := handler.NewClassHandler(classStore)
+	ch := handler.NewCourseHandler(courseStore)
+	lh := handler.NewLessonHandler(lessonStore)
+	clh := handler.NewClassHandler(classStore)
 
-	// 注册路由（Go 1.22+ 增强 ServeMux）
 	mux := http.NewServeMux()
 
-	// Program 路由
-	mux.HandleFunc("GET /programs", ph.ListPrograms)
-	mux.HandleFunc("POST /programs", ph.CreateProgram)
-	mux.HandleFunc("GET /programs/{id}", ph.GetProgram)
-	mux.HandleFunc("PUT /programs/{id}", ph.UpdateProgram)
-	mux.HandleFunc("DELETE /programs/{id}", ph.DeleteProgram)
+	// Program
+	mux.HandleFunc("GET /programs", ph.List)
+	mux.HandleFunc("POST /programs", ph.Create)
+	mux.HandleFunc("GET /programs/{id}", ph.Get)
+	mux.HandleFunc("PUT /programs/{id}", ph.Update)
+	mux.HandleFunc("DELETE /programs/{id}", ph.Delete)
 
-	// Course 路由（嵌套在 Program 下）
-	mux.HandleFunc("GET /programs/{id}/courses", ph.ListCourses)
-	mux.HandleFunc("POST /programs/{id}/courses", ph.CreateCourse)
-	mux.HandleFunc("GET /programs/{id}/courses/{courseId}", ph.GetCourse)
-	mux.HandleFunc("PUT /programs/{id}/courses/{courseId}", ph.UpdateCourse)
-	mux.HandleFunc("DELETE /programs/{id}/courses/{courseId}", ph.DeleteCourse)
+	// Course
+	mux.HandleFunc("GET /courses", ch.List)
+	mux.HandleFunc("POST /courses", ch.Create)
+	mux.HandleFunc("GET /courses/{id}", ch.Get)
+	mux.HandleFunc("PUT /courses/{id}", ch.Update)
+	mux.HandleFunc("DELETE /courses/{id}", ch.Delete)
 
-	// Lesson 路由（嵌套在 Course 下）
-	mux.HandleFunc("GET /programs/{id}/courses/{courseId}/lessons", ph.ListLessons)
-	mux.HandleFunc("POST /programs/{id}/courses/{courseId}/lessons", ph.CreateLesson)
-	mux.HandleFunc("GET /programs/{id}/courses/{courseId}/lessons/{lessonId}", ph.GetLesson)
-	mux.HandleFunc("PUT /programs/{id}/courses/{courseId}/lessons/{lessonId}", ph.UpdateLesson)
-	mux.HandleFunc("DELETE /programs/{id}/courses/{courseId}/lessons/{lessonId}", ph.DeleteLesson)
+	// Lesson
+	mux.HandleFunc("GET /lessons", lh.List)
+	mux.HandleFunc("POST /lessons", lh.Create)
+	mux.HandleFunc("GET /lessons/{id}", lh.Get)
+	mux.HandleFunc("PUT /lessons/{id}", lh.Update)
+	mux.HandleFunc("DELETE /lessons/{id}", lh.Delete)
 
-	// Class 路由
-	mux.HandleFunc("GET /classes", ch.ListClasses)
-	mux.HandleFunc("POST /classes", ch.CreateClass)
-	mux.HandleFunc("GET /classes/{id}", ch.GetClass)
-	mux.HandleFunc("PUT /classes/{id}", ch.UpdateClass)
-	mux.HandleFunc("DELETE /classes/{id}", ch.DeleteClass)
+	// Class
+	mux.HandleFunc("GET /classes", clh.ListClasses)
+	mux.HandleFunc("POST /classes", clh.CreateClass)
+	mux.HandleFunc("GET /classes/{id}", clh.GetClass)
+	mux.HandleFunc("PUT /classes/{id}", clh.UpdateClass)
+	mux.HandleFunc("DELETE /classes/{id}", clh.DeleteClass)
 
-	// 健康检查
+	// Health
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	// 启动服务
 	addr := getEnv("LISTEN_ADDR", ":8080")
 	log.Printf("qtcloud-course-provider starting on %s", addr)
 	if err := http.ListenAndServe(addr, mux); err != nil {
