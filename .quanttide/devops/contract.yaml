@@ -1,3 +1,5 @@
 scopes:
   cli:
     dir: src/cli
+  provider:
+    dir: src/provider
