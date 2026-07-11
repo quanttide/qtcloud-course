@@ -13,11 +13,13 @@ func main() {
 	programStore := store.NewProgramStore()
 	courseStore := store.NewCourseStore()
 	lessonStore := store.NewLessonStore()
+	sceneStore := store.NewSceneStore()
 	classStore := store.NewClassStore()
 
 	ph := handler.NewProgramHandler(programStore)
 	ch := handler.NewCourseHandler(courseStore)
 	lh := handler.NewLessonHandler(lessonStore)
+	sh := handler.NewSceneHandler(sceneStore, lessonStore)
 	clh := handler.NewClassHandler(classStore)
 
 	mux := http.NewServeMux()
@@ -42,6 +44,13 @@ func main() {
 	mux.HandleFunc("GET /lessons/{id}", lh.Get)
 	mux.HandleFunc("PUT /lessons/{id}", lh.Update)
 	mux.HandleFunc("DELETE /lessons/{id}", lh.Delete)
+
+	// Scene（按 lessonId 查询）
+	mux.HandleFunc("GET /scenes", sh.List)
+	mux.HandleFunc("POST /scenes", sh.Create)
+	mux.HandleFunc("GET /scenes/{id}", sh.Get)
+	mux.HandleFunc("PUT /scenes/{id}", sh.Update)
+	mux.HandleFunc("DELETE /scenes/{id}", sh.Delete)
 
 	// Class
 	mux.HandleFunc("GET /classes", clh.ListClasses)

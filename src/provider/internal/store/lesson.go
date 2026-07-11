@@ -64,6 +64,7 @@ func (s *LessonStore) Update(l *domain.Lesson) (*domain.Lesson, bool) {
 	existing.Description = l.Description
 	existing.Duration = l.Duration
 	existing.Status = l.Status
+	existing.StartSceneID = l.StartSceneID
 	return existing, true
 }
 
