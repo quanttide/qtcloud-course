@@ -34,7 +34,7 @@ type Scene struct {
 	ID       string   `json:"id"`
 	LessonID string   `json:"lessonId"`           // 所属课时
 	VideoURL string   `json:"videoUrl"`            // 本段视频地址
-	Choices  []Choice `json:"choices,omitempty"`   // 分支选项（空数组表示终结）
+	Choices  []Choice `json:"choices"`                // 分支选项（空数组表示终结）
 }
 
 // Choice 是场景内的分支选项，用户选择后跳转到目标场景。

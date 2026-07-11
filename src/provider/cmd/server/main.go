@@ -10,6 +10,16 @@ import (
 )
 
 func main() {
+	mux := newRouter()
+	addr := getEnv("LISTEN_ADDR", ":8080")
+	log.Printf("qtcloud-course-provider starting on %s", addr)
+	if err := http.ListenAndServe(addr, mux); err != nil {
+		log.Fatalf("server error: %v", err)
+	}
+}
+
+// newRouter 创建并配置所有路由，可单独测试。
+func newRouter() *http.ServeMux {
 	programStore := store.NewProgramStore()
 	courseStore := store.NewCourseStore()
 	lessonStore := store.NewLessonStore()
@@ -65,11 +75,7 @@ func main() {
 		w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	addr := getEnv("LISTEN_ADDR", ":8080")
-	log.Printf("qtcloud-course-provider starting on %s", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
-		log.Fatalf("server error: %v", err)
-	}
+	return mux
 }
 
 func getEnv(key, fallback string) string {
