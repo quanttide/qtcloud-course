@@ -24,10 +24,12 @@ func newRouter() *http.ServeMux {
 	courseStore := store.NewCourseStore()
 	lessonStore := store.NewLessonStore()
 	sceneStore := store.NewSceneStore()
+	phaseStore := store.NewPhaseStore()
 	classStore := store.NewClassStore()
 
 	ph := handler.NewProgramHandler(programStore)
 	ch := handler.NewCourseHandler(courseStore)
+	psh := handler.NewPhaseHandler(phaseStore, courseStore)
 	lh := handler.NewLessonHandler(lessonStore)
 	sh := handler.NewSceneHandler(sceneStore, lessonStore)
 	clh := handler.NewClassHandler(classStore)
@@ -47,6 +49,13 @@ func newRouter() *http.ServeMux {
 	mux.HandleFunc("GET /courses/{id}", ch.Get)
 	mux.HandleFunc("PUT /courses/{id}", ch.Update)
 	mux.HandleFunc("DELETE /courses/{id}", ch.Delete)
+
+	// Phase
+	mux.HandleFunc("GET /phases", psh.List)
+	mux.HandleFunc("POST /phases", psh.Create)
+	mux.HandleFunc("GET /phases/{id}", psh.Get)
+	mux.HandleFunc("PUT /phases/{id}", psh.Update)
+	mux.HandleFunc("DELETE /phases/{id}", psh.Delete)
 
 	// Lesson
 	mux.HandleFunc("GET /lessons", lh.List)
@@ -74,6 +83,10 @@ func newRouter() *http.ServeMux {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status":"ok"}`))
 	})
+
+	// 视频静态文件服务（本地磁盘路径）
+	videoDir := getEnv("VIDEO_DIR", "./data/video")
+	mux.Handle("GET /video/", http.StripPrefix("/video/", http.FileServer(http.Dir(videoDir))))
 
 	return mux
 }

@@ -22,11 +22,21 @@ func TestProgram_JSON(t *testing.T) {
 }
 
 func TestCourse_JSON(t *testing.T) {
-	c := Course{ID: "cour-1", Name: "数据工程", Status: "published", LessonIDs: []string{"less-1"}}
+	c := Course{ID: "cour-1", Name: "数据工程", Status: "published"}
 	b, _ := json.Marshal(c)
 	var got Course
 	json.Unmarshal(b, &got)
-	if got.Name != "数据工程" || len(got.LessonIDs) != 1 {
+	if got.Name != "数据工程" {
+		t.Fatalf("roundtrip = %+v", got)
+	}
+}
+
+func TestPhase_JSON(t *testing.T) {
+	p := Phase{ID: "phase-1", CourseID: "cour-1", Name: "数据采集阶段", SortOrder: 1, LessonIDs: []string{"less-1", "less-2"}}
+	b, _ := json.Marshal(p)
+	var got Phase
+	json.Unmarshal(b, &got)
+	if got.Name != "数据采集阶段" || got.CourseID != "cour-1" || got.SortOrder != 1 || len(got.LessonIDs) != 2 {
 		t.Fatalf("roundtrip = %+v", got)
 	}
 }

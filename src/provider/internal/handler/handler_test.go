@@ -12,17 +12,19 @@ import (
 )
 
 // setupMux creates a fresh mux with all routes for testing.
-func setupMux() (*http.ServeMux, *store.ProgramStore, *store.CourseStore, *store.LessonStore, *store.SceneStore, *store.ClassStore) {
+func setupMux() (*http.ServeMux, *store.ProgramStore, *store.CourseStore, *store.LessonStore, *store.SceneStore, *store.PhaseStore, *store.ClassStore) {
 	ps := store.NewProgramStore()
 	cs := store.NewCourseStore()
 	ls := store.NewLessonStore()
 	ss := store.NewSceneStore()
+	phs := store.NewPhaseStore()
 	cls := store.NewClassStore()
 
 	ph := NewProgramHandler(ps)
 	ch := NewCourseHandler(cs)
 	lh := NewLessonHandler(ls)
 	sh := NewSceneHandler(ss, ls)
+	psh := NewPhaseHandler(phs, cs)
 	clh := NewClassHandler(cls)
 
 	mux := http.NewServeMux()
@@ -36,6 +38,11 @@ func setupMux() (*http.ServeMux, *store.ProgramStore, *store.CourseStore, *store
 	mux.HandleFunc("GET /courses/{id}", ch.Get)
 	mux.HandleFunc("PUT /courses/{id}", ch.Update)
 	mux.HandleFunc("DELETE /courses/{id}", ch.Delete)
+	mux.HandleFunc("GET /phases", psh.List)
+	mux.HandleFunc("POST /phases", psh.Create)
+	mux.HandleFunc("GET /phases/{id}", psh.Get)
+	mux.HandleFunc("PUT /phases/{id}", psh.Update)
+	mux.HandleFunc("DELETE /phases/{id}", psh.Delete)
 	mux.HandleFunc("GET /lessons", lh.List)
 	mux.HandleFunc("POST /lessons", lh.Create)
 	mux.HandleFunc("GET /lessons/{id}", lh.Get)
@@ -51,7 +58,7 @@ func setupMux() (*http.ServeMux, *store.ProgramStore, *store.CourseStore, *store
 	mux.HandleFunc("GET /classes/{id}", clh.GetClass)
 	mux.HandleFunc("PUT /classes/{id}", clh.UpdateClass)
 	mux.HandleFunc("DELETE /classes/{id}", clh.DeleteClass)
-	return mux, ps, cs, ls, ss, cls
+	return mux, ps, cs, ls, ss, phs, cls
 }
 
 func request(t *testing.T, mux *http.ServeMux, method, path, body string) *httptest.ResponseRecorder {
@@ -93,7 +100,7 @@ func assertJSONArray(t *testing.T, w *httptest.ResponseRecorder) []any {
 // --- Program ---
 
 func TestProgramHandler_CRUD(t *testing.T) {
-	mux, _, _, _, _, _ := setupMux()
+	mux, _, _, _, _, _, _ := setupMux()
 
 	// List empty
 	w := request(t, mux, "GET", "/programs", "")
@@ -169,7 +176,7 @@ func TestProgramHandler_CRUD(t *testing.T) {
 // --- Course ---
 
 func TestCourseHandler_CRUD(t *testing.T) {
-	mux, _, _, _, _, _ := setupMux()
+	mux, _, _, _, _, _, _ := setupMux()
 
 	w := request(t, mux, "GET", "/courses", "")
 	assertStatus(t, w, 200)
@@ -192,7 +199,7 @@ func TestCourseHandler_CRUD(t *testing.T) {
 	w = request(t, mux, "GET", "/courses/nonexistent", "")
 	assertStatus(t, w, 404)
 
-	w = request(t, mux, "PUT", fmt.Sprintf("/courses/%s", cid), `{"name":"v2","status":"published","lessonIds":["less-1"]}`)
+	w = request(t, mux, "PUT", fmt.Sprintf("/courses/%s", cid), `{"name":"v2","status":"published"}`)
 	assertStatus(t, w, 200)
 	c = assertJSON(t, w)
 	if c["name"] != "v2" {
@@ -213,10 +220,83 @@ func TestCourseHandler_CRUD(t *testing.T) {
 	assertStatus(t, w, 404)
 }
 
+// --- Phase ---
+
+func TestPhaseHandler_CRUD(t *testing.T) {
+	mux, _, _, _, _, _, _ := setupMux()
+
+	// List empty
+	w := request(t, mux, "GET", "/phases", "")
+	assertStatus(t, w, 200)
+	assertJSONArray(t, w)
+
+	// Create needs a course first
+	w = request(t, mux, "POST", "/courses", `{"name":"数据工程"}`)
+	assertStatus(t, w, 201)
+	c := assertJSON(t, w)
+	cid := c["id"].(string)
+
+	// Create phase with missing courseId
+	w = request(t, mux, "POST", "/phases", `{"name":"数据采集阶段"}`)
+	assertStatus(t, w, 400)
+
+	// Create phase with nonexistent course
+	w = request(t, mux, "POST", "/phases", `{"name":"x","courseId":"nonexistent"}`)
+	assertStatus(t, w, 404)
+
+	w = request(t, mux, "POST", "/phases", fmt.Sprintf(`{"name":"数据采集阶段","courseId":"%s","sortOrder":1}`, cid))
+	assertStatus(t, w, 201)
+	p := assertJSON(t, w)
+	pid := p["id"].(string)
+	if p["name"] != "数据采集阶段" || p["courseId"] != cid || p["sortOrder"] != float64(1) {
+		t.Fatalf("create phase = %v", p)
+	}
+
+	w = request(t, mux, "POST", "/phases", `{invalid`)
+	assertStatus(t, w, 400)
+
+	w = request(t, mux, "POST", "/phases", `{"name":""}`)
+	assertStatus(t, w, 400)
+
+	w = request(t, mux, "GET", "/phases/"+pid, "")
+	assertStatus(t, w, 200)
+
+	w = request(t, mux, "GET", "/phases/nonexistent", "")
+	assertStatus(t, w, 404)
+
+	// List by courseId
+	w = request(t, mux, "GET", fmt.Sprintf("/phases?courseId=%s", cid), "")
+	assertStatus(t, w, 200)
+	arr := assertJSONArray(t, w)
+	if len(arr) != 1 {
+		t.Fatalf("List by courseId = %d, want 1", len(arr))
+	}
+
+	w = request(t, mux, "PUT", "/phases/"+pid, `{"name":"v2","sortOrder":2,"lessonIds":["less-1"]}`)
+	assertStatus(t, w, 200)
+	p = assertJSON(t, w)
+	if p["name"] != "v2" || p["sortOrder"] != float64(2) {
+		t.Fatalf("update phase = %v", p)
+	}
+
+	w = request(t, mux, "PUT", "/phases/"+pid, `{`)
+	assertStatus(t, w, 400)
+
+	w = request(t, mux, "PUT", "/phases/nonexistent", `{"name":"x"}`)
+	assertStatus(t, w, 404)
+
+	w = request(t, mux, "DELETE", "/phases/"+pid, "")
+	assertStatus(t, w, 204)
+	w = request(t, mux, "DELETE", "/phases/"+pid, "")
+	assertStatus(t, w, 404)
+	w = request(t, mux, "DELETE", "/phases/nonexistent", "")
+	assertStatus(t, w, 404)
+}
+
 // --- Lesson ---
 
 func TestLessonHandler_CRUD(t *testing.T) {
-	mux, _, _, _, _, _ := setupMux()
+	mux, _, _, _, _, _, _ := setupMux()
 
 	w := request(t, mux, "GET", "/lessons", "")
 	assertStatus(t, w, 200)
@@ -263,7 +343,7 @@ func TestLessonHandler_CRUD(t *testing.T) {
 // --- Scene ---
 
 func TestSceneHandler_CRUD(t *testing.T) {
-	mux, _, _, _, _, _ := setupMux()
+	mux, _, _, _, _, _, _ := setupMux()
 
 	// List without lessonId
 	w := request(t, mux, "GET", "/scenes", "")
@@ -356,7 +436,7 @@ func TestSceneHandler_CRUD(t *testing.T) {
 // --- Class ---
 
 func TestClassHandler_CRUD(t *testing.T) {
-	mux, _, _, _, _, _ := setupMux()
+	mux, _, _, _, _, _, _ := setupMux()
 
 	w := request(t, mux, "GET", "/classes", "")
 	assertStatus(t, w, 200)

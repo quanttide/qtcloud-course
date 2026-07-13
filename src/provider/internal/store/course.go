@@ -49,9 +49,6 @@ func (s *CourseStore) Create(c *domain.Course) *domain.Course {
 	defer s.mu.Unlock()
 	clone := *c
 	clone.ID = s.nextID()
-	if clone.LessonIDs == nil {
-		clone.LessonIDs = []string{}
-	}
 	s.data[clone.ID] = &clone
 	return &clone
 }
@@ -66,7 +63,6 @@ func (s *CourseStore) Update(c *domain.Course) (*domain.Course, bool) {
 	existing.Name = c.Name
 	existing.Description = c.Description
 	existing.Status = c.Status
-	existing.LessonIDs = c.LessonIDs
 	return existing, true
 }
 

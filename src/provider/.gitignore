@@ -17,3 +17,6 @@ go.work.sum
 .vscode/
 *.swp
 *.swo
+
+# Local data files
+/data/

@@ -78,11 +78,13 @@ LISTEN_ADDR=:9090 go run ./cmd/server
 
 ## 数据模型
 
-Program、Course、Lesson 均为**独立资源**，通过 ID 列表互相引用：
+Program、Course、Phase、Lesson 均为**独立资源**，通过 ID 列表互相引用：
 
 ```
 Program.courseIds → Course
-Course.lessonIds  → Lesson
+Course           → Phase (courseId)
+Phase.lessonIds  → Lesson
+Lesson           → Scene (lessonId)
 ```
 
 Class 引用 Program 或 Course 的内容进行教学（`refType` + `refId`）。
@@ -99,7 +101,7 @@ Lesson 通过 Scene 构建分支视频体验：
   "scenes": [
     {
       "id": "scene-1",
-      "videoUrl": "intro.mp4",
+      "videoUrl": "less-1/intro.mp4",
       "choices": [
         { "label": "继续", "targetSceneId": "scene-2" },
         { "label": "跳过", "targetSceneId": "scene-3" }
@@ -107,6 +109,21 @@ Lesson 通过 Scene 构建分支视频体验：
     }
   ]
 }
+```
+
+## 视频存储
+
+视频文件存放在本地磁盘 `./data/video/` 目录，通过 `/video/{path}` 访问：
+
+```
+GET /video/less-1/intro.mp4    # 返回 ./data/video/less-1/intro.mp4
+```
+
+`Scene.videoUrl` 存的是相对于 `./data/video/` 的路径。
+目录路径可通过 `VIDEO_DIR` 环境变量覆盖：
+
+```bash
+VIDEO_DIR=/mnt/videos go run ./cmd/server
 ```
 
 ## 技术栈

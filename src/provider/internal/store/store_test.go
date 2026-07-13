@@ -99,18 +99,14 @@ func TestCourseStore_CRUD(t *testing.T) {
 	if c.ID == "" || c.Name != "数据工程" {
 		t.Fatalf("Create() = %+v", c)
 	}
-	if c.LessonIDs == nil {
-		t.Fatal("Create(): LessonIDs should not be nil")
-	}
 
-	// Create with lesson IDs
-	s.Create(&domain.Course{Name: "数据可视化", LessonIDs: []string{"less-1"}})
+	s.Create(&domain.Course{Name: "数据可视化"})
 	if got := s.List(); len(got) != 2 {
 		t.Fatalf("List() = %d, want 2", len(got))
 	}
 
-	updated, ok := s.Update(&domain.Course{ID: c.ID, Name: "数据工程v2", Status: "published", LessonIDs: []string{"less-1"}})
-	if !ok || updated.Name != "数据工程v2" || updated.Status != "published" || len(updated.LessonIDs) != 1 {
+	updated, ok := s.Update(&domain.Course{ID: c.ID, Name: "数据工程v2", Status: "published"})
+	if !ok || updated.Name != "数据工程v2" || updated.Status != "published" {
 		t.Fatalf("Update() = %+v", updated)
 	}
 	if _, ok := s.Update(&domain.Course{ID: "x"}); ok {
@@ -160,6 +156,60 @@ func TestLessonStore_CRUD(t *testing.T) {
 		t.Fatal("Delete() ok = false")
 	}
 	if ok := s.Delete(l.ID); ok {
+		t.Fatal("Delete() again ok = true")
+	}
+	if ok := s.Delete("x"); ok {
+		t.Fatal("Delete() nonexistent ok = true")
+	}
+}
+
+func TestPhaseStore_CRUD(t *testing.T) {
+	s := NewPhaseStore()
+
+	if got := s.List(); len(got) != 0 {
+		t.Fatalf("List() = %d, want 0", len(got))
+	}
+	if _, ok := s.Get("x"); ok {
+		t.Fatal("Get() nonexistent ok = true")
+	}
+
+	p := s.Create(&domain.Phase{Name: "数据采集阶段", CourseID: "cour-1", SortOrder: 1})
+	if p.ID == "" || p.Name != "数据采集阶段" || p.CourseID != "cour-1" || p.SortOrder != 1 {
+		t.Fatalf("Create() = %+v", p)
+	}
+	if p.LessonIDs == nil {
+		t.Fatal("Create(): LessonIDs should not be nil")
+	}
+
+	s.Create(&domain.Phase{Name: "数据清洗阶段", CourseID: "cour-1"})
+	s.Create(&domain.Phase{Name: "其他课程阶段", CourseID: "cour-2"})
+	if got := s.List(); len(got) != 3 {
+		t.Fatalf("List() = %d, want 3", len(got))
+	}
+
+	// ListByCourse
+	if got := s.ListByCourse("cour-1"); len(got) != 2 {
+		t.Fatalf("ListByCourse(cour-1) = %d, want 2", len(got))
+	}
+	if got := s.ListByCourse("cour-2"); len(got) != 1 {
+		t.Fatalf("ListByCourse(cour-2) = %d, want 1", len(got))
+	}
+	if got := s.ListByCourse("cour-3"); len(got) != 0 {
+		t.Fatalf("ListByCourse(cour-3) = %d, want 0", len(got))
+	}
+
+	updated, ok := s.Update(&domain.Phase{ID: p.ID, Name: "数据采集阶段v2", Description: "desc", SortOrder: 2, LessonIDs: []string{"less-1", "less-2"}})
+	if !ok || updated.Name != "数据采集阶段v2" || updated.Description != "desc" || updated.SortOrder != 2 || len(updated.LessonIDs) != 2 {
+		t.Fatalf("Update() = %+v", updated)
+	}
+	if _, ok := s.Update(&domain.Phase{ID: "x"}); ok {
+		t.Fatal("Update() nonexistent ok = true")
+	}
+
+	if ok := s.Delete(p.ID); !ok {
+		t.Fatal("Delete() ok = false")
+	}
+	if ok := s.Delete(p.ID); ok {
 		t.Fatal("Delete() again ok = true")
 	}
 	if ok := s.Delete("x"); ok {
