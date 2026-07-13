@@ -1,45 +1,62 @@
-# ROADMAP
-
-qtcloud-course-provider 0.0.3 版本规划。
-
-## 版本状态
-
-- 当前：v0.0.2
-- 目标：v0.0.3
-- 主题：**数据持久化与课程加载**
+# ROADMAP — v0.0.3
 
 ## 目标
 
-0.0.2 完成了核心 CRUD API 和视频服务，但数据只存在于内存中，且没有课程批量加载能力。
-0.0.3 的目标是让数据"存得住、读得进"，能直接把 profile 里创作的 JSON 加载到平台。
+以 **Step 模型**为核心，完成从"视频片段"到"可交互操作指南"的升级。
+
+## 背景
+
+当前 Scene 支持视频播放 + 场景间跳转（Choices），已能满足线性视频学习。但实际教学场景中，学员需要跟着视频一步一步操作，并在遇到问题时获得指引——这需要 Step 模型具备异常分支能力。
 
 ## 任务
 
-### 数据持久化
+### 1. Step 模型扩展
 
-- [ ] 从内存存储迁移到文件存储（JSON 文件），重启不丢数据
-- [ ] 启动时从 `data/` 目录自动加载已有数据
-- [ ] 运行时写操作同步更新文件
+- [ ] `Step` 增加 `errorSteps` 字段，在当前步骤内嵌入异常处理子步骤
+- [ ] `Step` 增加可选的图片/代码块等辅助资源字段（`imageUrl` / `codeBlock`）
 
-### 课程批量导入
+```go
+type Step struct {
+    Order      int     `json:"order"`
+    Content    string  `json:"content"`
+    ImageURL   string  `json:"imageUrl,omitempty"`   // 辅助截图
+    CodeBlock  string  `json:"codeBlock,omitempty"`  // 示例代码
+    ErrorSteps []Step  `json:"errorSteps,omitempty"` // 异常子步骤
+}
+```
 
-- [ ] 新增 CLI 命令或 API 端点，批量导入 profile 产出的 JSON 数据
-- [ ] 支持导入格式解析：lesson（含 scenes 数组）→ 拆分为 Lesson + Scene 存储
-- [ ] 校验导入数据与 domain 模型的兼容性
+### 2. Step 渲染 API
 
-### Lesson 扩展
+- [ ] 新增 `GET /scenes/:id/steps` 端点，按序返回场景的操作步骤
+- [ ] 每个 Step 携带 `depth` 属性，前端可据此渲染缩进层级（正常步骤 depth=0，异常子步骤 depth=1）
 
-- [ ] 补充 0.0.2 未覆盖的 Lesson→Scene 联动 API（按课时查询全部场景）
-- [ ] Scene 新增 Title / Steps / VerifyTip 字段（已实现 domain 层）
+### 3. 视频-步骤时间锚点
 
-### 测试
+- [ ] `Step` 增加 `timestamp` 字段（秒），标记该步骤在视频中对应的起止时间
 
-- [ ] 文件存储的单元测试（创建／读取／写入／重建）
-- [ ] 批量导入集成测试
-- [ ] 端到端测试：profile JSON → 导入 → API 查询 → 视频服务
+```go
+type Step struct {
+    // 现有字段...
+    TimestampStart int `json:"timestampStart,omitempty"` // 起始秒数
+    TimestampEnd   int `json:"timestampEnd,omitempty"`   // 结束秒数
+}
+```
 
-## 非目标
+- [ ] 前端可根据时间锚点实现"视频跳到对应位置时高亮当前步骤"
 
-- 数据库支持（PostgreSQL / SQLite）留到 0.1.0
-- 用户认证与权限
-- 前端页面
+### 4. 数据加载
+
+- [ ] `data/profile/` 中的 lesson JSON 支持带 Steps 的完整场景数据导入
+- [ ] 启动时通过环境变量 `DATA_DIR` 加载 JSON 种子数据，替代 fixture 硬编码
+
+### 5. 自动化测试
+
+- [ ] Step 序列化/反序列化测试
+- [ ] API `/scenes/:id/steps` 集成测试
+- [ ] 含异常分支的 Step JSON 校验测试
+
+## 交付标准
+
+- `go test ./... -count=1` 全部通过
+- `vibe-coding/lesson1.json` 中的 4 个场景均包含完整的 Steps + 时间锚点
+- 至少一个场景的某个 Step 包含 errorSteps 异常分支数据
