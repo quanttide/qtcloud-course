@@ -4,21 +4,18 @@
 
 ### 代码
 
-- [ ] 新建 `lib/models/phase.dart` — Phase（id/name/sortOrder/lessons）
-- [ ] 新建 `lib/models/scene.dart` — Scene（id/name/title/steps/choices/verifyTip）+ Step（order/content）+ Choice（label/targetSceneId）
-- [ ] 修改 `lib/models/program.dart` — Course 的 `lessons` 改为 `phases: List<Phase>`，fromJson/copyWith 同步更新
-- [ ] 修改 `lib/services/data_service.dart` — 新增 `lessonJson` 加载方法（参考 `data/profile/vibe-coding/lesson1.json`）
+- [ ] 新建 `lib/models/phase.dart` — Phase（id/name/sortOrder/lessons: List<Lesson>）
+- [ ] 新建 `lib/models/scene.dart` — Scene（id/name/title/steps/choices/verifyTip），Step（order/content），Choice（label/targetSceneId）
+- [ ] 修改 `lib/models/program.dart` — Course.lessons → Course.phases: List<Phase>；Lesson 新增 sortOrder 和 scenes: List<Scene>
+- [ ] 修改 `lib/services/data_service.dart` — 新增 `loadLesson(String lessonId)` 按需加载单课 Scene/Step 详情（结构参考 `data/profile/vibe-coding/lesson1.json`）
 
 ### 测试
 
 - [ ] 新建 `test/models/phase_test.dart` — Phase fromJson/copyWith 单元测试
 - [ ] 新建 `test/models/scene_test.dart` — Scene/Step/Choice fromJson 单元测试
-- [ ] 修改 `test/models/program_test.dart` — Course JSON 从 `lessons` 改为 `phases`，增加 Phase 嵌套断言
-- [ ] 新建 `test/services/data_service_test.dart` — DataService 加载 lesson JSON 测试
-
-### 文档
-
-- [ ] 更新 `CHANGELOG.md` — 添加 v0.0.2 条目
+- [ ] 修改 `test/models/program_test.dart` — Course JSON 从 `lessons` 改为 `phases`；Lesson 增加 scenes/sortOrder 断言
+- [ ] 新建 `test/services/` 目录
+- [ ] 新建 `test/services/data_service_test.dart` — DataService.loadLesson() 加载课时 JSON 测试
 
 ---
 
@@ -29,18 +26,15 @@
 - [ ] 修改 `lib/screens/program_screen.dart`
   - Course tile 展开后显示 Phase 列表（原有 Lesson 列表改为 Phase 列表）
   - Phase tile 展开后显示 Lesson 列表
-  - Lesson tile 展开后显示 Scene 列表
+  - Lesson tile 展开后显示 Scene 列表（需调用 DataService.loadLesson 加载）
   - Scene tile 展开后显示 Step 列表 + 验证提示
   - Lesson 行末增加"试听"按钮
+  - 新增 `_PhaseTile`、`_SceneTile`、`_StepTile` 子 Widget
 
 ### 测试
 
-- [ ] 修改 `test/screens/program_screen_test.dart` — 适配 Phase → Lesson 嵌套，测试展开至 Scene 层级
+- [ ] 修改 `test/screens/program_screen_test.dart` — 适配 Phase → Lesson → Scene 嵌套，测试展开至 Scene 层级
 - [ ] 断言"试听"按钮存在
-
-### 文档
-
-- [ ] 更新 `CHANGELOG.md` — 同上
 
 ---
 
@@ -48,15 +42,11 @@
 
 ### 代码
 
-- [ ] 配置 `integration_test` 依赖（`pubspec.yaml` dev_dependencies 添加 `integration_test` + `flutter_test`）
+- [ ] 配置 `integration_test` 依赖（`pubspec.yaml` dev_dependencies 添加 `integration_test: sdk: flutter`）
 - [ ] 新建 `integration_test/app_test.dart` — 应用启动 + 页面跳转集成测试
 - [ ] 新建 `integration_test/preview_test.dart` — 从课程研发页点击"试听"到预览页全流程
-  - 加载 `lesson1.json` 构造测试数据
+  - 加载 `assets/lesson1.json` 构造测试数据
   - 模拟场景切换、步骤高亮、完成页呈现
-
-### 文档
-
-- [ ] 更新 `CHANGELOG.md` — 同上
 
 ---
 
@@ -68,7 +58,6 @@
 - [ ] 新建 `doc/architecture.md` — Studio 分层架构说明（Models → Services → Screens）
 - [ ] 新建 `doc/data-model.md` — 数据模型层级和 JSON 字段对照表
 - [ ] 新建 `doc/testing.md` — 测试策略说明（单元测试 vs 集成测试的职责划分、运行方式）
-- [ ] 更新 `CHANGELOG.md` — 同上
 
 ---
 
@@ -76,21 +65,17 @@
 
 ### 代码
 
-- [ ] 新建 `lib/screens/preview_screen.dart` — 一个全屏的"课堂页面"
+- [ ] 新建 `lib/screens/preview_screen.dart` — 全屏"课堂页面"
   - 左侧视频占位 + 场景标题栏
   - 右侧步骤面板（场景导航 + 步骤列表 + 验证提示 + 继续按钮）
   - 最后一个场景显示完成页
-  - 数据源：从 DataService 获取当前 Lesson 的 Scene/Step 数据
+  - 数据源：调用 `DataService.loadLesson(lessonId)` 获取该课时的 Scene/Step 数据
   - 参考 `data/profile/vibe-coding/lesson1.html` 的布局和交互
 
 ### 测试
 
 - [ ] 新建 `test/screens/preview_screen_test.dart` — 测试场景切换、步骤高亮、完成页
 - [ ] 设置 test data：构造含 2-3 个 Scene 的 Lesson 数据
-
-### 文档
-
-- [ ] 更新 `CHANGELOG.md` — 同上
 
 ---
 
