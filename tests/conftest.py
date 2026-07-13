@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.gui_utils import check_tool, has_tesseract_cn as _has_tesseract_cn
+
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
@@ -40,3 +42,35 @@ def scenes() -> list[dict]:
 @pytest.fixture(scope="session")
 def classes() -> list[dict]:
     return json.loads((FIXTURES_DIR / "classes.json").read_text())
+
+
+# ── GUI 工具检测 fixtures ────────────────────────────────────────────
+
+
+@pytest.fixture(scope="session")
+def has_xvfb():
+    return check_tool("xvfb-run") is not None or check_tool("Xvfb") is not None
+
+
+@pytest.fixture(scope="session")
+def has_xdotool():
+    return check_tool("xdotool") is not None
+
+
+@pytest.fixture(scope="session")
+def has_import():
+    return check_tool("import") is not None
+
+
+@pytest.fixture(scope="session")
+def has_tesseract_cn():
+    return _has_tesseract_cn()
+
+
+@pytest.fixture(scope="session")
+def has_opencv():
+    try:
+        import cv2  # noqa: F401
+        return True
+    except ImportError:
+        return False
