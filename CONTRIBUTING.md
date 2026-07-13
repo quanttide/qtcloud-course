@@ -7,7 +7,7 @@
 | 层 | 工具 | 位置 | 职责 |
 |---|------|------|------|
 | **单元测试** | `go test` | `src/provider/` | 数据模型、存储层、Handler，覆盖率 ≥95% |
-| **集成测试** | `pytest` | `tests/` | 服务端启动、API 端到端、数据 fixture 校验 |
+| **集成测试** | `pytest` | `tests/` | 服务端启动、API 端到端、数据 fixture 校验、视频可播放性 |
 
 ### 运行
 
@@ -18,6 +18,8 @@ cd src/provider && go test ./... -count=1 -cover
 # 全部集成测试
 uv run pytest -v
 ```
+
+视频可播放性测试需要 `ffmpeg` 和 `ffprobe`。缺失时自动跳过，不影响其他测试。
 
 ### 目录约定
 

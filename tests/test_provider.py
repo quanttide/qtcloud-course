@@ -204,26 +204,75 @@ class TestNotFound:
 
 # ── Video serving ──────────────────────────────────────────────────
 
-VIDEO_CONTENT = b"\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42mp41"
+def _generate_test_video(path: Path) -> bool:
+    """用 ffmpeg 生成 1 秒可播放的视频。返回 False 表示 ffmpeg 不可用。"""
+    try:
+        subprocess.run(
+            ["ffmpeg", "-f", "lavfi", "-i", "color=c=black:s=320x240:d=1",
+             "-c:v", "libx264", "-profile:v", "baseline", "-pix_fmt", "yuv420p",
+             "-y", str(path)],
+            capture_output=True, check=True, timeout=15,
+        )
+        return True
+    except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        path.write_bytes(b"\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42mp41")
+        return False
 
 
 @pytest.fixture(scope="module")
 def video_server(tmp_path_factory):
     video_dir = tmp_path_factory.mktemp("video")
-    (video_dir / "intro.mp4").write_bytes(VIDEO_CONTENT)
+    video_path = video_dir / "intro.mp4"
+    has_ffmpeg = _generate_test_video(video_path)
     base, proc = _start_server(video_dir=str(video_dir))
     try:
-        yield base
+        yield base, has_ffmpeg
     finally:
         _stop_server(proc)
 
 
 class TestVideoServing:
     def test_serve_existing_file(self, video_server):
-        status, body = _req("GET", f"{video_server}/video/intro.mp4")
+        base, _ = video_server
+        status, body = _req("GET", f"{base}/video/intro.mp4")
         assert status == 200
-        assert body == VIDEO_CONTENT
+        assert len(body) > 0
 
     def test_serve_nonexistent_file(self, video_server):
-        status, _ = _req("GET", f"{video_server}/video/nonexistent.mp4")
+        base, _ = video_server
+        status, _ = _req("GET", f"{base}/video/nonexistent.mp4")
         assert status == 404
+
+
+class TestVideoPlayability:
+    def test_video_is_playable(self, video_server, tmp_path):
+        base, has_ffmpeg = video_server
+        if not has_ffmpeg:
+            pytest.skip("ffmpeg not available, skipping playability check")
+
+        # 下载视频
+        _, body = _req("GET", f"{base}/video/intro.mp4")
+        assert len(body) > 100, "downloaded video too small"
+
+        # 写入临时文件供 ffprobe 分析
+        tmp = tmp_path / "test.mp4"
+        tmp.write_bytes(body)
+
+        # 用 ffprobe 验证
+        r = subprocess.run(
+            ["ffprobe", "-v", "quiet", "-print_format", "json",
+             "-show_format", "-show_streams", str(tmp)],
+            capture_output=True, text=True, timeout=10,
+        )
+        assert r.returncode == 0, f"ffprobe failed:\n{r.stderr}"
+
+        info = json.loads(r.stdout)
+        assert "mp4" in info["format"]["format_name"], (
+            f"unexpected format: {info['format']['format_name']}"
+        )
+        duration = float(info["format"]["duration"])
+        assert duration > 0, "video has zero duration"
+
+        # 至少有一条视频流
+        video_streams = [s for s in info.get("streams", []) if s["codec_type"] == "video"]
+        assert len(video_streams) >= 1, "no video stream found"
