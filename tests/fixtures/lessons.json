@@ -1,0 +1,61 @@
+[
+  {
+    "id": "less-1",
+    "title": "数据工程概述",
+    "description": "数据工程的起源、发展与应用场景",
+    "duration": 45,
+    "status": "published",
+    "startSceneId": "scene-1"
+  },
+  {
+    "id": "less-2",
+    "title": "数据采集技术",
+    "description": "常见数据源与采集工具",
+    "duration": 45,
+    "status": "published",
+    "startSceneId": "scene-4"
+  },
+  {
+    "id": "less-3",
+    "title": "数据清洗与预处理",
+    "description": "缺失值处理、异常值检测与数据标准化",
+    "duration": 60,
+    "status": "draft",
+    "startSceneId": "scene-7"
+  },
+  {
+    "id": "less-4",
+    "title": "Python环境搭建",
+    "description": "安装Python与开发环境配置",
+    "duration": 45,
+    "status": "published"
+  },
+  {
+    "id": "less-5",
+    "title": "数据类型与变量",
+    "description": "基本数据类型、变量声明与类型转换",
+    "duration": 45,
+    "status": "published"
+  },
+  {
+    "id": "less-6",
+    "title": "控制流与函数",
+    "description": "条件判断、循环与函数定义",
+    "duration": 60,
+    "status": "draft"
+  },
+  {
+    "id": "less-7",
+    "title": "机器学习概述",
+    "description": "什么是机器学习、分类与回归问题",
+    "duration": 45,
+    "status": "draft"
+  },
+  {
+    "id": "less-8",
+    "title": "线性回归",
+    "description": "最小二乘法与梯度下降",
+    "duration": 60,
+    "status": "draft"
+  }
+]

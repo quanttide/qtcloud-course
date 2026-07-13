@@ -1,0 +1,20 @@
+[
+  {
+    "id": "cour-1",
+    "name": "数据工程",
+    "description": "掌握数据采集、清洗、存储和处理的核心技术",
+    "status": "published"
+  },
+  {
+    "id": "cour-2",
+    "name": "Python基础",
+    "description": "从零开始学习Python编程",
+    "status": "published"
+  },
+  {
+    "id": "cour-3",
+    "name": "机器学习入门",
+    "description": "机器学习核心概念与基本算法",
+    "status": "draft"
+  }
+]

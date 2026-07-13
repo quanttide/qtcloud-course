@@ -1,0 +1,34 @@
+[
+  {
+    "id": "phase-1",
+    "courseId": "cour-1",
+    "name": "数据采集阶段",
+    "description": "常见数据源与采集工具",
+    "sortOrder": 1,
+    "lessonIds": ["less-1", "less-2"]
+  },
+  {
+    "id": "phase-2",
+    "courseId": "cour-1",
+    "name": "数据清洗与处理阶段",
+    "description": "缺失值处理、异常值检测与数据标准化",
+    "sortOrder": 2,
+    "lessonIds": ["less-3"]
+  },
+  {
+    "id": "phase-3",
+    "courseId": "cour-2",
+    "name": "Python基础阶段",
+    "description": "Python编程基础入门",
+    "sortOrder": 1,
+    "lessonIds": ["less-4", "less-5", "less-6"]
+  },
+  {
+    "id": "phase-4",
+    "courseId": "cour-3",
+    "name": "机器学习基础阶段",
+    "description": "机器学习核心概念与算法基础",
+    "sortOrder": 1,
+    "lessonIds": ["less-7", "less-8"]
+  }
+]

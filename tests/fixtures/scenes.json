@@ -1,0 +1,79 @@
+[
+  {
+    "id": "scene-1",
+    "lessonId": "less-1",
+    "videoUrl": "less-1/intro.mp4",
+    "choices": [
+      { "label": "继续学习", "targetSceneId": "scene-2" }
+    ]
+  },
+  {
+    "id": "scene-2",
+    "lessonId": "less-1",
+    "videoUrl": "less-1/concepts.mp4",
+    "choices": [
+      { "label": "了解应用场景", "targetSceneId": "scene-3" },
+      { "label": "直接看总结", "targetSceneId": "scene-99" }
+    ]
+  },
+  {
+    "id": "scene-3",
+    "lessonId": "less-1",
+    "videoUrl": "less-1/applications.mp4",
+    "choices": [
+      { "label": "看总结", "targetSceneId": "scene-99" }
+    ]
+  },
+  {
+    "id": "scene-4",
+    "lessonId": "less-2",
+    "videoUrl": "less-2/sources.mp4",
+    "choices": [
+      { "label": "继续", "targetSceneId": "scene-5" }
+    ]
+  },
+  {
+    "id": "scene-5",
+    "lessonId": "less-2",
+    "videoUrl": "less-2/tools.mp4",
+    "choices": [
+      { "label": "做练习", "targetSceneId": "scene-6" },
+      { "label": "跳过", "targetSceneId": "scene-99" }
+    ]
+  },
+  {
+    "id": "scene-6",
+    "lessonId": "less-2",
+    "videoUrl": "less-2/practice.mp4",
+    "choices": []
+  },
+  {
+    "id": "scene-7",
+    "lessonId": "less-3",
+    "videoUrl": "less-3/cleaning.mp4",
+    "choices": [
+      { "label": "学习缺失值处理", "targetSceneId": "scene-8" },
+      { "label": "学习异常值检测", "targetSceneId": "scene-9" }
+    ]
+  },
+  {
+    "id": "scene-8",
+    "lessonId": "less-3",
+    "videoUrl": "less-3/missing.mp4",
+    "choices": [
+      { "label": "学习异常值检测", "targetSceneId": "scene-9" }
+    ]
+  },
+  {
+    "id": "scene-9",
+    "lessonId": "less-3",
+    "videoUrl": "less-3/outliers.mp4",
+    "choices": []
+  },
+  {
+    "id": "scene-99",
+    "lessonId": "less-1",
+    "videoUrl": "less-1/summary.mp4",
+    "choices": []
+  }
+]
