@@ -64,7 +64,7 @@ wheels = [
 ]
 
 [[package]]
-name = "qtcloud-course-tests"
+name = "qtcloud-course"
 version = "0.0.1"
 source = { virtual = "." }
 
