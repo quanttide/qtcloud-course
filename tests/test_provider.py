@@ -13,7 +13,6 @@ import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SERVER_DIR = str(PROJECT_ROOT / "src/provider")
-VIDEO_DIR = Path(SERVER_DIR) / "data" / "video"
 
 
 def _free_port() -> int:
@@ -22,14 +21,17 @@ def _free_port() -> int:
         return s.getsockname()[1]
 
 
-@pytest.fixture(scope="module")
-def server():
+def _start_server(*, video_dir: str | None = None) -> tuple:
+    """启动服务端实例，返回 (base_url, proc)。"""
     host = "127.0.0.1"
     port = _free_port()
     base = f"http://{host}:{port}"
 
     env = os.environ.copy()
     env["LISTEN_ADDR"] = f"{host}:{port}"
+    if video_dir is not None:
+        env["VIDEO_DIR"] = video_dir
+
     proc = subprocess.Popen(
         ["go", "run", "./cmd/server"],
         cwd=SERVER_DIR,
@@ -53,14 +55,24 @@ def server():
         proc.kill()
         raise RuntimeError(f"Server did not start within 15s on port {port}")
 
+    return base, proc
+
+
+def _stop_server(proc) -> None:
+    proc.terminate()
+    try:
+        proc.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+
+
+@pytest.fixture(scope="module")
+def server():
+    base, proc = _start_server()
     try:
         yield base, proc
     finally:
-        proc.terminate()
-        try:
-            proc.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            proc.kill()
+        _stop_server(proc)
 
 
 def _req(method: str, url: str, data: bytes | None = None):
@@ -108,20 +120,16 @@ class TestProgramCRUD:
 
     def test_get_created(self, server):
         base, _ = server
-
         _, body = _req("POST", f"{base}/programs", '{"name":"prog-B"}'.encode())
         pid = json.loads(body)["id"]
-
         status, body = _req("GET", f"{base}/programs/{pid}")
         assert status == 200
         assert json.loads(body)["name"] == "prog-B"
 
     def test_update(self, server):
         base, _ = server
-
         _, body = _req("POST", f"{base}/programs", '{"name":"old"}'.encode())
         pid = json.loads(body)["id"]
-
         status, body = _req(
             "PUT", f"{base}/programs/{pid}",
             '{"name":"new","status":"published"}'.encode(),
@@ -131,13 +139,10 @@ class TestProgramCRUD:
 
     def test_delete(self, server):
         base, _ = server
-
         _, body = _req("POST", f"{base}/programs", '{"name":"to-delete"}'.encode())
         pid = json.loads(body)["id"]
-
         status, body = _req("DELETE", f"{base}/programs/{pid}")
         assert status == 204
-
         status, _ = _req("GET", f"{base}/programs/{pid}")
         assert status == 404
 
@@ -148,25 +153,19 @@ class TestCoursePhaseLessonChain:
     def test_full_chain(self, server):
         base, _ = server
 
-        # 1. Create Course
         _, body = _req("POST", f"{base}/courses", '{"name":"course-A"}'.encode())
-        course = json.loads(body)
-        cid = course["id"]
+        cid = json.loads(body)["id"]
 
-        # 2. Create Phase linked to course
         _, body = _req(
             "POST", f"{base}/phases",
             ('{"name":"phase-1","courseId":"' + cid + '","sortOrder":1}').encode(),
         )
-        phase = json.loads(body)
-        pid = phase["id"]
+        pid = json.loads(body)["id"]
 
-        # 3. List phases by courseId
         status, body = _req("GET", f"{base}/phases?courseId={cid}")
         assert status == 200
         assert len(json.loads(body)) == 1
 
-        # 4. Create Lesson and link via Phase.lessonIds
         _, body = _req("POST", f"{base}/lessons", '{"title":"lesson-1","duration":45}'.encode())
         lid = json.loads(body)["id"]
 
@@ -176,11 +175,9 @@ class TestCoursePhaseLessonChain:
         )
         assert lid in json.loads(body)["lessonIds"]
 
-        # 5. Delete Phase, verify lesson still exists independently
         _req("DELETE", f"{base}/phases/{pid}")
         status, _ = _req("GET", f"{base}/phases/{pid}")
         assert status == 404
-
         status, _ = _req("GET", f"{base}/lessons/{lid}")
         assert status == 200
 
@@ -200,7 +197,6 @@ class TestNotFound:
     ])
     def test_returns_404(self, server, method, url):
         base, _ = server
-
         body = '{"name":"x"}'.encode() if method == "PUT" else None
         status, _ = _req(method, f"{base}{url}", body)
         assert status == 404, f"{method} {url} expected 404, got {status}"
@@ -208,31 +204,26 @@ class TestNotFound:
 
 # ── Video serving ──────────────────────────────────────────────────
 
+VIDEO_CONTENT = b"\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42mp41"
+
+
+@pytest.fixture(scope="module")
+def video_server(tmp_path_factory):
+    video_dir = tmp_path_factory.mktemp("video")
+    (video_dir / "intro.mp4").write_bytes(VIDEO_CONTENT)
+    base, proc = _start_server(video_dir=str(video_dir))
+    try:
+        yield base
+    finally:
+        _stop_server(proc)
+
+
 class TestVideoServing:
-    SUBDIR = "_test_video"
-    FILENAME = "test.mp4"
-    CONTENT = b"\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42mp41"
-
-    @classmethod
-    def setup_class(cls):
-        cls.video_dir = VIDEO_DIR / cls.SUBDIR
-        cls.video_dir.mkdir(parents=True, exist_ok=True)
-        (cls.video_dir / cls.FILENAME).write_bytes(cls.CONTENT)
-
-    @classmethod
-    def teardown_class(cls):
-        import shutil
-        shutil.rmtree(cls.video_dir, ignore_errors=True)
-
-    def test_serve_existing_file(self, server):
-        base, _ = server
-        url = f"{base}/video/{self.SUBDIR}/{self.FILENAME}"
-        status, body = _req("GET", url)
+    def test_serve_existing_file(self, video_server):
+        status, body = _req("GET", f"{video_server}/video/intro.mp4")
         assert status == 200
-        assert body == self.CONTENT
+        assert body == VIDEO_CONTENT
 
-    def test_serve_nonexistent_file(self, server):
-        base, _ = server
-        url = f"{base}/video/{self.SUBDIR}/nonexistent.mp4"
-        status, _ = _req("GET", url)
+    def test_serve_nonexistent_file(self, video_server):
+        status, _ = _req("GET", f"{video_server}/video/nonexistent.mp4")
         assert status == 404
