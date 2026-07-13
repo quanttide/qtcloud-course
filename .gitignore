@@ -4,3 +4,9 @@
 __pycache__/
 .python-version
 *.pyc
+
+# Build artifacts
+bin/
+
+# Studio bundle (Flutter build output)
+examples/default/bin/
