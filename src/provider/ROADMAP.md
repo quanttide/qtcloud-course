@@ -82,10 +82,32 @@ type Step struct {
 - [ ] `data/profile/` 中的 lesson JSON 支持带 Steps 的完整场景数据导入
 - [ ] 启动时通过环境变量 `DATA_DIR` 加载 JSON 种子数据，替代 fixture 硬编码
 
-### 6. 自动化测试
+
+### 7. 统一 name/title 字段
+
+#### 补齐缺失字段
+
+| 资源 | 当前有 | 需补齐 |
+|------|--------|--------|
+| Program | `name`（显示名） | `title`（显示名副本） |
+| Course | `name`（显示名） | `title`（显示名副本） |
+| Phase | `name`（显示名） | `title`（显示名副本） |
+| Lesson | `title`（显示名） | `name`（URL slug） |
+| Scene | `title`（显示名） | `name`（URL slug） |
+| Class | `name`（显示名） | `title`（显示名副本） |
+
+- [ ] Lesson/Scene 增加 `name` 字段（URL 友好的 slug，如 `"zed-install"`）
+- [ ] Program/Course/Phase/Class 增加 `title` 字段（显示名，初始化时与 `name` 相同）
+- [ ] 所有资源的 `name` 在 Create 时自动从 `title` 生成 slug，也可手动指定
+- [ ] Store 增加 `GetByName(name)` 方法
+- [ ] Handler 增加 `GET /{resource}/name/{name}` 端点，按 name 查询
+
+### 8. 自动化测试补充
+
+- [ ] name 重复校验测试
 
 - [ ] Step 序列化/反序列化测试
-- API `/lessons/{id}/scenes/{sceneId}/steps` 集成测试
+- [ ] API `/lessons/{id}/scenes/{sceneId}/steps` 集成测试
 - [ ] 含异常分支的 Step JSON 校验测试
 
 ## 交付标准
