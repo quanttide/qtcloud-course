@@ -1,0 +1,23 @@
+[
+  {
+    "id": "prog-1",
+    "name": "大数据微专业",
+    "description": "培养数据工程能力的系统化课程体系",
+    "status": "published",
+    "courseIds": ["cour-1", "cour-2"]
+  },
+  {
+    "id": "prog-2",
+    "name": "AI应用开发",
+    "description": "AI技术在业务中的应用与开发实践",
+    "status": "published",
+    "courseIds": ["cour-3"]
+  },
+  {
+    "id": "prog-3",
+    "name": "UI/UX设计",
+    "description": "用户界面与体验设计基础",
+    "status": "draft",
+    "courseIds": []
+  }
+]

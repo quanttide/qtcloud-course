@@ -44,6 +44,34 @@
 
 ---
 
+## 集成测试（integration_test/）
+
+### 代码
+
+- [ ] 配置 `integration_test` 依赖（`pubspec.yaml` dev_dependencies 添加 `integration_test` + `flutter_test`）
+- [ ] 新建 `integration_test/app_test.dart` — 应用启动 + 页面跳转集成测试
+- [ ] 新建 `integration_test/preview_test.dart` — 从课程研发页点击"试听"到预览页全流程
+  - 加载 `lesson1.json` 构造测试数据
+  - 模拟场景切换、步骤高亮、完成页呈现
+
+### 文档
+
+- [ ] 更新 `CHANGELOG.md` — 同上
+
+---
+
+## 开发文档（doc/）
+
+### 文档
+
+- [ ] 新建 `doc/README.md` — 开发文档入口，说明子目录结构
+- [ ] 新建 `doc/architecture.md` — Studio 分层架构说明（Models → Services → Screens）
+- [ ] 新建 `doc/data-model.md` — 数据模型层级和 JSON 字段对照表
+- [ ] 新建 `doc/testing.md` — 测试策略说明（单元测试 vs 集成测试的职责划分、运行方式）
+- [ ] 更新 `CHANGELOG.md` — 同上
+
+---
+
 ## 试听预览页
 
 ### 代码
@@ -81,7 +109,7 @@
 
 ## 发布
 
-- [ ] 在 `pubspec.yaml` 中更新版本号至 `0.0.2+1`
+- [ ] 在 `pubspec.yaml` 中更新版本号至 `0.0.2`
 - [ ] 运行 `flutter test` 确认全部通过
 - [ ] 创建 git tag `studio/v0.0.2`
 - [ ] 更新 `CHANGELOG.md` 确认完整
