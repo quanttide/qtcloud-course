@@ -8,6 +8,8 @@ dependencies = []
 [dependency-groups]
 dev = [
     "pytest>=8",
+    "opencv-python",
+    "numpy",
 ]
 
 [tool.pytest.ini_options]
