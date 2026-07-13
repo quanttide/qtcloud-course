@@ -1,0 +1,15 @@
+[project]
+name = "qtcloud-course"
+version = "0.0.1"
+description = "量潮课程云"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
