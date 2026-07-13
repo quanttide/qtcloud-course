@@ -15,7 +15,7 @@
 </head>
 <body>
   <video id="player" controls autoplay muted>
-    <source src="http://localhost:9092/video/quickstart/intro.mp4" type="video/mp4">
+    <source id="source" src="" type="video/mp4">
   </video>
   <div class="info">
     <div id="status">加载中...</div>
@@ -23,8 +23,18 @@
   </div>
   <script>
     const v = document.getElementById('player');
+    const source = document.getElementById('source');
     const status = document.getElementById('status');
     const size = document.getElementById('size');
+
+    // 从查询参数获取视频 URL，例如 ?url=http://localhost:9092/video/intro.mp4
+    // 未传参时使用默认地址（方便手动使用）
+    const params = new URLSearchParams(window.location.search);
+    const videoUrl = params.get('url') || 'http://localhost:9092/video/quickstart/intro.mp4';
+    source.src = videoUrl;
+
+    // 重新加载视频（上面修改 src 后需要）
+    v.load();
 
     v.oncanplay = () => {
       status.innerHTML = '<span class="ok">✓ 视频可播放</span>';
