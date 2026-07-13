@@ -13,6 +13,7 @@ import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SERVER_DIR = str(PROJECT_ROOT / "src/provider")
+VIDEO_DIR = Path(SERVER_DIR) / "data" / "video"
 
 
 def _free_port() -> int:
@@ -73,6 +74,8 @@ def _req(method: str, url: str, data: bytes | None = None):
         return e.code, e.read()
 
 
+# ── Server health ──────────────────────────────────────────────────
+
 class TestServerHealth:
     def test_starts_and_healthy(self, server):
         base, proc = server
@@ -84,6 +87,8 @@ class TestServerHealth:
         assert status == 200
         assert body == b'{"status":"ok"}'
 
+
+# ── Program CRUD ───────────────────────────────────────────────────
 
 class TestProgramCRUD:
     def test_list_empty(self, server):
@@ -137,6 +142,8 @@ class TestProgramCRUD:
         assert status == 404
 
 
+# ── Course → Phase → Lesson chain ──────────────────────────────────
+
 class TestCoursePhaseLessonChain:
     def test_full_chain(self, server):
         base, _ = server
@@ -178,6 +185,8 @@ class TestCoursePhaseLessonChain:
         assert status == 200
 
 
+# ── 404 ────────────────────────────────────────────────────────────
+
 class TestNotFound:
     @pytest.mark.parametrize("method,url", [
         ("GET", "/programs/nonexistent"),
@@ -195,3 +204,35 @@ class TestNotFound:
         body = '{"name":"x"}'.encode() if method == "PUT" else None
         status, _ = _req(method, f"{base}{url}", body)
         assert status == 404, f"{method} {url} expected 404, got {status}"
+
+
+# ── Video serving ──────────────────────────────────────────────────
+
+class TestVideoServing:
+    SUBDIR = "_test_video"
+    FILENAME = "test.mp4"
+    CONTENT = b"\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42mp41"
+
+    @classmethod
+    def setup_class(cls):
+        cls.video_dir = VIDEO_DIR / cls.SUBDIR
+        cls.video_dir.mkdir(parents=True, exist_ok=True)
+        (cls.video_dir / cls.FILENAME).write_bytes(cls.CONTENT)
+
+    @classmethod
+    def teardown_class(cls):
+        import shutil
+        shutil.rmtree(cls.video_dir, ignore_errors=True)
+
+    def test_serve_existing_file(self, server):
+        base, _ = server
+        url = f"{base}/video/{self.SUBDIR}/{self.FILENAME}"
+        status, body = _req("GET", url)
+        assert status == 200
+        assert body == self.CONTENT
+
+    def test_serve_nonexistent_file(self, server):
+        base, _ = server
+        url = f"{base}/video/{self.SUBDIR}/nonexistent.mp4"
+        status, _ = _req("GET", url)
+        assert status == 404
