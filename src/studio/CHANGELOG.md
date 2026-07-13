@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.0.2] - 2026-07-13
+
+### 新增
+
+- 数据模型新增 Phase、Scene、Step、Choice，Course.lessons → Course.phases，Lesson 新增 sortOrder 和 scenes
+- DataService 新增 `loadLesson(String lessonId)` 按需加载课时详情
+- 课程研发页 Program → Course → Phase → Lesson → Scene → Step 六级展开树
+- Lesson 行末增加"试听"按钮跳转预览页
+- 新建 PreviewScreen 作为试听占位页
+- 集成测试覆盖应用启动和试听跳转
+- 开发文档 doc/ 记录架构、数据模型和测试策略
+
+### 测试
+
+- 添加 Phase、Scene、Step、Choice 模型单元测试
+- 更新 Program/Course/Lesson 测试适配 phases 结构
+- 添加 DataService 统计逻辑单元测试
+- 更新 ProgramScreen Widget 测试适配多级展开
+
 ## [0.0.1] - 2026-05-08
 
 ### 新增

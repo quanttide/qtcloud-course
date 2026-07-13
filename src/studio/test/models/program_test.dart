@@ -9,6 +9,7 @@ void main() {
     'description': '数据工程的起源与发展',
     'duration': 45,
     'status': 'published',
+    'sortOrder': 1,
   };
 
   final lessonJsonMinimal = {
@@ -16,12 +17,19 @@ void main() {
     'title': 'Python基础',
   };
 
+  final phaseJson = {
+    'id': 'phase-1',
+    'name': '基础阶段',
+    'sortOrder': 1,
+    'lessons': [lessonJson],
+  };
+
   final courseJson = {
     'id': 'course-1',
     'name': '数据工程',
     'description': '核心技术',
     'status': 'published',
-    'lessons': [lessonJson],
+    'phases': [phaseJson],
   };
 
   final programJson = {
@@ -40,6 +48,8 @@ void main() {
       expect(lesson.description, '数据工程的起源与发展');
       expect(lesson.duration, 45);
       expect(lesson.status, ContentStatus.published);
+      expect(lesson.sortOrder, 1);
+      expect(lesson.scenes, isEmpty);
     });
 
     test('fromJson uses defaults for missing fields', () {
@@ -49,14 +59,17 @@ void main() {
       expect(lesson.description, '');
       expect(lesson.duration, 45);
       expect(lesson.status, ContentStatus.draft);
+      expect(lesson.sortOrder, 0);
+      expect(lesson.scenes, isEmpty);
     });
 
     test('copyWith overrides specified fields', () {
       final lesson = Lesson.fromJson(lessonJson);
-      final copy = lesson.copyWith(title: '新标题', duration: 60);
-      expect(copy.id, 'lesson-1');
+      final copy = lesson.copyWith(title: '新标题', duration: 60, sortOrder: 2);
       expect(copy.title, '新标题');
       expect(copy.duration, 60);
+      expect(copy.sortOrder, 2);
+      expect(copy.id, lesson.id);
       expect(copy.description, lesson.description);
       expect(copy.status, lesson.status);
     });
@@ -69,29 +82,31 @@ void main() {
       expect(copy.description, lesson.description);
       expect(copy.duration, lesson.duration);
       expect(copy.status, lesson.status);
+      expect(copy.sortOrder, lesson.sortOrder);
     });
   });
 
   group('Course', () {
-    test('fromJson parses all fields with lessons', () {
+    test('fromJson parses all fields with phases', () {
       final course = Course.fromJson(courseJson);
       expect(course.id, 'course-1');
       expect(course.name, '数据工程');
       expect(course.description, '核心技术');
       expect(course.status, ContentStatus.published);
-      expect(course.lessons.length, 1);
-      expect(course.lessons[0].title, '数据工程概述');
+      expect(course.phases.length, 1);
+      expect(course.phases[0].name, '基础阶段');
+      expect(course.phases[0].lessons[0].title, '数据工程概述');
     });
 
-    test('fromJson defaults to empty lessons list', () {
+    test('fromJson defaults to empty phases list', () {
       final course = Course.fromJson({'id': 'c-1', 'name': 'test'});
-      expect(course.lessons, isEmpty);
+      expect(course.phases, isEmpty);
     });
 
-    test('copyWith replaces lessons', () {
+    test('copyWith replaces phases', () {
       final course = Course.fromJson(courseJson);
-      final copy = course.copyWith(lessons: []);
-      expect(copy.lessons, isEmpty);
+      final copy = course.copyWith(phases: []);
+      expect(copy.phases, isEmpty);
       expect(copy.id, course.id);
     });
   });

@@ -1,4 +1,6 @@
 import 'enums.dart';
+import 'scene.dart';
+import 'phase.dart';
 
 class Lesson {
   final String id;
@@ -6,6 +8,8 @@ class Lesson {
   final String description;
   final int duration;
   final ContentStatus status;
+  final int sortOrder;
+  final List<Scene> scenes;
 
   const Lesson({
     required this.id,
@@ -13,6 +17,8 @@ class Lesson {
     this.description = '',
     this.duration = 45,
     this.status = ContentStatus.draft,
+    this.sortOrder = 0,
+    this.scenes = const [],
   });
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
@@ -22,6 +28,11 @@ class Lesson {
       description: json['description'] as String? ?? '',
       duration: json['duration'] as int? ?? 45,
       status: ContentStatus.fromString(json['status'] as String? ?? 'draft'),
+      sortOrder: json['sortOrder'] as int? ?? 0,
+      scenes: (json['scenes'] as List<dynamic>?)
+              ?.map((e) => Scene.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 
@@ -31,6 +42,8 @@ class Lesson {
     String? description,
     int? duration,
     ContentStatus? status,
+    int? sortOrder,
+    List<Scene>? scenes,
   }) {
     return Lesson(
       id: id ?? this.id,
@@ -38,6 +51,8 @@ class Lesson {
       description: description ?? this.description,
       duration: duration ?? this.duration,
       status: status ?? this.status,
+      sortOrder: sortOrder ?? this.sortOrder,
+      scenes: scenes ?? this.scenes,
     );
   }
 }
@@ -47,14 +62,14 @@ class Course {
   final String name;
   final String description;
   final ContentStatus status;
-  final List<Lesson> lessons;
+  final List<Phase> phases;
 
   const Course({
     required this.id,
     required this.name,
     this.description = '',
     this.status = ContentStatus.draft,
-    this.lessons = const [],
+    this.phases = const [],
   });
 
   factory Course.fromJson(Map<String, dynamic> json) {
@@ -63,8 +78,8 @@ class Course {
       name: json['name'] as String,
       description: json['description'] as String? ?? '',
       status: ContentStatus.fromString(json['status'] as String? ?? 'draft'),
-      lessons: (json['lessons'] as List<dynamic>?)
-              ?.map((e) => Lesson.fromJson(e as Map<String, dynamic>))
+      phases: (json['phases'] as List<dynamic>?)
+              ?.map((e) => Phase.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
     );
@@ -75,14 +90,14 @@ class Course {
     String? name,
     String? description,
     ContentStatus? status,
-    List<Lesson>? lessons,
+    List<Phase>? phases,
   }) {
     return Course(
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
       status: status ?? this.status,
-      lessons: lessons ?? this.lessons,
+      phases: phases ?? this.phases,
     );
   }
 }

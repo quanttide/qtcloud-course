@@ -1,7 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Step;
 import 'package:provider/provider.dart';
 import '../models/program.dart';
+import '../models/phase.dart';
+import '../models/scene.dart';
 import '../services/data_service.dart';
+import 'preview_screen.dart';
 
 class ProgramScreen extends StatelessWidget {
   const ProgramScreen({super.key});
@@ -65,13 +68,13 @@ class _ProgramTileState extends State<_ProgramTile> {
               ],
             ),
           ),
-          if (_expanded) ..._buildCourses(context, program.courses),
+          if (_expanded) ..._buildCourses(program.courses),
         ],
       ),
     );
   }
 
-  List<Widget> _buildCourses(BuildContext context, List<Course> courses) {
+  List<Widget> _buildCourses(List<Course> courses) {
     if (courses.isEmpty) {
       return [
         const Padding(
@@ -80,9 +83,7 @@ class _ProgramTileState extends State<_ProgramTile> {
         )
       ];
     }
-    return courses
-        .map((c) => _CourseTile(course: c))
-        .toList();
+    return courses.map((c) => _CourseTile(course: c)).toList();
   }
 }
 
@@ -97,6 +98,9 @@ class _CourseTile extends StatefulWidget {
 
 class _CourseTileState extends State<_CourseTile> {
   bool _expanded = false;
+
+  int get _lessonCount =>
+      widget.course.phases.fold(0, (s, p) => s + p.lessons.length);
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +122,7 @@ class _CourseTileState extends State<_CourseTile> {
               children: [
                 _StatusChip(status: course.status.label),
                 const SizedBox(width: 8),
-                Text('${course.lessons.length} 课时',
+                Text('$_lessonCount 课时',
                     style: TextStyle(color: Colors.grey[500])),
                 IconButton(
                   icon: Icon(
@@ -130,13 +134,66 @@ class _CourseTileState extends State<_CourseTile> {
               ],
             ),
           ),
-          if (_expanded) ..._buildLessons(context, course.lessons),
+          if (_expanded) ..._buildPhases(course.phases),
         ],
       ),
     );
   }
 
-  List<Widget> _buildLessons(BuildContext context, List<Lesson> lessons) {
+  List<Widget> _buildPhases(List<Phase> phases) {
+    if (phases.isEmpty) {
+      return [
+        const Padding(
+          padding: EdgeInsets.only(left: 56, bottom: 8),
+          child: Text('暂无阶段', style: TextStyle(color: Colors.grey)),
+        )
+      ];
+    }
+    return phases.map((p) => _PhaseTile(phase: p)).toList();
+  }
+}
+
+class _PhaseTile extends StatefulWidget {
+  final Phase phase;
+
+  const _PhaseTile({required this.phase});
+
+  @override
+  State<_PhaseTile> createState() => _PhaseTileState();
+}
+
+class _PhaseTileState extends State<_PhaseTile> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final phase = widget.phase;
+    return Container(
+      padding: const EdgeInsets.only(left: 56),
+      child: Column(
+        children: [
+          const Divider(height: 1),
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.layers, size: 18, color: Colors.teal),
+            title: Text(phase.name,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            subtitle: Text('${phase.lessons.length} 课时',
+                style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+            trailing: IconButton(
+              icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+              onPressed: () => setState(() => _expanded = !_expanded),
+              constraints: const BoxConstraints(),
+              padding: EdgeInsets.zero,
+            ),
+          ),
+          if (_expanded) ..._buildLessons(phase.lessons),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildLessons(List<Lesson> lessons) {
     if (lessons.isEmpty) {
       return [
         const Padding(
@@ -145,17 +202,155 @@ class _CourseTileState extends State<_CourseTile> {
         )
       ];
     }
-    return lessons
-        .map((l) => Container(
-              padding: const EdgeInsets.only(left: 56),
-              child: ListTile(
-                dense: true,
-                leading:
-                    const Icon(Icons.description, size: 18, color: Colors.orange),
-                title: Text(l.title, style: const TextStyle(fontSize: 14)),
-                subtitle: Text('${l.duration}分钟',
+    return lessons.map((l) => _LessonTile(lesson: l)).toList();
+  }
+}
+
+class _LessonTile extends StatefulWidget {
+  final Lesson lesson;
+
+  const _LessonTile({required this.lesson});
+
+  @override
+  State<_LessonTile> createState() => _LessonTileState();
+}
+
+class _LessonTileState extends State<_LessonTile> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final lesson = widget.lesson;
+    return Container(
+      padding: const EdgeInsets.only(left: 56),
+      child: Column(
+        children: [
+          const Divider(height: 1),
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.description, size: 18, color: Colors.orange),
+            title: Text(lesson.title, style: const TextStyle(fontSize: 14)),
+            subtitle: Text('${lesson.duration}分钟',
+                style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _StatusChip(status: lesson.status.label),
+                const SizedBox(width: 4),
+                IconButton(
+                  icon: const Icon(Icons.headphones, size: 18),
+                  tooltip: '试听',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PreviewScreen(lessonId: lesson.id),
+                      ),
+                    );
+                  },
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                ),
+                IconButton(
+                  icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more,
+                      size: 18),
+                  onPressed: () => setState(() => _expanded = !_expanded),
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                ),
+              ],
+            ),
+          ),
+          if (_expanded) ..._buildScenes(lesson.scenes),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildScenes(List<Scene> scenes) {
+    if (scenes.isEmpty) {
+      return [
+        const Padding(
+          padding: EdgeInsets.only(left: 56, bottom: 8),
+          child: Text('暂无场景', style: TextStyle(color: Colors.grey)),
+        )
+      ];
+    }
+    return scenes.map((s) => _SceneTile(scene: s)).toList();
+  }
+}
+
+class _SceneTile extends StatefulWidget {
+  final Scene scene;
+
+  const _SceneTile({required this.scene});
+
+  @override
+  State<_SceneTile> createState() => _SceneTileState();
+}
+
+class _SceneTileState extends State<_SceneTile> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final scene = widget.scene;
+    return Container(
+      padding: const EdgeInsets.only(left: 56),
+      child: Column(
+        children: [
+          const Divider(height: 1),
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.play_circle_outline, size: 16, color: Colors.purple),
+            title: Text(scene.title, style: const TextStyle(fontSize: 13)),
+            subtitle: scene.verifyTip.isNotEmpty
+                ? Text(scene.verifyTip,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.grey[500], fontSize: 11))
+                : null,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('${scene.steps.length} 步',
                     style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                trailing: _StatusChip(status: l.status.label),
+                IconButton(
+                  icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more,
+                      size: 16),
+                  onPressed: () => setState(() => _expanded = !_expanded),
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                ),
+              ],
+            ),
+          ),
+          if (_expanded) ..._buildSteps(scene.steps),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildSteps(List<Step> steps) {
+    return steps
+        .map((s) => Container(
+              padding: const EdgeInsets.only(left: 72, right: 16, top: 4, bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 10,
+                    backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                    child: Text('${s.order}',
+                        style:
+                            const TextStyle(fontSize: 10, color: Colors.blue)),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(s.content,
+                        style: const TextStyle(fontSize: 12)),
+                  ),
+                ],
               ),
             ))
         .toList();

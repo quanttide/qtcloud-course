@@ -1,0 +1,94 @@
+class Step {
+  final int order;
+  final String content;
+
+  const Step({required this.order, required this.content});
+
+  factory Step.fromJson(Map<String, dynamic> json) {
+    return Step(
+      order: json['order'] as int,
+      content: json['content'] as String,
+    );
+  }
+
+  Step copyWith({int? order, String? content}) {
+    return Step(
+      order: order ?? this.order,
+      content: content ?? this.content,
+    );
+  }
+}
+
+class Choice {
+  final String label;
+  final String targetSceneId;
+
+  const Choice({required this.label, required this.targetSceneId});
+
+  factory Choice.fromJson(Map<String, dynamic> json) {
+    return Choice(
+      label: json['label'] as String,
+      targetSceneId: json['targetSceneId'] as String,
+    );
+  }
+
+  Choice copyWith({String? label, String? targetSceneId}) {
+    return Choice(
+      label: label ?? this.label,
+      targetSceneId: targetSceneId ?? this.targetSceneId,
+    );
+  }
+}
+
+class Scene {
+  final String id;
+  final String name;
+  final String title;
+  final List<Step> steps;
+  final List<Choice> choices;
+  final String verifyTip;
+
+  const Scene({
+    required this.id,
+    required this.name,
+    this.title = '',
+    this.steps = const [],
+    this.choices = const [],
+    this.verifyTip = '',
+  });
+
+  factory Scene.fromJson(Map<String, dynamic> json) {
+    return Scene(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      title: json['title'] as String? ?? '',
+      steps: (json['steps'] as List<dynamic>?)
+              ?.map((e) => Step.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      choices: (json['choices'] as List<dynamic>?)
+              ?.map((e) => Choice.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      verifyTip: json['verifyTip'] as String? ?? '',
+    );
+  }
+
+  Scene copyWith({
+    String? id,
+    String? name,
+    String? title,
+    List<Step>? steps,
+    List<Choice>? choices,
+    String? verifyTip,
+  }) {
+    return Scene(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      title: title ?? this.title,
+      steps: steps ?? this.steps,
+      choices: choices ?? this.choices,
+      verifyTip: verifyTip ?? this.verifyTip,
+    );
+  }
+}

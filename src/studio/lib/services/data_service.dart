@@ -7,6 +7,7 @@ import '../models/class_teaching.dart';
 class CourseDataService extends ChangeNotifier {
   List<Program> _programs = [];
   List<ClassTeaching> _classes = [];
+  final Map<String, Lesson> _lessonCache = {};
   bool _loaded = false;
 
   List<Program> get programs => _programs;
@@ -17,7 +18,7 @@ class CourseDataService extends ChangeNotifier {
   int get totalCourses =>
       _programs.fold(0, (sum, p) => sum + p.courses.length);
   int get totalLessons => _programs.fold(
-      0, (sum, p) => sum + p.courses.fold(0, (s, c) => s + c.lessons.length));
+      0, (sum, p) => sum + p.courses.fold(0, (s, c) => s + c.phases.fold(0, (s2, ph) => s2 + ph.lessons.length)));
   int get activeClasses =>
       _classes.where((c) => c.status.name == 'active').length;
   int get totalStudents =>
@@ -45,5 +46,19 @@ class CourseDataService extends ChangeNotifier {
         .toList();
     _loaded = true;
     notifyListeners();
+  }
+
+  Future<Lesson?> loadLesson(String lessonId) async {
+    if (_lessonCache.containsKey(lessonId)) return _lessonCache[lessonId];
+
+    try {
+      final jsonStr = await rootBundle.loadString('assets/$lessonId.json');
+      final data = json.decode(jsonStr) as Map<String, dynamic>;
+      final lesson = Lesson.fromJson(data);
+      _lessonCache[lessonId] = lesson;
+      return lesson;
+    } catch (_) {
+      return null;
+    }
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:qtcloud_course_studio/services/data_service.dart';
 import 'package:qtcloud_course_studio/models/program.dart';
+import 'package:qtcloud_course_studio/models/phase.dart';
 import 'package:qtcloud_course_studio/models/class_teaching.dart';
 import 'package:qtcloud_course_studio/models/enums.dart';
 import 'package:qtcloud_course_studio/screens/dashboard_screen.dart';
@@ -29,20 +30,24 @@ CourseDataService createServiceWithData() {
           id: 'course-1',
           name: '数据工程',
           status: ContentStatus.published,
-          lessons: [
-            Lesson(id: 'l1', title: '数据工程概述', status: ContentStatus.published),
-            Lesson(id: 'l2', title: '数据采集技术', status: ContentStatus.published),
-            Lesson(id: 'l3', title: '数据清洗', status: ContentStatus.draft),
+          phases: [
+            Phase(id: 'ph1', name: '基础', sortOrder: 1, lessons: [
+              Lesson(id: 'l1', title: '数据工程概述', status: ContentStatus.published),
+              Lesson(id: 'l2', title: '数据采集技术', status: ContentStatus.published),
+              Lesson(id: 'l3', title: '数据清洗', status: ContentStatus.draft),
+            ]),
           ],
         ),
         Course(
           id: 'course-2',
           name: 'Python基础',
           status: ContentStatus.published,
-          lessons: [
-            Lesson(id: 'l4', title: '环境搭建', status: ContentStatus.published),
-            Lesson(id: 'l5', title: '变量与类型', status: ContentStatus.published),
-            Lesson(id: 'l6', title: '控制流', status: ContentStatus.draft),
+          phases: [
+            Phase(id: 'ph2', name: '入门', sortOrder: 1, lessons: [
+              Lesson(id: 'l4', title: '环境搭建', status: ContentStatus.published),
+              Lesson(id: 'l5', title: '变量与类型', status: ContentStatus.published),
+              Lesson(id: 'l6', title: '控制流', status: ContentStatus.draft),
+            ]),
           ],
         ),
       ],
@@ -56,9 +61,11 @@ CourseDataService createServiceWithData() {
           id: 'course-3',
           name: '机器学习入门',
           status: ContentStatus.draft,
-          lessons: [
-            Lesson(id: 'l7', title: '概述', status: ContentStatus.draft),
-            Lesson(id: 'l8', title: '线性回归', status: ContentStatus.draft),
+          phases: [
+            Phase(id: 'ph3', name: '基础', sortOrder: 1, lessons: [
+              Lesson(id: 'l7', title: '概述', status: ContentStatus.draft),
+              Lesson(id: 'l8', title: '线性回归', status: ContentStatus.draft),
+            ]),
           ],
         ),
       ],

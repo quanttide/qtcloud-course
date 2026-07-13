@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:qtcloud_course_studio/services/data_service.dart';
 import 'package:qtcloud_course_studio/models/program.dart';
+import 'package:qtcloud_course_studio/models/phase.dart';
 import 'package:qtcloud_course_studio/models/enums.dart';
 import 'package:qtcloud_course_studio/screens/program_screen.dart';
 
@@ -57,14 +58,120 @@ void main() {
       ]);
       await tester.pumpWidget(createProgramTest(service));
 
-      // Initially courses are hidden
       expect(find.text('数据工程'), findsNothing);
 
-      // Tap expand button
       await tester.tap(find.byIcon(Icons.expand_more));
       await tester.pumpAndSettle();
 
       expect(find.text('数据工程'), findsOneWidget);
+    });
+
+    testWidgets('expand course to show phases', (tester) async {
+      final service = CourseDataService();
+      service.programs.addAll([
+        Program(
+          id: 'p1',
+          name: '大数据微专业',
+          status: ContentStatus.published,
+          courses: [
+            Course(
+              id: 'c1',
+              name: '数据工程',
+              status: ContentStatus.published,
+              phases: [
+                Phase(id: 'ph1', name: '基础阶段', sortOrder: 1),
+              ],
+            ),
+          ],
+        ),
+      ]);
+      await tester.pumpWidget(createProgramTest(service));
+
+      // Expand program
+      await tester.tap(find.byIcon(Icons.expand_more));
+      await tester.pumpAndSettle();
+
+      expect(find.text('基础阶段'), findsNothing);
+
+      // Expand course
+      await tester.tap(find.byIcon(Icons.expand_more).last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('基础阶段'), findsOneWidget);
+    });
+
+    testWidgets('expand phase to show lessons', (tester) async {
+      final service = CourseDataService();
+      service.programs.addAll([
+        Program(
+          id: 'p1',
+          name: '大数据微专业',
+          status: ContentStatus.published,
+          courses: [
+            Course(
+              id: 'c1',
+              name: '数据工程',
+              status: ContentStatus.published,
+              phases: [
+                Phase(id: 'ph1', name: '基础阶段', sortOrder: 1, lessons: [
+                  Lesson(id: 'l1', title: '数据工程概述', duration: 45),
+                ]),
+              ],
+            ),
+          ],
+        ),
+      ]);
+      await tester.pumpWidget(createProgramTest(service));
+
+      // Expand program
+      await tester.tap(find.byIcon(Icons.expand_more));
+      await tester.pumpAndSettle();
+
+      // Expand course
+      await tester.tap(find.byIcon(Icons.expand_more).last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('数据工程概述'), findsNothing);
+
+      // Expand phase
+      await tester.tap(find.byIcon(Icons.expand_more).last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('数据工程概述'), findsOneWidget);
+    });
+
+    testWidgets('lesson row has listen button', (tester) async {
+      final service = CourseDataService();
+      service.programs.addAll([
+        Program(
+          id: 'p1',
+          name: '大数据微专业',
+          status: ContentStatus.published,
+          courses: [
+            Course(
+              id: 'c1',
+              name: '数据工程',
+              status: ContentStatus.published,
+              phases: [
+                Phase(id: 'ph1', name: '基础阶段', sortOrder: 1, lessons: [
+                  Lesson(id: 'l1', title: '数据工程概述', duration: 45),
+                ]),
+              ],
+            ),
+          ],
+        ),
+      ]);
+      await tester.pumpWidget(createProgramTest(service));
+
+      // Expand all the way to lesson
+      await tester.tap(find.byIcon(Icons.expand_more));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.expand_more).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.expand_more).last);
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.headphones), findsOneWidget);
     });
   });
 }
