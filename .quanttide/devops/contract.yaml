@@ -1,5 +1,7 @@
 scopes:
   cli:
     dir: src/cli
+  studio:
+    dir: src/studio
   provider:
     dir: src/provider
