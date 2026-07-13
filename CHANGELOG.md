@@ -1,5 +1,28 @@
 # Changelog
 
+
+## [0.0.2] - 2026-07-13
+
+### Added
+- 新增 studio GUI 自动化测试套件及 PreviewScreen 试听预览页，实现 Phase/Scene/Step 模型和六级编排树
+- 新增 Scene 模型字段（Title/Steps/VerifyTip），完善领域模型
+- 新增 Go 服务端 provider，包含 Phase 阶段模型、视频静态服务、Scene/Choice 互动课时模型
+- 新增 pytest 测试框架，添加视频服务测试、视频可播放性验证及课堂视频播放自动化测试
+- 新增 ROADMAP、TODO.md、CONTRIBUTING.md 等文档，明确开发路线与贡献规范
+
+### Changed
+- 重构测试文件：移动并抽离 GUI 测试工具到 tests/utils/gui.py，消除视频 URL 硬编码，测试改用 tmp_path_factory，重命名 test_server 为 test_provider
+- 重构 provider：将 API 文档移至 docs/api/index.md，拆解 Course/Lesson 为独立资源
+- 更新依赖锁文件 uv.lock 和 Cargo.lock
+- 修订文档：审核 ROADMAP 和 TODO.md，补充 Phase 缺失，精简 v0.0.3 规划
+
+### Fixed
+- 修复版本号从 1.0.0 改为 0.0.1，对齐 CHANGELOG 和 git tag
+
+### Removed
+- 移除 Playwright 依赖及浏览器测试
+- 移除冗余集成测试（由 PreviewScreen 替代）
+- 移除 CHANGELOG 中由 AI 自动添加的 0.1.0 条目
 ## [0.0.1] - 2026-05-08
 
 ### 架构设计
