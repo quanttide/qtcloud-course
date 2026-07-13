@@ -41,10 +41,19 @@ type Lesson struct {
 
 // Scene 是视频片段，互动课时的基本单元。
 type Scene struct {
-	ID       string   `json:"id"`
-	LessonID string   `json:"lessonId"`           // 所属课时
-	VideoURL string   `json:"videoUrl"`            // 本段视频地址
-	Choices  []Choice `json:"choices"`                // 分支选项（空数组表示终结）
+	ID         string   `json:"id"`
+	LessonID   string   `json:"lessonId"`           // 所属课时
+	Title      string   `json:"title,omitempty"`      // 场景标题
+	VideoURL   string   `json:"videoUrl"`            // 本段视频地址
+	Steps      []Step   `json:"steps,omitempty"`       // 操作步骤列表
+	VerifyTip  string   `json:"verifyTip,omitempty"`  // 验证方式
+	Choices    []Choice `json:"choices"`                // 分支选项（空数组表示终结）
+}
+
+// Step 是场景内的操作步骤。
+type Step struct {
+	Order    int    `json:"order"`
+	Content  string `json:"content"`
 }
 
 // Choice 是场景内的分支选项，用户选择后跳转到目标场景。

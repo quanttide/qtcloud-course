@@ -67,6 +67,9 @@ func (s *SceneStore) Update(sc *domain.Scene) (*domain.Scene, bool) {
 	}
 	existing.VideoURL = sc.VideoURL
 	existing.Choices = sc.Choices
+	existing.Title = sc.Title
+	existing.Steps = sc.Steps
+	existing.VerifyTip = sc.VerifyTip
 	return existing, true
 }
 
