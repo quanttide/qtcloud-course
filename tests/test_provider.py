@@ -7,10 +7,12 @@ import subprocess
 import time
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 import pytest
 
-SERVER_DIR = "src/provider"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+SERVER_DIR = str(PROJECT_ROOT / "src/provider")
 
 
 def _free_port() -> int:
@@ -31,8 +33,8 @@ def server():
         ["go", "run", "./cmd/server"],
         cwd=SERVER_DIR,
         env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
 
     deadline = time.time() + 15
@@ -46,8 +48,12 @@ def server():
         except (urllib.error.URLError, ConnectionError, OSError):
             time.sleep(0.3)
 
+    if not ready:
+        proc.kill()
+        raise RuntimeError(f"Server did not start within 15s on port {port}")
+
     try:
-        yield base, proc, ready
+        yield base, proc
     finally:
         proc.terminate()
         try:
@@ -61,7 +67,7 @@ def _req(method: str, url: str, data: bytes | None = None):
     if data is not None:
         req.add_header("Content-Type", "application/json")
     try:
-        resp = urllib.request.urlopen(req)
+        resp = urllib.request.urlopen(req, timeout=5)
         return resp.status, resp.read()
     except urllib.error.HTTPError as e:
         return e.code, e.read()
@@ -69,14 +75,11 @@ def _req(method: str, url: str, data: bytes | None = None):
 
 class TestServerHealth:
     def test_starts_and_healthy(self, server):
-        base, proc, ready = server
-        assert ready, "server not ready within 15s"
+        base, proc = server
         assert proc.poll() is None, "server process exited"
 
     def test_healthz(self, server):
-        base, _, ready = server
-        if not ready:
-            pytest.skip("server not ready")
+        base, proc = server
         status, body = _req("GET", f"{base}/healthz")
         assert status == 200
         assert body == b'{"status":"ok"}'
@@ -84,18 +87,14 @@ class TestServerHealth:
 
 class TestProgramCRUD:
     def test_list_empty(self, server):
-        base, _, ready = server
-        if not ready:
-            pytest.skip("server not ready")
+        base, _ = server
         status, body = _req("GET", f"{base}/programs")
         assert status == 200
         data = json.loads(body)
         assert isinstance(data, list)
 
     def test_create(self, server):
-        base, _, ready = server
-        if not ready:
-            pytest.skip("server not ready")
+        base, _ = server
         status, body = _req("POST", f"{base}/programs", '{"name":"prog-A"}'.encode())
         assert status == 201
         prog = json.loads(body)
@@ -103,9 +102,7 @@ class TestProgramCRUD:
         assert "id" in prog
 
     def test_get_created(self, server):
-        base, _, ready = server
-        if not ready:
-            pytest.skip("server not ready")
+        base, _ = server
 
         _, body = _req("POST", f"{base}/programs", '{"name":"prog-B"}'.encode())
         pid = json.loads(body)["id"]
@@ -115,9 +112,7 @@ class TestProgramCRUD:
         assert json.loads(body)["name"] == "prog-B"
 
     def test_update(self, server):
-        base, _, ready = server
-        if not ready:
-            pytest.skip("server not ready")
+        base, _ = server
 
         _, body = _req("POST", f"{base}/programs", '{"name":"old"}'.encode())
         pid = json.loads(body)["id"]
@@ -130,9 +125,7 @@ class TestProgramCRUD:
         assert json.loads(body)["name"] == "new"
 
     def test_delete(self, server):
-        base, _, ready = server
-        if not ready:
-            pytest.skip("server not ready")
+        base, _ = server
 
         _, body = _req("POST", f"{base}/programs", '{"name":"to-delete"}'.encode())
         pid = json.loads(body)["id"]
@@ -146,9 +139,7 @@ class TestProgramCRUD:
 
 class TestCoursePhaseLessonChain:
     def test_full_chain(self, server):
-        base, _, ready = server
-        if not ready:
-            pytest.skip("server not ready")
+        base, _ = server
 
         # 1. Create Course
         _, body = _req("POST", f"{base}/courses", '{"name":"course-A"}'.encode())
@@ -199,9 +190,7 @@ class TestNotFound:
         ("GET", "/classes/nonexistent"),
     ])
     def test_returns_404(self, server, method, url):
-        base, _, ready = server
-        if not ready:
-            pytest.skip("server not ready")
+        base, _ = server
 
         body = '{"name":"x"}'.encode() if method == "PUT" else None
         status, _ = _req(method, f"{base}{url}", body)
