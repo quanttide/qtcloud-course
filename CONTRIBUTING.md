@@ -57,33 +57,6 @@ tests/
 
 ---
 
-## 实验
-
-实验（Experiments）放在 [`examples/default/`](examples/default/) 下，用于验证部署、集成和端到端可用性。
-
-### 目录约定
-
-```
-examples/default/
-├── ROADMAP.md           # 实验方案
-├── .gitignore
-└── lab/                 # 实验现场
-    ├── bin/             ← gitignore
-    ├── videos/          ← gitignore
-    ├── deploy.sh        ← 跟踪
-    ├── seed-demo.sh     ← 跟踪
-    └── video-test.html  ← 跟踪
-```
-
-### 规则
-
-1. **所有操作在 `lab/` 内完成** — 不涉及系统目录（如 `~/course-lab/`），不污染仓库其他位置
-2. **脚本和配置文件可跟踪** — `lab/` 下的 `.sh`、`.html`、`.yaml` 等代码文件正常进版本控制
-3. **构建产物和视频数据必须过滤** — 编译的二进制、生成的视频文件放在 `lab/bin/` 和 `lab/videos/` 下，已加入 `.gitignore`
-4. **视频自包含** — 实验所需的视频通过 `ffmpeg` 自动生成，不依赖外部视频文件
-
----
-
 ## 发布
 
 组件发布使用 `qtcloud-devops`。详情见 [`src/provider/CONTRIBUTING.md`](src/provider/CONTRIBUTING.md)。
