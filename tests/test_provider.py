@@ -11,6 +11,8 @@ from pathlib import Path
 
 import pytest
 
+from playwright.sync_api import Page
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SERVER_DIR = PROJECT_ROOT / "src/provider"
 BINARY_DIR = SERVER_DIR / "bin"
@@ -325,3 +327,29 @@ class TestVideoPlayability:
         )
         assert vs.get("width", 0) > 0, f"invalid width: {vs.get('width')}"
         assert vs.get("height", 0) > 0, f"invalid height: {vs.get('height')}"
+
+
+class TestVideoBrowserPlayback:
+    """在 headless 浏览器中实际播放视频，验证 oncanplay 事件。"""
+
+    FIXTURES_DIR = Path(__file__).parent / "fixtures"
+
+    def test_video_plays_in_browser(self, video_server, page: Page):
+        base, has_ffmpeg = video_server
+        if not has_ffmpeg:
+            pytest.skip("ffmpeg not available, video may be invalid")
+
+        # 用 ?url= 参数打开 classroom.html，注入服务端实际地址
+        video_url = f"{base}/video/intro.mp4"
+        html_path = self.FIXTURES_DIR / "classroom.html"
+        page.goto(f"file://{html_path}?url={video_url}")
+
+        # 等待 oncanplay 触发（浏览器需要下载并开始解码）
+        page.wait_for_function(
+            'document.getElementById("status").querySelector(".ok") !== null',
+            timeout=10000,
+        )
+
+        # 验证分辨率已读取
+        size_text = page.text_content("#size")
+        assert "×" in (size_text or ""), f"unexpected size text: {size_text!r}"
