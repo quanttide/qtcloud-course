@@ -258,6 +258,33 @@ class TestVideoServing:
         status, _ = _req("GET", f"{base}/video/nonexistent.mp4")
         assert status == 404
 
+    def test_content_type(self, video_server):
+        """验证 Content-Type 为 video/mp4 — 对应 classroom.html 中 <source type="video/mp4">。"""
+        base, _ = video_server
+        req = urllib.request.Request(f"{base}/video/intro.mp4", method="GET")
+        resp = urllib.request.urlopen(req, timeout=5)
+        assert resp.status == 200
+        ct = resp.headers.get("Content-Type", "")
+        assert ct == "video/mp4", f"expected video/mp4, got {ct!r}"
+
+    def test_range_request(self, video_server):
+        """验证支持 HTTP Range 请求（206 Partial Content）— 浏览器 seek 依赖此能力。"""
+        base, _ = video_server
+        req = urllib.request.Request(
+            f"{base}/video/intro.mp4",
+            method="GET",
+            headers={"Range": "bytes=0-1023"},
+        )
+        resp = urllib.request.urlopen(req, timeout=5)
+        assert resp.status == 206, f"expected 206 Partial Content, got {resp.status}"
+        body = resp.read()
+        assert 0 < len(body) <= 1024, f"range response body length={len(body)}"
+        content_range = resp.headers.get("Content-Range", "")
+        assert content_range.startswith("bytes 0-"), (
+            f"unexpected Content-Range: {content_range!r}"
+        )
+        assert "video/mp4" in resp.headers.get("Content-Type", "")
+
 
 class TestVideoPlayability:
     def test_video_is_playable(self, video_server, tmp_path):
@@ -291,3 +318,10 @@ class TestVideoPlayability:
         # 至少有一条视频流
         video_streams = [s for s in info.get("streams", []) if s["codec_type"] == "video"]
         assert len(video_streams) >= 1, "no video stream found"
+        vs = video_streams[0]
+        assert vs["codec_name"] == "h264", f"expected h264, got {vs['codec_name']}"
+        assert "Baseline" in vs.get("profile", ""), (
+            f"expected Baseline-family profile, got {vs.get('profile')}"
+        )
+        assert vs.get("width", 0) > 0, f"invalid width: {vs.get('width')}"
+        assert vs.get("height", 0) > 0, f"invalid height: {vs.get('height')}"
