@@ -13,5 +13,5 @@
 
 ## 集成测试
 
-- `integration_test/` — 验证应用启动、页面跳转、试听全流程
-- 运行：`flutter test integration_test/`（需要模拟器/真机）
+当前无集成测试。应用启动、页面跳转、试听全流程由 Widget 测试覆盖（见上）。
+如需端到端测试（如平台通道、真实 I/O），可添加 `flutter_driver` 或 `integration_test` 测试，需要模拟器/真机运行。

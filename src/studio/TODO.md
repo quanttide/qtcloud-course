@@ -38,18 +38,6 @@
 
 ---
 
-## 集成测试（integration_test/）
-
-### 代码
-
-- [x] 配置 `integration_test` 依赖（`pubspec.yaml` dev_dependencies 添加 `integration_test: sdk: flutter`）
-- [x] 新建 `integration_test/app_test.dart` — 应用启动 + 页面跳转集成测试
-- [x] 新建 `integration_test/preview_test.dart` — 从课程研发页点击"试听"到预览页全流程
-  - 构造 Program → Course → Phase → Lesson 数据
-  - 验证展开树 → 点击试听 → 跳转预览页
-
----
-
 ## 开发文档（doc/）
 
 ### 文档
