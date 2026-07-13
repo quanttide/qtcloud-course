@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.gui_utils import (
+from tests.utils.gui import (
     XvfbApp,
     ensure_xvfb,
     ocr_text,

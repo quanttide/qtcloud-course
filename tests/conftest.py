@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.gui_utils import check_tool, has_tesseract_cn as _has_tesseract_cn
+from tests.utils.gui import check_tool, has_tesseract_cn as _has_tesseract_cn
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
