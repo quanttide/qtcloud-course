@@ -12,7 +12,9 @@ from pathlib import Path
 import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-SERVER_DIR = str(PROJECT_ROOT / "src/provider")
+SERVER_DIR = PROJECT_ROOT / "src/provider"
+BINARY_DIR = SERVER_DIR / "bin"
+BINARY_PATH = BINARY_DIR / "server"
 
 
 def _free_port() -> int:
@@ -21,7 +23,21 @@ def _free_port() -> int:
         return s.getsockname()[1]
 
 
-def _start_server(*, video_dir: str | None = None) -> tuple:
+@pytest.fixture(scope="session")
+def build():
+    """构建服务端二进制文件，返回二进制路径。"""
+    BINARY_DIR.mkdir(exist_ok=True)
+    subprocess.run(
+        ["go", "build", "-o", str(BINARY_PATH), "./cmd/server"],
+        cwd=str(SERVER_DIR),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return BINARY_PATH
+
+
+def _start_server(binary: Path, *, video_dir: str | None = None) -> tuple:
     """启动服务端实例，返回 (base_url, proc)。"""
     host = "127.0.0.1"
     port = _free_port()
@@ -33,8 +49,7 @@ def _start_server(*, video_dir: str | None = None) -> tuple:
         env["VIDEO_DIR"] = video_dir
 
     proc = subprocess.Popen(
-        ["go", "run", "./cmd/server"],
-        cwd=SERVER_DIR,
+        [str(binary)],
         env=env,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -67,8 +82,8 @@ def _stop_server(proc) -> None:
 
 
 @pytest.fixture(scope="module")
-def server():
-    base, proc = _start_server()
+def server(build):
+    base, proc = _start_server(build)
     try:
         yield base, proc
     finally:
@@ -220,11 +235,11 @@ def _generate_test_video(path: Path) -> bool:
 
 
 @pytest.fixture(scope="module")
-def video_server(tmp_path_factory):
+def video_server(build, tmp_path_factory):
     video_dir = tmp_path_factory.mktemp("video")
     video_path = video_dir / "intro.mp4"
     has_ffmpeg = _generate_test_video(video_path)
-    base, proc = _start_server(video_dir=str(video_dir))
+    base, proc = _start_server(build, video_dir=str(video_dir))
     try:
         yield base, has_ffmpeg
     finally:
