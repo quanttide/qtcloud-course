@@ -1,50 +1,4 @@
-# TODO — v0.0.3
-
-## DataSource 策略模式
-
-在 `CourseDataService` 内部增加双数据源切换，不改调用方接口。
-
-### 代码
-
-- [x] 添加 `http` 依赖到 `pubspec.yaml`
-- [x] `CourseDataService` 增加 `baseUrl` 参数：
-  - `null` → 从 `assets/` 加载 JSON（现有行为，不变）
-  - `非 null` → 从 `http://$baseUrl` 调用 Provider API
-- [x] `CourseDataService._loadFromAssets()` — 现有 `load()` 代码，原封不动搬入
-- [x] `CourseDataService._loadFromApi()` — 新实现：HTTP GET `/programs` + `/classes`
-  - ⚠️ 需确认 API 响应格式是否与现有 `assets/programs.json` / `assets/classes.json` 结构一致；若不一致需添加转换层
-- [x] `CourseDataService` 增加 `error` / `loading` 状态字段，支持部分加载失败的展示
-- [x] `CourseDataService.loadLesson()` 同样支持双数据源：
-  - assets 模式：`assets/$lessonId.json`（现有行为）
-  - API 模式：`GET /lessons/{lessonId}`
-- [x] 默认构造 `CourseDataService()` 无参，保持 assets 模式
-- [x] `--dart-define=API_BASE_URL` 编译期注入（`main.dart:12` 传入 `CourseDataService(baseUrl: ...)`）
-
-### 测试
-
-- [x] 新增单元测试覆盖 API 数据源（mock HTTP 响应）
-- [x] `flutter test` 全部通过
-
----
-
-## PreviewScreen 真实场景播放
-
-### 代码
-
-- [x] Scene 标题展示
-- [x] Step 逐步骤文字引导（`Step.content`）
-- [x] Choice 跳转支持（场景间导航，`Choice.targetSceneId`）
-- [x] 验证提示展示（`verifyTip`）
-- [x] Scene 模型增加 `videoUrl` 字段
-- [x] 视频播放占位（展示 `videoUrl`，未来集成真实播放器）
-
-### 测试
-
-- [x] 确认 `preview_screen_test.dart` 已有覆盖率，补充缺失的 widget 测试
-- [x] Widget 测试覆盖 Step 渲染（已有 testWidgets）
-- [x] Widget 测试覆盖 Choice 跳转（已有 `点击继续切换到下一个场景`）
-
----
+# TODO — v0.0.4
 
 ## GUI 测试补充
 
@@ -58,8 +12,6 @@
 
 - [ ] `pytest tests/test_studio.py -v` 全部通过
 
----
-
 ## 联调验证
 
 - [ ] `flutter run -d linux` assets 模式正常
@@ -69,15 +21,25 @@
 
 ---
 
-## 发布
+## v0.0.3 回顾（已完成）
 
-- [ ] 在 `pubspec.yaml` 中更新版本号至 `0.0.3`
-- [ ] 运行 `flutter test` 全部通过
-- [ ] 更新 `CHANGELOG.md`
-- [ ] 创建 git tag `studio/v0.0.3`
+v0.0.3 全部任务已完成并发布。见 [CHANGELOG.md](./CHANGELOG.md)。
 
----
+### DataSource 策略模式
 
-## v0.0.2 回顾（已完成）
+- `CourseDataService` 双数据源（assets / API），`baseUrl` 参数切换
+- `--dart-define=API_BASE_URL` 编译期注入
+- `http` 依赖，MockClient 单元测试覆盖 API 模式
+- `loading` / `error` 状态字段，支持部分加载失败展示
 
-v0.0.2 全部任务已完成并发布。见 [CHANGELOG.md](./CHANGELOG.md)。
+### PreviewScreen 真实场景播放
+
+- Scene 标题展示、Step 逐步骤引导、Choice 跳转、验证提示、视频占位
+- 6 个 Widget 测试覆盖场景切换全路径
+
+### 发布
+
+- [x] `pubspec.yaml` version `0.0.3`
+- [x] `CHANGELOG.md` v0.0.3
+- [x] Tag `studio/v0.0.3`
+- [x] GitHub Release
