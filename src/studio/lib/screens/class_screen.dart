@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/data_service.dart';
 import '../models/enums.dart';
+import '../widgets/status_chip.dart';
 
 class ClassScreen extends StatelessWidget {
   const ClassScreen({super.key});
@@ -47,7 +48,7 @@ class ClassScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        _ClassStatusChip(status: c.status),
+                        StatusChip(status: c.status),
                         const SizedBox(height: 2),
                         Text('👥 ${c.studentCount}',
                             style: TextStyle(color: Colors.grey[600], fontSize: 13)),
@@ -113,30 +114,6 @@ class ClassScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _ClassStatusChip extends StatelessWidget {
-  final ClassStatus status;
-
-  const _ClassStatusChip({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = switch (status) {
-      ClassStatus.active => Colors.green,
-      ClassStatus.preparing => Colors.orange,
-      ClassStatus.ended => Colors.grey,
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(status.label,
-          style: TextStyle(fontSize: 11, color: color)),
     );
   }
 }

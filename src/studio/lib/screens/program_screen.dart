@@ -4,6 +4,7 @@ import '../models/program.dart';
 import '../models/phase.dart';
 import '../models/scene.dart';
 import '../services/data_service.dart';
+import '../widgets/status_chip.dart';
 import 'preview_screen.dart';
 
 class ProgramScreen extends StatelessWidget {
@@ -56,7 +57,7 @@ class _ProgramTileState extends State<_ProgramTile> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _StatusChip(status: program.status.label),
+                StatusChip(status: program.status),
                 const SizedBox(width: 8),
                 Text('${program.courses.length} 门',
                     style: TextStyle(color: Colors.grey[500])),
@@ -120,7 +121,7 @@ class _CourseTileState extends State<_CourseTile> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _StatusChip(status: course.status.label),
+                StatusChip(status: course.status),
                 const SizedBox(width: 8),
                 Text('$_lessonCount 课时',
                     style: TextStyle(color: Colors.grey[500])),
@@ -235,7 +236,7 @@ class _LessonTileState extends State<_LessonTile> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _StatusChip(status: lesson.status.label),
+                StatusChip(status: lesson.status),
                 const SizedBox(width: 4),
                 IconButton(
                   icon: const Icon(Icons.headphones, size: 18),
@@ -357,26 +358,3 @@ class _SceneTileState extends State<_SceneTile> {
   }
 }
 
-class _StatusChip extends StatelessWidget {
-  final String status;
-
-  const _StatusChip({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = switch (status) {
-      '已发布' => Colors.green,
-      '草稿' => Colors.orange,
-      _ => Colors.grey,
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(status,
-          style: TextStyle(fontSize: 11, color: color)),
-    );
-  }
-}
