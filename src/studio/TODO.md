@@ -12,11 +12,13 @@
   - `非 null` → 从 `http://$baseUrl` 调用 Provider API
 - [ ] `CourseDataService._loadFromAssets()` — 现有 `load()` 代码，原封不动搬入
 - [ ] `CourseDataService._loadFromApi()` — 新实现：HTTP GET `/programs` + `/classes`
+  - ⚠️ 需确认 API 响应格式是否与现有 `assets/programs.json` / `assets/classes.json` 结构一致；若不一致需添加转换层
+- [ ] `CourseDataService` 增加 `error` / `loading` 状态字段，支持部分加载失败的展示
 - [ ] `CourseDataService.loadLesson()` 同样支持双数据源：
   - assets 模式：`assets/$lessonId.json`（现有行为）
   - API 模式：`GET /lessons/{lessonId}`
 - [ ] 默认构造 `CourseDataService()` 无参，保持 assets 模式
-- [ ] `--dart-define=API_BASE_URL` 编译期注入
+- [ ] `--dart-define=API_BASE_URL` 编译期注入（`main.dart:12` 传入 `CourseDataService(baseUrl: ...)`）
 
 ### 测试
 
@@ -29,14 +31,16 @@
 
 ### 代码
 
-- [ ] Scene 标题展示
-- [ ] Step 逐步骤文字引导（`Step.content`）
-- [ ] Choice 跳转支持（场景间导航，`Choice.targetSceneId`）
-- [ ] 验证提示展示（`verifyTip`）
+- [x] Scene 标题展示
+- [x] Step 逐步骤文字引导（`Step.content`）
+- [x] Choice 跳转支持（场景间导航，`Choice.targetSceneId`）
+- [x] 验证提示展示（`verifyTip`）
+- [ ] Scene 模型增加 `videoUrl` 字段
 - [ ] 视频播放占位（展示 `videoUrl`，未来集成真实播放器）
 
 ### 测试
 
+- [ ] 确认 `preview_screen_test.dart` 已有覆盖率，补充缺失的 widget 测试
 - [ ] Widget 测试覆盖 Step 渲染
 - [ ] Widget 测试覆盖 Choice 跳转
 
