@@ -1,47 +1,36 @@
-# TODO 
+# TODO — v0.0.7 
 
-## P0 — API 写回
+## P0 — 基础设施
 
-- [x] ProgramService CRUD 同步 POST/PUT/DELETE（API 模式时）
-- [x] CourseDataService CRUD 同步 POST/PUT/DELETE
-- [x] AssessmentService CRUD 同步 POST/PUT/DELETE
-- [x] 单元测试覆盖 API 写回（MockClient 验证 HTTP 调用，22 个测试）
+- [ ] CI pipeline：push 自动跑 `flutter test` + `dart analyze`
+- [ ] `analysis_options.yaml` 开启额外 lint（`prefer_const_constructors`、`avoid_print` 等）
+- [ ] 拖拽排序 widget 测试
+- [ ] 消除 `dart analyze` 余留 info（`use_null_aware_elements`）
 
----
+## P1 — 评审重构
 
-## P1 — 产品打磨
+- [ ] `_apiPost/Put/Delete` 提取为 mixin（消除三 Service 重复 + 统一 `debugPrint` 异常日志）
+- [ ] `_buildTile` 拆分为 `_buildProgramTile` / `_buildCourseTile` / `_buildPhaseTile` / `_buildLessonTile`
+- [ ] 拖拽约束 `ids[0]`/`ids[1]`/`ids[2]` 提取为命名结构
+- [ ] 导航配置集中化（sidebar / _titles / _screens 三处合并为一处）
+- [ ] `#5` 补全：`data_service` / `assessment_service` API 写回异常日志（当前仅 program_service 有 `debugPrint`）
+- [ ] `StatusChip.dynamic status` 改为类型安全（`Object` + 运行时检查）
+- [ ] `_findLessonInTree` 四层循环 — 将 `_lessonCache` 扩展到缓存树内 scenes
 
-### 拖拽排序
+## P2 — 低优先级
 
-- [x] 树渲染重构为扁平缩进列表（替换嵌套 Column + 展开折叠）
-- [x] 同级节点拖拽（`ReorderableListView` + 插入指示线）
-- [x] 不可跨级拖拽约束
-- [x] 排序后调用 `updateXxx(sortOrder: ...)` 持久化
-- [ ] widget 测试覆盖拖拽
-
-### ID 生成
-
-- [x] `_nextId()` 改用 `Uuid`（`uuid` 包）替代自增计数器
-
-### 仪表盘
-
-- [x] 整合三领域指标（课程数 / 班级数 / 待评分考核数）
-
-### CI
-
-- [ ] push 自动跑 `flutter test` + `dart analyze`
+- [ ] `Step` UI 显示 `order + 1`（当前从 0 开始）
+- [ ] `Scene.videoUrl` 真实播放器集成
+- [ ] Assessment 日期字段 `String` → `DateTime`
+- [ ] `file_picker` 平台兼容性标记（桌面专用，移动端应隐藏导入/导出按钮）
+- [ ] `_SimpleItem` / `_buildSectionPanel` 归入 `DashboardScreen` 作为私有静态成员
+- [ ] `_showScoreDialog` 学生姓名查询从 `fold` 改为 `firstWhereOrNull`
+- [ ] 硬编码颜色统一使用 `Theme.of(context).colorScheme`
+- [ ] `_screens` static const 加注释说明单例约束
 
 ---
 
 ## 测试与验证
 
-- [x] `flutter test` 全部通过（165/165）
-- [x] `dart analyze` 零报错
-
----
-
-## 发布
-
-- [ ] 同步更新 `pubspec.yaml` 和 `lib/version.dart` 版本号至 `0.0.7`
-- [ ] 更新 `CHANGELOG.md`
-- [ ] 创建 git tag `studio/v0.0.7`
+- [ ] `flutter test` 全部通过
+- [ ] `dart analyze` 零报错
