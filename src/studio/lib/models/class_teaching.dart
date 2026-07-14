@@ -65,4 +65,17 @@ class ClassTeaching {
       progress: progress ?? this.progress,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'refName': refName,
+    'refType': refType,
+    'refId': refId,
+    'status': status.name,
+    'startDate': startDate,
+    'endDate': endDate,
+    'studentCount': studentCount,
+    'progress': progress,
+  };
 }

@@ -55,6 +55,16 @@ class Lesson {
       scenes: scenes ?? this.scenes,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'description': description,
+    'duration': duration,
+    'status': status.name,
+    'sortOrder': sortOrder,
+    'scenes': scenes.map((s) => s.toJson()).toList(),
+  };
 }
 
 class Course {
@@ -105,6 +115,15 @@ class Course {
       phases: phases ?? this.phases,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'description': description,
+    'status': status.name,
+    'sortOrder': sortOrder,
+    'phases': phases.map((p) => p.toJson()).toList(),
+  };
 }
 
 class Program {
@@ -150,4 +169,12 @@ class Program {
       courses: courses ?? this.courses,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'description': description,
+    'status': status.name,
+    'courses': courses.map((c) => c.toJson()).toList(),
+  };
 }

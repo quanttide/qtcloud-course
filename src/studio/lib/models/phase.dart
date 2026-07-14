@@ -49,4 +49,13 @@ class Phase {
       lessons: lessons ?? this.lessons,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'description': description,
+    'sortOrder': sortOrder,
+    'status': status.name,
+    'lessons': lessons.map((l) => l.toJson()).toList(),
+  };
 }

@@ -155,6 +155,34 @@ void main() {
     });
   });
 
+  group('CourseDataService Import/Export', () {
+    test('exportProgramsJson returns valid JSON', () {
+      final service = CourseDataService();
+      service.createProgram('P1', 'Desc1');
+      service.createProgram('P2', 'Desc2');
+      final json = service.exportProgramsJson();
+      expect(json, contains('P1'));
+      expect(json, contains('P2'));
+      expect(json, contains('"programs"'));
+    });
+
+    test('mergeProgramsFromJson merges new programs', () {
+      final service = CourseDataService();
+      service.createProgram('Existing', '');
+      const json = '{"programs":[{"id":"new1","name":"Imported","description":"","status":"draft","courses":[]}]}';
+      final ok = service.mergeProgramsFromJson(json);
+      expect(ok, true);
+      expect(service.totalPrograms, 2);
+      expect(service.programs[1].name, 'Imported');
+    });
+
+    test('mergeProgramsFromJson returns false on invalid JSON', () {
+      final service = CourseDataService();
+      final ok = service.mergeProgramsFromJson('not json');
+      expect(ok, false);
+    });
+  });
+
   group('CourseDataService API mode', () {
     test('load sets error on HTTP failure', () async {
       final client = MockClient((_) async => http.Response('Not Found', 404));

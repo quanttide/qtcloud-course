@@ -225,11 +225,45 @@ class _ProgramScreenState extends State<ProgramScreen> {
     );
   }
 
+  Future<void> _exportPrograms() async {
+    final service = context.read<CourseDataService>();
+    final ok = await service.exportProgramsToFile();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(ok ? '导出成功' : '导出已取消')),
+    );
+  }
+
+  Future<void> _importPrograms() async {
+    final service = context.read<CourseDataService>();
+    final jsonStr = await service.importProgramsFromFile();
+    if (jsonStr == null) return;
+    final ok = service.mergeProgramsFromJson(jsonStr);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(ok ? '导入成功' : '导入失败：JSON 格式错误')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final service = context.watch<CourseDataService>();
     return Scaffold(
-      appBar: AppBar(title: const Text('课程研发')),
+      appBar: AppBar(
+        title: const Text('课程研发'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.upload),
+            tooltip: '导入',
+            onPressed: _importPrograms,
+          ),
+          IconButton(
+            icon: const Icon(Icons.download),
+            tooltip: '导出',
+            onPressed: _exportPrograms,
+          ),
+        ],
+      ),
       body: service.programs.isEmpty
           ? const Center(child: Text('暂无数据'))
           : ListView.builder(

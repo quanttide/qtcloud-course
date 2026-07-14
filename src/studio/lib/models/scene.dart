@@ -17,6 +17,8 @@ class Step {
       content: content ?? this.content,
     );
   }
+
+  Map<String, dynamic> toJson() => {'order': order, 'content': content};
 }
 
 class Choice {
@@ -38,6 +40,8 @@ class Choice {
       targetSceneId: targetSceneId ?? this.targetSceneId,
     );
   }
+
+  Map<String, dynamic> toJson() => {'label': label, 'targetSceneId': targetSceneId};
 }
 
 class Scene {
@@ -96,4 +100,14 @@ class Scene {
       videoUrl: videoUrl ?? this.videoUrl,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'title': title,
+    'steps': steps.map((s) => s.toJson()).toList(),
+    'choices': choices.map((c) => c.toJson()).toList(),
+    'verifyTip': verifyTip,
+    'videoUrl': videoUrl,
+  };
 }

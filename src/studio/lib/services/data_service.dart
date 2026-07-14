@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:file_picker/file_picker.dart';
 import '../models/enums.dart';
 import '../models/program.dart';
 import '../models/phase.dart';
@@ -314,6 +316,54 @@ class CourseDataService extends ChangeNotifier {
     courses[ci] = course.copyWith(phases: phases);
     _programs[pi] = program.copyWith(courses: courses);
     notifyListeners();
+  }
+
+  // ── Import / Export ──
+
+  String exportProgramsJson() {
+    final data = {'programs': _programs.map((p) => p.toJson()).toList()};
+    return const JsonEncoder.withIndent('  ').convert(data);
+  }
+
+  Future<String?> importProgramsFromFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+      withData: false,
+    );
+    if (result == null || result.files.isEmpty) return null;
+    final path = result.files.single.path;
+    if (path == null) return null;
+    return File(path).readAsString();
+  }
+
+  bool mergeProgramsFromJson(String jsonStr) {
+    try {
+      final data = json.decode(jsonStr) as Map<String, dynamic>;
+      final list = data['programs'] as List<dynamic>;
+      final incoming = list.map((e) => Program.fromJson(e as Map<String, dynamic>)).toList();
+
+      for (final p in incoming) {
+        final i = _programs.indexWhere((e) => e.id == p.id);
+        if (i == -1) {
+          _programs.add(p);
+        } else {
+          _programs[i] = p;
+        }
+      }
+      notifyListeners();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> exportProgramsToFile() async {
+    final outputDir = await FilePicker.platform.getDirectoryPath();
+    if (outputDir == null) return false;
+    final file = File('$outputDir/programs_export.json');
+    await file.writeAsString(exportProgramsJson());
+    return true;
   }
 
   void deleteLesson(String programId, String courseId, String phaseId, String lessonId) {

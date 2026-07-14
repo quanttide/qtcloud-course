@@ -143,5 +143,17 @@ void main() {
       expect(copy.status, ContentStatus.draft);
       expect(copy.id, program.id);
     });
+
+    test('toJson roundtrips through fromJson', () {
+      final original = Program.fromJson(programJson);
+      final json = original.toJson();
+      final roundtrip = Program.fromJson(json);
+      expect(roundtrip.id, original.id);
+      expect(roundtrip.name, original.name);
+      expect(roundtrip.description, original.description);
+      expect(roundtrip.status, original.status);
+      expect(roundtrip.courses.length, original.courses.length);
+      expect(roundtrip.courses[0].name, original.courses[0].name);
+    });
   });
 }
