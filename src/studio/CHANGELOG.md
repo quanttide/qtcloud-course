@@ -1,5 +1,26 @@
 # Changelog
 
+
+## [0.0.3] - 2026-07-14
+
+### Added
+- 新增双数据源、Scene videoUrl 字段及 API 模式测试
+- 实现 PreviewScreen 试听预览页
+- 新增 Scene 模型 Title、Steps、VerifyTip 字段
+- 添加 studio GUI 自动化测试套件及视频播放测试页面
+
+### Changed
+- 重构 GUI 测试工具，迁移至 tests/utils/gui.py 并消除视频 URL 硬编码
+- 更新 TODO 文档，标记 v0.0.3 已完成项并补充 API 契约、错误状态、videoUrl 字段
+- 同步 provider 和 studio ROADMAP 与产品级 ROADMAP 对齐
+- 将课堂视频测试页面移至 examples/，注册 studio scope 到 contract
+
+### Fixed
+- （无显著修复项）
+
+### Removed
+- 移除 Playwright 依赖及浏览器测试
+- 移除 CHANGELOG 中 AI 自动添加的 0.1.0 条目
 ## [0.0.2] - 2026-07-13
 
 ### 新增
