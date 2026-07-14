@@ -7,9 +7,12 @@ import 'screens/class_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  const apiBaseUrl = String.fromEnvironment('API_BASE_URL');
   runApp(
     ChangeNotifierProvider(
-      create: (_) => CourseDataService()..load(),
+      create: (_) => CourseDataService(
+        baseUrl: apiBaseUrl.isNotEmpty ? apiBaseUrl : null,
+      )..load(),
       child: const QtCloudCourseApp(),
     ),
   );

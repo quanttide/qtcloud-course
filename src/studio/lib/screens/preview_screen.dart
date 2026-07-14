@@ -124,26 +124,32 @@ class _PreviewScreenState extends State<PreviewScreen> {
           child: Column(
             children: [
               Expanded(
-                child: Container(
-                  color: Colors.black,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.play_circle_outline,
-                          size: 64,
-                          color: Colors.grey[700],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '视频播放区域',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                      ],
+                  child: Container(
+                    color: Colors.black,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.play_circle_outline,
+                            size: 64,
+                            color: Colors.grey[700],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            scene.videoUrl.isNotEmpty
+                                ? scene.videoUrl
+                                : '视频播放区域',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
               ),
               Container(
                 width: double.infinity,
@@ -206,7 +212,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
                   child: ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     itemCount: _lesson!.scenes.length,
-                    separatorBuilder: (_, __) =>
+                    separatorBuilder: (_, _) =>
                         const Divider(height: 1, indent: 44),
                     itemBuilder: (_, i) {
                       final s = _lesson!.scenes[i];

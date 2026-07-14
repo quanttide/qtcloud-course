@@ -47,6 +47,7 @@ class Scene {
   final List<Step> steps;
   final List<Choice> choices;
   final String verifyTip;
+  final String videoUrl;
 
   const Scene({
     required this.id,
@@ -55,6 +56,7 @@ class Scene {
     this.steps = const [],
     this.choices = const [],
     this.verifyTip = '',
+    this.videoUrl = '',
   });
 
   factory Scene.fromJson(Map<String, dynamic> json) {
@@ -71,6 +73,7 @@ class Scene {
               .toList() ??
           [],
       verifyTip: json['verifyTip'] as String? ?? '',
+      videoUrl: json['videoUrl'] as String? ?? '',
     );
   }
 
@@ -81,6 +84,7 @@ class Scene {
     List<Step>? steps,
     List<Choice>? choices,
     String? verifyTip,
+    String? videoUrl,
   }) {
     return Scene(
       id: id ?? this.id,
@@ -89,6 +93,7 @@ class Scene {
       steps: steps ?? this.steps,
       choices: choices ?? this.choices,
       verifyTip: verifyTip ?? this.verifyTip,
+      videoUrl: videoUrl ?? this.videoUrl,
     );
   }
 }

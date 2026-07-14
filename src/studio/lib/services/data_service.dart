@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import '../models/program.dart';
 import '../models/class_teaching.dart';
 
@@ -9,10 +10,17 @@ class CourseDataService extends ChangeNotifier {
   List<ClassTeaching> _classes = [];
   final Map<String, Lesson> _lessonCache = {};
   bool _loaded = false;
+  String? _error;
+  bool _loading = false;
+
+  final String? baseUrl;
+  http.Client client;
 
   List<Program> get programs => _programs;
   List<ClassTeaching> get classes => _classes;
   bool get loaded => _loaded;
+  String? get error => _error;
+  bool get loading => _loading;
 
   int get totalPrograms => _programs.length;
   int get totalCourses =>
@@ -24,12 +32,34 @@ class CourseDataService extends ChangeNotifier {
   int get totalStudents =>
       _classes.fold(0, (sum, c) => sum + c.studentCount);
 
+  CourseDataService({this.baseUrl, http.Client? client}) : client = client ?? http.Client();
+
   void markLoaded() {
     _loaded = true;
     notifyListeners();
   }
 
   Future<void> load() async {
+    _loading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      if (baseUrl != null) {
+        await _loadFromApi();
+      } else {
+        await _loadFromAssets();
+      }
+      _loaded = true;
+    } catch (e) {
+      _error = e.toString();
+    }
+
+    _loading = false;
+    notifyListeners();
+  }
+
+  Future<void> _loadFromAssets() async {
     final programsJson =
         await rootBundle.loadString('assets/programs.json');
     final classesJson =
@@ -44,21 +74,63 @@ class CourseDataService extends ChangeNotifier {
     _classes = classesList
         .map((e) => ClassTeaching.fromJson(e as Map<String, dynamic>))
         .toList();
-    _loaded = true;
-    notifyListeners();
+  }
+
+  Future<void> _loadFromApi() async {
+    final programsUri = Uri.parse('$baseUrl/programs');
+    final classesUri = Uri.parse('$baseUrl/classes');
+
+    final programsResponse = await client.get(programsUri);
+    final classesResponse = await client.get(classesUri);
+
+    if (programsResponse.statusCode != 200) {
+      throw Exception('Failed to load programs: ${programsResponse.statusCode}');
+    }
+    if (classesResponse.statusCode != 200) {
+      throw Exception('Failed to load classes: ${classesResponse.statusCode}');
+    }
+
+    final programsList = json.decode(programsResponse.body) as List<dynamic>;
+    final classesList = json.decode(classesResponse.body) as List<dynamic>;
+
+    _programs = programsList
+        .map((e) => Program.fromJson(e as Map<String, dynamic>))
+        .toList();
+    _classes = classesList
+        .map((e) => ClassTeaching.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Lesson?> loadLesson(String lessonId) async {
     if (_lessonCache.containsKey(lessonId)) return _lessonCache[lessonId];
 
     try {
-      final jsonStr = await rootBundle.loadString('assets/$lessonId.json');
-      final data = json.decode(jsonStr) as Map<String, dynamic>;
-      final lesson = Lesson.fromJson(data);
-      _lessonCache[lessonId] = lesson;
-      return lesson;
+      if (baseUrl != null) {
+        return await _loadLessonFromApi(lessonId);
+      } else {
+        return await _loadLessonFromAssets(lessonId);
+      }
     } catch (_) {
       return null;
     }
+  }
+
+  Future<Lesson?> _loadLessonFromAssets(String lessonId) async {
+    final jsonStr = await rootBundle.loadString('assets/$lessonId.json');
+    final data = json.decode(jsonStr) as Map<String, dynamic>;
+    final lesson = Lesson.fromJson(data);
+    _lessonCache[lessonId] = lesson;
+    return lesson;
+  }
+
+  Future<Lesson?> _loadLessonFromApi(String lessonId) async {
+    final uri = Uri.parse('$baseUrl/lessons/$lessonId');
+    final response = await client.get(uri);
+    if (response.statusCode != 200) return null;
+
+    final data = json.decode(response.body) as Map<String, dynamic>;
+    final lesson = Lesson.fromJson(data);
+    _lessonCache[lessonId] = lesson;
+    return lesson;
   }
 }

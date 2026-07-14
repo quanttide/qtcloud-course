@@ -13,6 +13,7 @@ void main() {
     'steps': [stepJson],
     'choices': [choiceJson],
     'verifyTip': 'Zed 编辑器能正常编辑即完成',
+    'videoUrl': 'https://example.com/video.mp4',
   };
 
   group('Step', () {
@@ -54,6 +55,7 @@ void main() {
       expect(scene.steps.length, 1);
       expect(scene.choices.length, 1);
       expect(scene.verifyTip, 'Zed 编辑器能正常编辑即完成');
+      expect(scene.videoUrl, 'https://example.com/video.mp4');
     });
 
     test('fromJson uses defaults for missing fields', () {
@@ -62,6 +64,7 @@ void main() {
       expect(scene.steps, isEmpty);
       expect(scene.choices, isEmpty);
       expect(scene.verifyTip, '');
+      expect(scene.videoUrl, '');
     });
 
     test('copyWith overrides specified fields', () {
