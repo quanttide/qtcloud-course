@@ -4,9 +4,9 @@
 
 CRUD 操作需要写入目标。API 模式（v0.0.4）下需 `POST/PUT/DELETE`；assets 模式下需决定降级行为。
 
-- [ ] 确定持久化方案（API 写回 / 纯内存 / 本地存储）
-- [ ] 在 `CourseDataService` 中添加对应写方法（`createProgram` / `updateProgram` / `deleteProgram` 等）
-- [ ] 单元测试覆盖写方法
+- [x] 确定持久化方案：API 模式读，内存 CRUD（纯内存写，API 写回延后）
+- [x] 在 `CourseDataService` 中添加写方法（Program/Course/Phase/Lesson 四级 create/update/delete）
+- [x] 单元测试覆盖写方法（17 CRUD tests 通过）
 
 ---
 

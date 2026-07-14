@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import '../models/enums.dart';
 import '../models/program.dart';
+import '../models/phase.dart';
 import '../models/class_teaching.dart';
 
 class CourseDataService extends ChangeNotifier {
@@ -145,5 +147,190 @@ class CourseDataService extends ChangeNotifier {
     final lesson = Lesson.fromJson(data);
     _lessonCache[lessonId] = lesson;
     return lesson;
+  }
+
+  int _idCounter = 0;
+  String _nextId() => '${++_idCounter}';
+
+  // ── Program CRUD ──
+
+  Program createProgram(String name, String description) {
+    final program = Program(
+      id: _nextId(),
+      name: name,
+      description: description,
+    );
+    _programs.add(program);
+    notifyListeners();
+    return program;
+  }
+
+  void updateProgram(String id, {String? name, String? description, ContentStatus? status}) {
+    final i = _programs.indexWhere((p) => p.id == id);
+    if (i == -1) return;
+    _programs[i] = _programs[i].copyWith(name: name, description: description, status: status);
+    notifyListeners();
+  }
+
+  void deleteProgram(String id) {
+    _programs.removeWhere((p) => p.id == id);
+    notifyListeners();
+  }
+
+  // ── Course CRUD ──
+
+  Course? createCourse(String programId, String name, String description) {
+    final pi = _programs.indexWhere((p) => p.id == programId);
+    if (pi == -1) return null;
+    final program = _programs[pi];
+    final course = Course(
+      id: _nextId(),
+      name: name,
+      description: description,
+      sortOrder: program.courses.length,
+    );
+    _programs[pi] = program.copyWith(courses: [...program.courses, course]);
+    notifyListeners();
+    return course;
+  }
+
+  void updateCourse(String programId, String courseId, {String? name, String? description, ContentStatus? status, int? sortOrder}) {
+    final pi = _programs.indexWhere((p) => p.id == programId);
+    if (pi == -1) return;
+    final program = _programs[pi];
+    final ci = program.courses.indexWhere((c) => c.id == courseId);
+    if (ci == -1) return;
+    final updated = program.courses[ci].copyWith(name: name, description: description, status: status, sortOrder: sortOrder);
+    final courses = [...program.courses];
+    courses[ci] = updated;
+    _programs[pi] = program.copyWith(courses: courses);
+    notifyListeners();
+  }
+
+  void deleteCourse(String programId, String courseId) {
+    final pi = _programs.indexWhere((p) => p.id == programId);
+    if (pi == -1) return;
+    final program = _programs[pi];
+    _programs[pi] = program.copyWith(courses: program.courses.where((c) => c.id != courseId).toList());
+    notifyListeners();
+  }
+
+  // ── Phase CRUD ──
+
+  Phase? createPhase(String programId, String courseId, String name) {
+    final pi = _programs.indexWhere((p) => p.id == programId);
+    if (pi == -1) return null;
+    final program = _programs[pi];
+    final ci = program.courses.indexWhere((c) => c.id == courseId);
+    if (ci == -1) return null;
+    final course = program.courses[ci];
+    final phase = Phase(
+      id: _nextId(),
+      name: name,
+      sortOrder: course.phases.length,
+    );
+    final courses = [...program.courses];
+    courses[ci] = course.copyWith(phases: [...course.phases, phase]);
+    _programs[pi] = program.copyWith(courses: courses);
+    notifyListeners();
+    return phase;
+  }
+
+  void updatePhase(String programId, String courseId, String phaseId, {String? name, String? description, ContentStatus? status, int? sortOrder}) {
+    final pi = _programs.indexWhere((p) => p.id == programId);
+    if (pi == -1) return;
+    final program = _programs[pi];
+    final ci = program.courses.indexWhere((c) => c.id == courseId);
+    if (ci == -1) return;
+    final course = program.courses[ci];
+    final phi = course.phases.indexWhere((ph) => ph.id == phaseId);
+    if (phi == -1) return;
+    final updated = course.phases[phi].copyWith(name: name, description: description, status: status, sortOrder: sortOrder);
+    final phases = [...course.phases];
+    phases[phi] = updated;
+    final courses = [...program.courses];
+    courses[ci] = course.copyWith(phases: phases);
+    _programs[pi] = program.copyWith(courses: courses);
+    notifyListeners();
+  }
+
+  void deletePhase(String programId, String courseId, String phaseId) {
+    final pi = _programs.indexWhere((p) => p.id == programId);
+    if (pi == -1) return;
+    final program = _programs[pi];
+    final ci = program.courses.indexWhere((c) => c.id == courseId);
+    if (ci == -1) return;
+    final course = program.courses[ci];
+    final courses = [...program.courses];
+    courses[ci] = course.copyWith(phases: course.phases.where((ph) => ph.id != phaseId).toList());
+    _programs[pi] = program.copyWith(courses: courses);
+    notifyListeners();
+  }
+
+  // ── Lesson CRUD ──
+
+  Lesson? createLesson(String programId, String courseId, String phaseId, String title) {
+    final pi = _programs.indexWhere((p) => p.id == programId);
+    if (pi == -1) return null;
+    final program = _programs[pi];
+    final ci = program.courses.indexWhere((c) => c.id == courseId);
+    if (ci == -1) return null;
+    final course = program.courses[ci];
+    final phi = course.phases.indexWhere((ph) => ph.id == phaseId);
+    if (phi == -1) return null;
+    final phase = course.phases[phi];
+    final lesson = Lesson(
+      id: _nextId(),
+      title: title,
+      sortOrder: phase.lessons.length,
+    );
+    final phases = [...course.phases];
+    phases[phi] = phase.copyWith(lessons: [...phase.lessons, lesson]);
+    final courses = [...program.courses];
+    courses[ci] = course.copyWith(phases: phases);
+    _programs[pi] = program.copyWith(courses: courses);
+    notifyListeners();
+    return lesson;
+  }
+
+  void updateLesson(String programId, String courseId, String phaseId, String lessonId, {String? title, String? description, ContentStatus? status, int? sortOrder, int? duration}) {
+    final pi = _programs.indexWhere((p) => p.id == programId);
+    if (pi == -1) return;
+    final program = _programs[pi];
+    final ci = program.courses.indexWhere((c) => c.id == courseId);
+    if (ci == -1) return;
+    final course = program.courses[ci];
+    final phi = course.phases.indexWhere((ph) => ph.id == phaseId);
+    if (phi == -1) return;
+    final phase = course.phases[phi];
+    final li = phase.lessons.indexWhere((l) => l.id == lessonId);
+    if (li == -1) return;
+    final updated = phase.lessons[li].copyWith(title: title, description: description, status: status, sortOrder: sortOrder, duration: duration);
+    final lessons = [...phase.lessons];
+    lessons[li] = updated;
+    final phases = [...course.phases];
+    phases[phi] = phase.copyWith(lessons: lessons);
+    final courses = [...program.courses];
+    courses[ci] = course.copyWith(phases: phases);
+    _programs[pi] = program.copyWith(courses: courses);
+    notifyListeners();
+  }
+
+  void deleteLesson(String programId, String courseId, String phaseId, String lessonId) {
+    final pi = _programs.indexWhere((p) => p.id == programId);
+    if (pi == -1) return;
+    final program = _programs[pi];
+    final ci = program.courses.indexWhere((c) => c.id == courseId);
+    if (ci == -1) return;
+    final course = program.courses[ci];
+    final phi = course.phases.indexWhere((ph) => ph.id == phaseId);
+    if (phi == -1) return;
+    final phase = course.phases[phi];
+    final phases = [...course.phases];
+    phases[phi] = phase.copyWith(lessons: phase.lessons.where((l) => l.id != lessonId).toList());
+    final courses = [...program.courses];
+    courses[ci] = course.copyWith(phases: phases);
+    _programs[pi] = program.copyWith(courses: courses);
+    notifyListeners();
   }
 }
