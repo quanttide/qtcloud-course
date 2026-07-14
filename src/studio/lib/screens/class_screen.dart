@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/data_service.dart';
+import '../models/class_teaching.dart';
 import '../models/enums.dart';
+import '../services/data_service.dart';
 import '../widgets/cards.dart';
 import '../widgets/status_chip.dart';
 
@@ -71,7 +72,7 @@ class ClassScreen extends StatelessWidget {
     );
   }
 
-  void _showClassDetail(BuildContext context, dynamic classTeaching) {
+  void _showClassDetail(BuildContext context, ClassTeaching classTeaching) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
