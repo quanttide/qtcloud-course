@@ -140,7 +140,9 @@ class ProgramService extends ChangeNotifier {
         headers: {'Content-Type': 'application/json'},
         body: json.encode(body),
       );
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('API POST $path failed: $e');
+    }
   }
 
   Future<void> _apiPut(String path, Map<String, dynamic> body) async {
@@ -151,14 +153,18 @@ class ProgramService extends ChangeNotifier {
         headers: {'Content-Type': 'application/json'},
         body: json.encode(body),
       );
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('API PUT $path failed: $e');
+    }
   }
 
   Future<void> _apiDelete(String path) async {
     if (baseUrl == null) return;
     try {
       await client.delete(Uri.parse('$baseUrl$path'));
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('API DELETE $path failed: $e');
+    }
   }
 
   static const _uuid = Uuid();

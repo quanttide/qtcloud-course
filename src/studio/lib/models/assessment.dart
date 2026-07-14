@@ -25,8 +25,8 @@ class Assessment {
       classId: json['classId'] as String,
       type: AssessmentType.fromString(json['type'] as String? ?? 'homework'),
       title: json['title'] as String,
-      fullScore: json['fullScore'] as int,
-      passScore: json['passScore'] as int,
+      fullScore: (json['fullScore'] as num).toInt(),
+      passScore: (json['passScore'] as num).toInt(),
       deadline: json['deadline'] as String,
     );
   }

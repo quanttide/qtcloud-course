@@ -3,7 +3,7 @@ import '../models/enums.dart';
 
 /// 通用状态标签组件，接受 [ContentStatus] 或 [ClassStatus]。
 class StatusChip extends StatelessWidget {
-  final dynamic status;
+  final Object status;
 
   const StatusChip({super.key, required this.status});
 
@@ -48,6 +48,6 @@ class StatusChip extends StatelessWidget {
     if (status is ClassStatus) {
       return (status as ClassStatus).label;
     }
-    return status?.toString() ?? '';
+    return status.toString();
   }
 }
