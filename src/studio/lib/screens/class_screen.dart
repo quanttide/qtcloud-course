@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/data_service.dart';
 import '../models/enums.dart';
+import '../widgets/cards.dart';
 import '../widgets/status_chip.dart';
 
 class ClassScreen extends StatelessWidget {
@@ -90,12 +91,12 @@ class ClassScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  _DetailCard(
+                  DetailCard(
                       label: '学员数', value: '${classTeaching.studentCount}'),
                   const SizedBox(width: 12),
-                  _DetailCard(label: '出勤率', value: '92%'),
+                  DetailCard(label: '出勤率', value: '92%'),
                   const SizedBox(width: 12),
-                  _DetailCard(label: '完成率',
+                  DetailCard(label: '完成率',
                       value: '${(classTeaching.progress * 100).toInt()}%'),
                 ],
               ),
@@ -106,10 +107,10 @@ class ClassScreen extends StatelessWidget {
                       .titleMedium
                       ?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              _InfoRow(label: '引用内容', value: classTeaching.refName),
-              _InfoRow(label: '教学周期', value:
+              InfoRow(label: '引用内容', value: classTeaching.refName),
+              InfoRow(label: '教学周期', value:
                   '${classTeaching.startDate} - ${classTeaching.endDate}'),
-              _InfoRow(label: '状态', value: classTeaching.status.label),
+              InfoRow(label: '状态', value: classTeaching.status.label),
             ],
           ),
         ),
@@ -118,53 +119,3 @@ class ClassScreen extends StatelessWidget {
   }
 }
 
-class _DetailCard extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _DetailCard({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Text(value,
-                  style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.bold)),
-              Text(label,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _InfoRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(label,
-                style: TextStyle(color: Colors.grey[600])),
-          ),
-          Text(value),
-        ],
-      ),
-    );
-  }
-}

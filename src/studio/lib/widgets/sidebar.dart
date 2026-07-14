@@ -73,7 +73,7 @@ class Sidebar extends StatelessWidget {
               ),
             ),
             child: Text(
-              'v0.0.4',
+              'v\${String.fromEnvironment("VERSION", defaultValue: "0.0.0")}',
               style: TextStyle(
                 color: Theme.of(context).disabledColor,
                 fontSize: 12,
