@@ -1,5 +1,23 @@
 # Changelog
 
+
+## [0.0.6] - 2026-07-14
+
+**Added**
+- 实现 P0 API 写回功能、P1 拖拽排序及仪表盘
+- ID 生成改用 UUID
+- 新增 classes.json 测试夹具（含 teacherIds/studentIds）
+- 完成 v0.0.6 教学管理核心功能
+
+**Changed**
+- 更新 ROADMAP 与 TODO 以反映 P0/P1 规划
+
+**Fixed**
+- 修复评审问题 #2/#5/#6/#16
+- 修复 4 项评审问题
+
+**Removed**
+- 无
 ## [0.0.5] - 2026-07-14
 
 ### Added
