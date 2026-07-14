@@ -1,25 +1,4 @@
-# TODO — v0.0.4
-
-## GUI 测试补充
-
-### 代码
-
-- [ ] 更多交互测试（点击场景步骤、验证导航）
-- [ ] CI 集成文档（runner 依赖安装清单：xvfb-run / xdotool / ImageMagick / tesseract / OpenCV）
-- [ ] `smart_click` 模板管理脚本（清除/更新缓存模板）
-
-### 测试
-
-- [ ] `pytest tests/test_studio.py -v` 全部通过
-
-## 联调验证
-
-- [ ] `flutter run -d linux` assets 模式正常
-- [ ] `flutter run -d linux --dart-define=API_BASE_URL=http://localhost:8080` API 模式加载数据
-- [ ] Provider 端 `go run ./cmd/server/` 正常启动
-- [ ] 首次联调问题清单记录
-
----
+# TODO — Studio
 
 ## v0.0.3 回顾（已完成）
 
