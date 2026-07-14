@@ -1,50 +1,65 @@
-# TODO — v0.0.4
+# TODO — v0.0.5
 
-## 底部导航 → 侧边导航
+## P0 — 课程结构编辑
 
-### 代码
+### 新建层级节点
 
-- [x] 新建 `lib/widgets/sidebar.dart` — Sidebar 组件（固定 240px，`Icons.dashboard` / `Icons.school` / `Icons.group`）
-- [x] `MainShell` 布局从 `bottomNavigationBar` 改为 `Row(Sidebar, Expanded(Content))`
-- [~] 路由：`PreviewScreen` 保持 `Navigator.push`（自建 `Scaffold`），全屏覆盖 Sidebar；无额外路由变更
+- [ ] Program 级别「+ 新建」按钮 + 表单
+- [ ] Course 级别「+ 新建」按钮 + 表单
+- [ ] Phase 级别「+ 新建」按钮 + 表单
+- [ ] Lesson 级别「+ 新建」按钮 + 表单
+- [ ] 新建后名称可编辑，焦点落入，sortOrder 自动计算
+- [ ] `StatusChip` 新建节点默认显示「草稿」
+- [ ] widget 测试覆盖新建操作
 
-### 测试
+### 编辑层级节点
 
-- [x] 更新 widget 测试适配新布局（现有测试全部通过无需改动）
-- [ ] GUI 测试：更新 `smart_click` 模板截图（窗口结构变更，全套重新录制）
-- [x] `flutter test` 全部通过
+- [ ] 点击节点标题进入编辑态
+- [ ] 编辑态底部 [保存] [取消] 操作栏
+- [ ] 未保存标记
+- [ ] 仅编辑名称和描述字段
+- [ ] widget 测试覆盖编辑操作
+
+### 删除层级节点
+
+- [ ] 右键菜单或操作按钮触发删除
+- [ ] 确认对话框（提示子级数量）
+- [ ] 已发布节点不可删除
+- [ ] 删除后节点从树中移除（不删除独立资源）
+- [ ] widget 测试覆盖删除操作
 
 ---
 
-## GUI 测试补充
+## P1 — 发布与排序
 
-跨组件端到端测试。
+### 发布/下架
 
-### 代码
+- [ ] Program 发布/下架
+- [ ] Course 发布/下架（发布时检查草稿 Lesson）
+- [ ] Lesson 发布/下架
+- [ ] Phase 不独立发布（仅展示状态）
+- [ ] 发布后状态标记更新
+- [ ] widget 测试覆盖发布操作
 
-- [ ] CI 集成文档（runner 依赖安装清单：xvfb-run / xdotool / ImageMagick / tesseract / OpenCV）
-- [ ] `smart_click` 模板管理脚本（清除/更新缓存模板）
+### 拖拽排序
 
-### 测试
-
-- [ ] `pytest tests/test_studio.py -v` 全部通过
+- [ ] 同级节点拖拽（含插入指示线）
+- [ ] 不可跨级拖拽约束
+- [ ] 排序后数据持久化
+- [ ] widget 测试覆盖拖拽
 
 ---
 
-## 联调验证
+## 测试与验证
 
-首次 Provider ↔ Studio 前后端联调。
-
-- [ ] `flutter run -d linux` assets 模式正常
-- [ ] `flutter run -d linux --dart-define=API_BASE_URL=http://localhost:8080` API 模式加载数据
-- [ ] Provider 端 `go run ./cmd/server/` 配合验证
-- [ ] 首次联调问题清单记录
+- [ ] `flutter test` 全部通过
+- [ ] `flutter analyze` 零报错
 
 ---
 
 ## 发布
 
-- [ ] 在 `pubspec.yaml` 中更新版本号至 `0.0.4`
+- [ ] 在 `pubspec.yaml` 中更新版本号至 `0.0.5`
 - [ ] 运行 `flutter test` 全部通过
 - [ ] 更新 `CHANGELOG.md`
-- [ ] 创建 git tag `studio/v0.0.4`
+- [ ] 创建 git tag `studio/v0.0.5`
