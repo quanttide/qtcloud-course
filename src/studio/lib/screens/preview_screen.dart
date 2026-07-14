@@ -2,7 +2,7 @@ import 'package:flutter/material.dart' hide Step;
 import 'package:provider/provider.dart';
 import '../models/program.dart';
 import '../models/scene.dart';
-import '../services/data_service.dart';
+import '../services/program_service.dart';
 
 /// 试听预览页，全屏课堂页面。
 ///
@@ -36,7 +36,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
   }
 
   Future<void> _loadLesson() async {
-    final service = context.read<CourseDataService>();
+    final service = context.read<ProgramService>();
     final lesson = await service.loadLesson(widget.lessonId);
     if (mounted) {
       setState(() {

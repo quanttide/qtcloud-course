@@ -4,9 +4,11 @@ import '../models/enums.dart';
 import '../models/program.dart';
 import '../models/phase.dart';
 import '../models/scene.dart';
-import '../services/data_service.dart';
+import '../services/program_service.dart';
 import '../widgets/status_chip.dart';
 import 'preview_screen.dart';
+
+enum _NodeType { program, course, phase, lesson }
 
 class ProgramScreen extends StatefulWidget {
   const ProgramScreen({super.key});
@@ -44,7 +46,7 @@ class _ProgramScreenState extends State<ProgramScreen> {
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
-                context.read<CourseDataService>().createProgram(
+                context.read<ProgramService>().createProgram(
                       nameCtrl.text,
                       descCtrl.text,
                     );
@@ -86,7 +88,7 @@ class _ProgramScreenState extends State<ProgramScreen> {
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
-                context.read<CourseDataService>().createCourse(
+                context.read<ProgramService>().createCourse(
                       programId, nameCtrl.text, descCtrl.text,
                     );
                 Navigator.pop(ctx);
@@ -115,7 +117,7 @@ class _ProgramScreenState extends State<ProgramScreen> {
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
-                context.read<CourseDataService>().createPhase(
+                context.read<ProgramService>().createPhase(
                       programId, courseId, nameCtrl.text,
                     );
                 Navigator.pop(ctx);
@@ -144,7 +146,7 @@ class _ProgramScreenState extends State<ProgramScreen> {
           FilledButton(
             onPressed: () {
               if (titleCtrl.text.isNotEmpty) {
-                context.read<CourseDataService>().createLesson(
+                context.read<ProgramService>().createLesson(
                       programId, courseId, phaseId, titleCtrl.text,
                     );
                 Navigator.pop(ctx);
@@ -157,12 +159,16 @@ class _ProgramScreenState extends State<ProgramScreen> {
     );
   }
 
-  void _rename(CourseDataService service, String type, List<String> ids, String current) {
+  String _nodeTypeLabel(_NodeType t) =>
+      switch (t) { _NodeType.program => '专业', _NodeType.course => '课程', _NodeType.phase => '阶段', _NodeType.lesson => '课时' };
+
+  void _rename(ProgramService service, _NodeType type, List<String> ids, String current) {
     final ctrl = TextEditingController(text: current);
+    final label = _nodeTypeLabel(type);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('编辑$type名称'),
+        title: Text('编辑$label名称'),
         content: TextField(
           controller: ctrl,
           autofocus: true,
@@ -174,13 +180,13 @@ class _ProgramScreenState extends State<ProgramScreen> {
             onPressed: () {
               if (ctrl.text.isNotEmpty && ctrl.text != current) {
                 switch (type) {
-                  case '专业':
+                  case _NodeType.program:
                     service.updateProgram(ids[0], name: ctrl.text);
-                  case '课程':
+                  case _NodeType.course:
                     service.updateCourse(ids[0], ids[1], name: ctrl.text);
-                  case '阶段':
+                  case _NodeType.phase:
                     service.updatePhase(ids[0], ids[1], ids[2], name: ctrl.text);
-                  case '课时':
+                  case _NodeType.lesson:
                     service.updateLesson(ids[0], ids[1], ids[2], ids[3], title: ctrl.text);
                 }
                 Navigator.pop(ctx);
@@ -193,27 +199,28 @@ class _ProgramScreenState extends State<ProgramScreen> {
     );
   }
 
-  void _confirmDelete(CourseDataService service, String type, List<String> ids, int childCount) {
+  void _confirmDelete(ProgramService service, _NodeType type, List<String> ids, int childCount) {
+    final label = _nodeTypeLabel(type);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('删除$type'),
+        title: Text('删除$label'),
         content: Text(childCount > 0
-            ? '该$type包含 $childCount 个子项，确认删除？'
-            : '确认删除该$type？'),
+            ? '该$label包含 $childCount 个子项，确认删除？'
+            : '确认删除该$label？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               switch (type) {
-                case '专业':
+                case _NodeType.program:
                   service.deleteProgram(ids[0]);
-                case '课程':
+                case _NodeType.course:
                   service.deleteCourse(ids[0], ids[1]);
-                case '阶段':
+                case _NodeType.phase:
                   service.deletePhase(ids[0], ids[1], ids[2]);
-                case '课时':
+                case _NodeType.lesson:
                   service.deleteLesson(ids[0], ids[1], ids[2], ids[3]);
               }
               Navigator.pop(ctx);
@@ -226,7 +233,7 @@ class _ProgramScreenState extends State<ProgramScreen> {
   }
 
   Future<void> _exportPrograms() async {
-    final service = context.read<CourseDataService>();
+    final service = context.read<ProgramService>();
     final ok = await service.exportProgramsToFile();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -235,7 +242,7 @@ class _ProgramScreenState extends State<ProgramScreen> {
   }
 
   Future<void> _importPrograms() async {
-    final service = context.read<CourseDataService>();
+    final service = context.read<ProgramService>();
     final jsonStr = await service.importProgramsFromFile();
     if (jsonStr == null) return;
     final ok = service.mergeProgramsFromJson(jsonStr);
@@ -247,7 +254,7 @@ class _ProgramScreenState extends State<ProgramScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final service = context.watch<CourseDataService>();
+    final service = context.watch<ProgramService>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('课程研发'),
@@ -286,7 +293,7 @@ class _ProgramScreenState extends State<ProgramScreen> {
 }
 
 class _ProgramTile extends StatefulWidget {
-  final CourseDataService service;
+  final ProgramService service;
   final Program program;
   final _ProgramScreenState parent;
 
@@ -315,7 +322,7 @@ class _ProgramTileState extends State<_ProgramTile> {
             leading: const Icon(Icons.folder, size: 32, color: Colors.blue),
             title: InkWell(
               onTap: () => widget.parent._rename(
-                widget.service, '专业', [program.id], program.name,
+                widget.service, _NodeType.program, [program.id], program.name,
               ),
               child: Text(program.name,
                   style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -335,7 +342,7 @@ class _ProgramTileState extends State<_ProgramTile> {
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 18),
                     onPressed: () => widget.parent._confirmDelete(
-                      widget.service, '专业', [program.id], program.courses.length,
+                      widget.service, _NodeType.program, [program.id], program.courses.length,
                     ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -379,7 +386,7 @@ class _ProgramTileState extends State<_ProgramTile> {
 }
 
 class _CourseTile extends StatefulWidget {
-  final CourseDataService service;
+  final ProgramService service;
   final Course course;
   final String programId;
   final _ProgramScreenState parent;
@@ -412,7 +419,7 @@ class _CourseTileState extends State<_CourseTile> {
             leading: const Icon(Icons.book, size: 20, color: Colors.green),
             title: InkWell(
               onTap: () => widget.parent._rename(
-                widget.service, '课程', [widget.programId, course.id], course.name,
+                widget.service, _NodeType.course, [widget.programId, course.id], course.name,
               ),
               child: Text(course.name,
                   style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -430,7 +437,7 @@ class _CourseTileState extends State<_CourseTile> {
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 18),
                     onPressed: () => widget.parent._confirmDelete(
-                      widget.service, '课程', [widget.programId, course.id],
+                      widget.service, _NodeType.course, [widget.programId, course.id],
                       course.phases.fold(0, (s, p) => s + p.lessons.length),
                     ),
                     padding: EdgeInsets.zero,
@@ -481,7 +488,7 @@ class _CourseTileState extends State<_CourseTile> {
 }
 
 class _PhaseTile extends StatefulWidget {
-  final CourseDataService service;
+  final ProgramService service;
   final Phase phase;
   final String programId;
   final String courseId;
@@ -515,7 +522,7 @@ class _PhaseTileState extends State<_PhaseTile> {
             leading: const Icon(Icons.layers, size: 18, color: Colors.teal),
             title: InkWell(
               onTap: () => widget.parent._rename(
-                widget.service, '阶段', [widget.programId, widget.courseId, phase.id], phase.name,
+                widget.service, _NodeType.phase, [widget.programId, widget.courseId, phase.id], phase.name,
               ),
               child: Text(phase.name,
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
@@ -530,7 +537,7 @@ class _PhaseTileState extends State<_PhaseTile> {
                 IconButton(
                   icon: const Icon(Icons.delete_outline, size: 16),
                   onPressed: () => widget.parent._confirmDelete(
-                    widget.service, '阶段', [widget.programId, widget.courseId, phase.id],
+                    widget.service, _NodeType.phase, [widget.programId, widget.courseId, phase.id],
                     phase.lessons.length,
                   ),
                   padding: EdgeInsets.zero,
@@ -578,7 +585,7 @@ class _PhaseTileState extends State<_PhaseTile> {
 }
 
 class _LessonTile extends StatefulWidget {
-  final CourseDataService service;
+  final ProgramService service;
   final Lesson lesson;
   final String programId;
   final String courseId;
@@ -615,7 +622,7 @@ class _LessonTileState extends State<_LessonTile> {
             leading: const Icon(Icons.description, size: 18, color: Colors.orange),
             title: InkWell(
               onTap: () => widget.parent._rename(
-                widget.service, '课时', [widget.programId, widget.courseId, widget.phaseId, lesson.id], lesson.title,
+                widget.service, _NodeType.lesson, [widget.programId, widget.courseId, widget.phaseId, lesson.id], lesson.title,
               ),
               child: Text(lesson.title, style: const TextStyle(fontSize: 14)),
             ),
@@ -644,7 +651,7 @@ class _LessonTileState extends State<_LessonTile> {
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 16),
                     onPressed: () => widget.parent._confirmDelete(
-                      widget.service, '课时', [widget.programId, widget.courseId, widget.phaseId, lesson.id],
+                      widget.service, _NodeType.lesson, [widget.programId, widget.courseId, widget.phaseId, lesson.id],
                       lesson.scenes.length,
                     ),
                     padding: EdgeInsets.zero,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:qtcloud_course_studio/services/program_service.dart';
 import 'package:qtcloud_course_studio/services/data_service.dart';
 import 'package:qtcloud_course_studio/main.dart';
 
@@ -13,17 +14,22 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
-    final service = CourseDataService();
+    final ps = ProgramService();
+    final cs = CourseDataService();
     await tester.pumpWidget(
-      ChangeNotifierProvider.value(
-        value: service,
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: ps),
+          ChangeNotifierProvider.value(value: cs),
+        ],
         child: const QtCloudCourseApp(),
       ),
     );
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-    service.markLoaded();
+    ps.markLoaded();
+    cs.markLoaded();
     await tester.pumpAndSettle();
 
     expect(find.text('仪表盘'), findsWidgets);

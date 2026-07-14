@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'services/program_service.dart';
 import 'services/data_service.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/program_screen.dart';
@@ -9,11 +10,17 @@ import 'widgets/sidebar.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   const apiBaseUrl = String.fromEnvironment('API_BASE_URL');
+  final baseUrl = apiBaseUrl.isNotEmpty ? apiBaseUrl : null;
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => CourseDataService(
-        baseUrl: apiBaseUrl.isNotEmpty ? apiBaseUrl : null,
-      )..load(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => ProgramService(baseUrl: baseUrl)..load(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CourseDataService(baseUrl: baseUrl)..load(),
+        ),
+      ],
       child: const QtCloudCourseApp(),
     ),
   );
@@ -56,8 +63,9 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    final service = context.watch<CourseDataService>();
-    if (!service.loaded) {
+    final programService = context.watch<ProgramService>();
+    final classService = context.watch<CourseDataService>();
+    if (!programService.loaded || !classService.loaded) {
       return const MaterialApp(
         home: Scaffold(body: Center(child: CircularProgressIndicator())),
       );

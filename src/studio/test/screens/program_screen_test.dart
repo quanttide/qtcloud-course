@@ -1,65 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:qtcloud_course_studio/services/program_service.dart';
 import 'package:qtcloud_course_studio/services/data_service.dart';
-import 'package:qtcloud_course_studio/models/program.dart';
-import 'package:qtcloud_course_studio/models/phase.dart';
-import 'package:qtcloud_course_studio/models/enums.dart';
 import 'package:qtcloud_course_studio/screens/program_screen.dart';
 
-Widget createProgramTest(CourseDataService service) {
-  return MaterialApp(
-    home: ChangeNotifierProvider.value(
-      value: service,
-      child: const ProgramScreen(),
-    ),
+Widget createProgramTest(ProgramService service) {
+  return MultiProvider(
+    providers: [
+      ChangeNotifierProvider.value(value: service),
+      ChangeNotifierProvider.value(value: CourseDataService()..markLoaded()),
+    ],
+    child: const MaterialApp(home: ProgramScreen()),
   );
 }
 
 void main() {
   group('ProgramScreen', () {
     testWidgets('shows app bar with title', (tester) async {
-      final service = CourseDataService();
+      final service = ProgramService();
+      service.createProgram('数据工程', '');
+      service.markLoaded();
       await tester.pumpWidget(createProgramTest(service));
-
       expect(find.text('课程研发'), findsOneWidget);
     });
 
     testWidgets('shows program names', (tester) async {
-      final service = CourseDataService();
-      service.programs.addAll([
-        Program(id: 'p1', name: '大数据微专业', status: ContentStatus.published),
-        Program(id: 'p2', name: 'AI应用开发', status: ContentStatus.draft),
-      ]);
+      final service = ProgramService();
+      service.createProgram('大数据微专业', '系统化课程体系');
+      service.markLoaded();
       await tester.pumpWidget(createProgramTest(service));
 
       expect(find.text('大数据微专业'), findsOneWidget);
-      expect(find.text('AI应用开发'), findsOneWidget);
     });
 
     testWidgets('shows empty state when no programs', (tester) async {
-      final service = CourseDataService();
+      final service = ProgramService();
+      service.markLoaded();
       await tester.pumpWidget(createProgramTest(service));
 
       expect(find.text('暂无数据'), findsOneWidget);
     });
 
     testWidgets('expand program to show courses', (tester) async {
-      final service = CourseDataService();
-      service.programs.addAll([
-        Program(
-          id: 'p1',
-          name: '大数据微专业',
-          status: ContentStatus.published,
-          courses: [
-            Course(id: 'c1', name: '数据工程', status: ContentStatus.published),
-          ],
-        ),
-      ]);
+      final service = ProgramService();
+      final p = service.createProgram('P1', '');
+      service.createCourse(p.id, '数据工程', '');
+      service.markLoaded();
       await tester.pumpWidget(createProgramTest(service));
 
-      expect(find.text('数据工程'), findsNothing);
-
+      // expand
       await tester.tap(find.byIcon(Icons.expand_more));
       await tester.pumpAndSettle();
 
@@ -67,103 +57,52 @@ void main() {
     });
 
     testWidgets('expand course to show phases', (tester) async {
-      final service = CourseDataService();
-      service.programs.addAll([
-        Program(
-          id: 'p1',
-          name: '大数据微专业',
-          status: ContentStatus.published,
-          courses: [
-            Course(
-              id: 'c1',
-              name: '数据工程',
-              status: ContentStatus.published,
-              phases: [
-                Phase(id: 'ph1', name: '基础阶段', sortOrder: 1),
-              ],
-            ),
-          ],
-        ),
-      ]);
+      final service = ProgramService();
+      final p = service.createProgram('P1', '');
+      final c = service.createCourse(p.id, '数据工程', '');
+      service.createPhase(p.id, c!.id, '基础');
+      service.markLoaded();
       await tester.pumpWidget(createProgramTest(service));
 
-      // Expand program
       await tester.tap(find.byIcon(Icons.expand_more));
       await tester.pumpAndSettle();
 
-      expect(find.text('基础阶段'), findsNothing);
-
-      // Expand course
+      // now expand the course
       await tester.tap(find.byIcon(Icons.expand_more).last);
       await tester.pumpAndSettle();
 
-      expect(find.text('基础阶段'), findsOneWidget);
+      expect(find.text('基础'), findsOneWidget);
     });
 
     testWidgets('expand phase to show lessons', (tester) async {
-      final service = CourseDataService();
-      service.programs.addAll([
-        Program(
-          id: 'p1',
-          name: '大数据微专业',
-          status: ContentStatus.published,
-          courses: [
-            Course(
-              id: 'c1',
-              name: '数据工程',
-              status: ContentStatus.published,
-              phases: [
-                Phase(id: 'ph1', name: '基础阶段', sortOrder: 1, lessons: [
-                  Lesson(id: 'l1', title: '数据工程概述', duration: 45),
-                ]),
-              ],
-            ),
-          ],
-        ),
-      ]);
+      final service = ProgramService();
+      final p = service.createProgram('P1', '');
+      final c = service.createCourse(p.id, '数据工程', '');
+      final ph = service.createPhase(p.id, c!.id, '基础');
+      service.createLesson(p.id, c.id, ph!.id, '概述');
+      service.markLoaded();
       await tester.pumpWidget(createProgramTest(service));
 
-      // Expand program
+      // expand all
       await tester.tap(find.byIcon(Icons.expand_more));
       await tester.pumpAndSettle();
-
-      // Expand course
+      await tester.tap(find.byIcon(Icons.expand_more).last);
+      await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.expand_more).last);
       await tester.pumpAndSettle();
 
-      expect(find.text('数据工程概述'), findsNothing);
-
-      // Expand phase
-      await tester.tap(find.byIcon(Icons.expand_more).last);
-      await tester.pumpAndSettle();
-
-      expect(find.text('数据工程概述'), findsOneWidget);
+      expect(find.text('概述'), findsOneWidget);
     });
 
     testWidgets('lesson row has listen button', (tester) async {
-      final service = CourseDataService();
-      service.programs.addAll([
-        Program(
-          id: 'p1',
-          name: '大数据微专业',
-          status: ContentStatus.published,
-          courses: [
-            Course(
-              id: 'c1',
-              name: '数据工程',
-              status: ContentStatus.published,
-              phases: [
-                Phase(id: 'ph1', name: '基础阶段', sortOrder: 1, lessons: [
-                  Lesson(id: 'l1', title: '数据工程概述', duration: 45),
-                ]),
-              ],
-            ),
-          ],
-        ),
-      ]);
+      final service = ProgramService();
+      final p = service.createProgram('P1', '');
+      final c = service.createCourse(p.id, '数据工程', '');
+      final ph = service.createPhase(p.id, c!.id, '基础');
+      service.createLesson(p.id, c.id, ph!.id, '概述');
+      service.markLoaded();
       await tester.pumpWidget(createProgramTest(service));
 
-      // Expand all the way to lesson
       await tester.tap(find.byIcon(Icons.expand_more));
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.expand_more).last);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../services/program_service.dart';
 import '../services/data_service.dart';
 import '../widgets/cards.dart';
 import 'program_screen.dart';
@@ -10,9 +11,10 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final service = context.watch<CourseDataService>();
-    final programs = service.programs;
-    final classes = service.classes;
+    final programService = context.watch<ProgramService>();
+    final classService = context.watch<CourseDataService>();
+    final programs = programService.programs;
+    final classes = classService.classes;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -29,17 +31,17 @@ class DashboardScreen extends StatelessWidget {
             children: [
               MetricCard(
                   label: '专业数',
-                  value: '${service.totalPrograms}',
+                  value: '${programService.totalPrograms}',
                   trend: '本月+0'),
               const SizedBox(width: 16),
               MetricCard(
                   label: '课程数',
-                  value: '${service.totalCourses}',
+                  value: '${programService.totalCourses}',
                   trend: '本月+0'),
               const SizedBox(width: 16),
               MetricCard(
                   label: '课时数',
-                  value: '${service.totalLessons}',
+                  value: '${programService.totalLessons}',
                   trend: '本月+0'),
             ],
           ),
@@ -48,12 +50,12 @@ class DashboardScreen extends StatelessWidget {
             children: [
               MetricCard(
                   label: '进行中班级',
-                  value: '${service.activeClasses}',
+                  value: '${classService.activeClasses}',
                   trend: '本月+0'),
               const SizedBox(width: 16),
               MetricCard(
                   label: '学员数',
-                  value: '${service.totalStudents}',
+                  value: '${classService.totalStudents}',
                   trend: '本月+0'),
               const SizedBox(width: 16),
               MetricCard(
