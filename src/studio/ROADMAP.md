@@ -8,13 +8,13 @@
 ### P1 — 产品打磨
 
 - 拖拽排序（树扁平化 + ReorderableListView）
-- ID 生成器改用 UUID
+- ✅ ID 生成器改用 UUID（`uuid` 包）
 - 仪表盘三领域指标整合
 - CI pipeline：push 自动跑测试
 
 ### 交付标准
 
 ```
-flutter test       # ✅ 全部通过
+flutter test       # ✅ 143 tests 全部通过
 dart analyze       # ✅ 零报错
 ```

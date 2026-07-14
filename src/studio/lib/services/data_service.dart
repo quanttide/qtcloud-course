@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
 import '../models/class_teaching.dart';
 import '../models/enums.dart';
 import '../models/student.dart';
@@ -94,7 +95,7 @@ class CourseDataService extends ChangeNotifier {
     required String endDate,
   }) {
     final newClass = ClassTeaching(
-      id: 'class-${DateTime.now().millisecondsSinceEpoch}',
+      id: const Uuid().v4(),
       name: name,
       refName: refName,
       refType: refType,

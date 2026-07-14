@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
 import '../models/enums.dart';
 import '../models/assessment.dart';
 import '../models/submission.dart';
@@ -97,8 +98,8 @@ class AssessmentService extends ChangeNotifier {
         .toList();
   }
 
-  int _idCounter = 0;
-  String _nextId() => '${++_idCounter}';
+  static const _uuid = Uuid();
+  String _nextId() => _uuid.v4();
 
   // ---- 考核 CRUD ----
 

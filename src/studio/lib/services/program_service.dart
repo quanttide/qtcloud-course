@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
+import 'package:uuid/uuid.dart';
 import '../models/enums.dart';
 import '../models/program.dart';
 import '../models/phase.dart';
@@ -128,8 +129,8 @@ class ProgramService extends ChangeNotifier {
     return lesson;
   }
 
-  int _idCounter = 0;
-  String _nextId() => '${++_idCounter}';
+  static const _uuid = Uuid();
+  String _nextId() => _uuid.v4();
 
   // ── Program CRUD ──
 

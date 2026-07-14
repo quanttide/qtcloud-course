@@ -21,7 +21,7 @@
 
 ### ID 生成
 
-- [ ] `_nextId()` 改用 `Uuid`（`uuid` 包）替代自增计数器
+- [x] `_nextId()` 改用 `Uuid`（`uuid` 包）替代自增计数器
 
 ### 仪表盘
 
@@ -35,8 +35,8 @@
 
 ## 测试与验证
 
-- [ ] `flutter test` 全部通过
-- [ ] `dart analyze` 零报错
+- [x] `flutter test` 全部通过（143/143）
+- [x] `dart analyze` 零报错
 
 ---
 
