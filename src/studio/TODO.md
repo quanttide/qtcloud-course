@@ -4,16 +4,15 @@
 
 ### 代码
 
-- [ ] 新建 `lib/widgets/sidebar.dart` — Sidebar 组件（固定 240px，`Icons.home` / `Icons.school` / `Icons.group`）
-- [ ] `MainShell` 布局从 `bottomNavigationBar` 改为 `Row(Sidebar, Expanded(Content))`
-- [ ] 路由状态：`_currentRoute` 区分 `tab` / `preview(lessonId)`，Content 区域切换 `IndexedStack` 或 `PreviewScreen`
-- [ ] `PreviewScreen` 迁出独立 `Scaffold`（AppBar 由 MainShell 控制或保留但隐藏 Sidebar）
+- [x] 新建 `lib/widgets/sidebar.dart` — Sidebar 组件（固定 240px，`Icons.dashboard` / `Icons.school` / `Icons.group`）
+- [x] `MainShell` 布局从 `bottomNavigationBar` 改为 `Row(Sidebar, Expanded(Content))`
+- [~] 路由：`PreviewScreen` 保持 `Navigator.push`（自建 `Scaffold`），全屏覆盖 Sidebar；无额外路由变更
 
 ### 测试
 
-- [ ] 更新 widget 测试适配新布局
+- [x] 更新 widget 测试适配新布局（现有测试全部通过无需改动）
 - [ ] GUI 测试：更新 `smart_click` 模板截图（窗口结构变更，全套重新录制）
-- [ ] `flutter test` 全部通过
+- [x] `flutter test` 全部通过
 
 ---
 

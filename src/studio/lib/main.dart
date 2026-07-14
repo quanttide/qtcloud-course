@@ -4,6 +4,7 @@ import 'services/data_service.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/program_screen.dart';
 import 'screens/class_screen.dart';
+import 'widgets/sidebar.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +48,12 @@ class _MainShellState extends State<MainShell> {
 
   static const _titles = ['仪表盘', '课程研发', '教学管理'];
 
+  static const _screens = [
+    DashboardScreen(),
+    ProgramScreen(),
+    ClassScreen(),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final service = context.watch<CourseDataService>();
@@ -57,21 +64,18 @@ class _MainShellState extends State<MainShell> {
     }
     return Scaffold(
       appBar: AppBar(title: Text(_titles[_currentIndex])),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: const [
-          DashboardScreen(),
-          ProgramScreen(),
-          ClassScreen(),
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (i) => setState(() => _currentIndex = i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.dashboard), label: '仪表盘'),
-          NavigationDestination(icon: Icon(Icons.school), label: '课程研发'),
-          NavigationDestination(icon: Icon(Icons.group), label: '教学管理'),
+      body: Row(
+        children: [
+          Sidebar(
+            currentIndex: _currentIndex,
+            onDestinationSelected: (i) => setState(() => _currentIndex = i),
+          ),
+          Expanded(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: _screens,
+            ),
+          ),
         ],
       ),
     );
