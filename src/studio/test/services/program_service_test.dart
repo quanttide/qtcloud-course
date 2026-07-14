@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/testing.dart';
+import 'package:http/http.dart' as http;
 import 'package:qtcloud_course_studio/models/enums.dart';
 import 'package:qtcloud_course_studio/services/program_service.dart';
 
@@ -190,6 +192,228 @@ void main() {
       final service = ProgramService();
       final ok = service.mergeProgramsFromJson('not json');
       expect(ok, false);
+    });
+  });
+
+  group('ProgramService API write-back', () {
+    test('createProgram sends POST /programs', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = ProgramService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      service.createProgram('P1', 'Desc');
+      await Future(() {});
+      expect(method, 'POST');
+      expect(path, '/programs');
+    });
+
+    test('updateProgram sends PUT /programs/:id', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = ProgramService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      final p = service.createProgram('P1', '');
+      method = null;
+      path = null;
+      service.updateProgram(p.id, name: 'P2');
+      await Future(() {});
+      expect(method, 'PUT');
+      expect(path, '/programs/${p.id}');
+    });
+
+    test('deleteProgram sends DELETE /programs/:id', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = ProgramService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      final p = service.createProgram('P1', '');
+      method = null;
+      path = null;
+      service.deleteProgram(p.id);
+      await Future(() {});
+      expect(method, 'DELETE');
+      expect(path, '/programs/${p.id}');
+    });
+
+    test('createCourse sends POST /courses', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = ProgramService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      final p = service.createProgram('P', '');
+      method = null;
+      path = null;
+      service.createCourse(p.id, 'C', '');
+      await Future(() {});
+      expect(method, 'POST');
+      expect(path, '/courses');
+    });
+
+    test('updateCourse sends PUT /courses/:id', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = ProgramService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      final p = service.createProgram('P', '');
+      final c = service.createCourse(p.id, 'C', '');
+      method = null;
+      path = null;
+      service.updateCourse(p.id, c!.id, name: 'C2');
+      await Future(() {});
+      expect(method, 'PUT');
+      expect(path, '/courses/${c.id}');
+    });
+
+    test('deleteCourse sends DELETE /courses/:id', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = ProgramService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      final p = service.createProgram('P', '');
+      final c = service.createCourse(p.id, 'C', '');
+      method = null;
+      path = null;
+      service.deleteCourse(p.id, c!.id);
+      await Future(() {});
+      expect(method, 'DELETE');
+      expect(path, '/courses/${c.id}');
+    });
+
+    test('createPhase sends POST /phases', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = ProgramService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      final p = service.createProgram('P', '');
+      final c = service.createCourse(p.id, 'C', '');
+      method = null;
+      path = null;
+      service.createPhase(p.id, c!.id, 'Ph');
+      await Future(() {});
+      expect(method, 'POST');
+      expect(path, '/phases');
+    });
+
+    test('createLesson sends POST /lessons', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = ProgramService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      final p = service.createProgram('P', '');
+      final c = service.createCourse(p.id, 'C', '');
+      final ph = service.createPhase(p.id, c!.id, 'Ph');
+      method = null;
+      path = null;
+      service.createLesson(p.id, c.id, ph!.id, 'L');
+      await Future(() {});
+      expect(method, 'POST');
+      expect(path, '/lessons');
+    });
+
+    test('deleteLesson sends DELETE /lessons/:id', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = ProgramService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      final p = service.createProgram('P', '');
+      final c = service.createCourse(p.id, 'C', '');
+      final ph = service.createPhase(p.id, c!.id, 'Ph');
+      final l = service.createLesson(p.id, c.id, ph!.id, 'L');
+      method = null;
+      path = null;
+      service.deleteLesson(p.id, c.id, ph.id, l!.id);
+      await Future(() {});
+      expect(method, 'DELETE');
+      expect(path, '/lessons/${l.id}');
+    });
+  });
+
+  group('ProgramService Reorder', () {
+    test('reorderProgram swaps list order', () {
+      final service = ProgramService();
+      final p1 = service.createProgram('A', '');
+      final p2 = service.createProgram('B', '');
+      service.reorderProgram(1, 0);
+      expect(service.programs[0].id, p2.id);
+      expect(service.programs[1].id, p1.id);
+    });
+
+    test('reorderCourses reorders within program', () {
+      final service = ProgramService();
+      final p = service.createProgram('P', '');
+      final c1 = service.createCourse(p.id, 'C1', '')!;
+      final c2 = service.createCourse(p.id, 'C2', '')!;
+      service.reorderCourses(p.id, 1, 0);
+      expect(service.programs[0].courses[0].id, c2.id);
+      expect(service.programs[0].courses[1].id, c1.id);
+    });
+
+    test('reorderPhases reorders within course', () {
+      final service = ProgramService();
+      final p = service.createProgram('P', '');
+      final c = service.createCourse(p.id, 'C', '')!;
+      final ph1 = service.createPhase(p.id, c.id, 'Ph1')!;
+      final ph2 = service.createPhase(p.id, c.id, 'Ph2')!;
+      service.reorderPhases(p.id, c.id, 1, 0);
+      expect(service.programs[0].courses[0].phases[0].id, ph2.id);
+      expect(service.programs[0].courses[0].phases[1].id, ph1.id);
+    });
+
+    test('reorderLessons reorders within phase', () {
+      final service = ProgramService();
+      final p = service.createProgram('P', '');
+      final c = service.createCourse(p.id, 'C', '')!;
+      final ph = service.createPhase(p.id, c.id, 'Ph')!;
+      final l1 = service.createLesson(p.id, c.id, ph.id, 'L1')!;
+      final l2 = service.createLesson(p.id, c.id, ph.id, 'L2')!;
+      service.reorderLessons(p.id, c.id, ph.id, 1, 0);
+      expect(service.programs[0].courses[0].phases[0].lessons[0].id, l2.id);
+      expect(service.programs[0].courses[0].phases[0].lessons[1].id, l1.id);
     });
   });
 }

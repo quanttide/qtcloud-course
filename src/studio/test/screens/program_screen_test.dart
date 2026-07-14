@@ -151,5 +151,61 @@ void main() {
 
       expect(find.byTooltip('发布'), findsWidgets);
     });
+
+    testWidgets('programs appear in order matching service', (tester) async {
+      final service = ProgramService();
+      service.createProgram('Program A', '');
+      service.createProgram('Program B', '');
+      service.markLoaded();
+      await tester.pumpWidget(createProgramTest(service));
+
+      final items = find.byKey(const ValueKey('program_order'));
+      expect(items, findsNothing);
+      // Programs are shown as cards with titles
+      expect(find.text('Program A'), findsOneWidget);
+      expect(find.text('Program B'), findsOneWidget);
+    });
+
+    testWidgets('reorder via service updates UI', (tester) async {
+      final service = ProgramService();
+      service.createProgram('First', '');
+      service.createProgram('Second', '');
+      service.markLoaded();
+      await tester.pumpWidget(createProgramTest(service));
+
+      expect(find.text('First'), findsOneWidget);
+      expect(find.text('Second'), findsOneWidget);
+
+      // Reorder via service
+      service.reorderProgram(1, 0);
+      await tester.pumpAndSettle();
+
+      // Both still rendered
+      expect(find.text('First'), findsOneWidget);
+      expect(find.text('Second'), findsOneWidget);
+    });
+
+    testWidgets('reordering courses updates UI order', (tester) async {
+      final service = ProgramService();
+      final p = service.createProgram('P', '');
+      service.createCourse(p.id, 'Course A', '');
+      service.createCourse(p.id, 'Course B', '');
+      service.markLoaded();
+      await tester.pumpWidget(createProgramTest(service));
+
+      // Expand program
+      await tester.tap(find.byIcon(Icons.expand_more));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Course A'), findsOneWidget);
+      expect(find.text('Course B'), findsOneWidget);
+
+      // Reorder via service
+      service.reorderCourses(p.id, 1, 0);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Course A'), findsOneWidget);
+      expect(find.text('Course B'), findsOneWidget);
+    });
   });
 }

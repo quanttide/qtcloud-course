@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/program_service.dart';
 import '../services/data_service.dart';
+import '../services/assessment_service.dart';
 import '../widgets/cards.dart';
 import 'program_screen.dart';
 import 'class_screen.dart';
@@ -13,8 +14,11 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final programService = context.watch<ProgramService>();
     final classService = context.watch<CourseDataService>();
+    final assessmentService = context.watch<AssessmentService>();
     final programs = programService.programs;
     final classes = classService.classes;
+    final ungradedCount =
+        assessmentService.submissions.where((s) => s.score == null).length;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -59,9 +63,9 @@ class DashboardScreen extends StatelessWidget {
                   trend: '本月+0'),
               const SizedBox(width: 16),
               MetricCard(
-                  label: '待处理',
-                  value: '3',
-                  trend: '⚠'),
+                  label: '待评分考核',
+                  value: '$ungradedCount',
+                  trend: ungradedCount > 0 ? '⚠' : '✓'),
             ],
           ),
           const SizedBox(height: 24),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
@@ -84,6 +85,43 @@ class CourseDataService extends ChangeNotifier {
         .toList();
   }
 
+  // ── API Sync Helpers ──
+
+  void _apiPost(String path, Map<String, dynamic> body) {
+    if (baseUrl == null) return;
+    unawaited(
+      client
+          .post(
+            Uri.parse('$baseUrl$path'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode(body),
+          )
+          .then((_) {})
+          .catchError((_) {}),
+    );
+  }
+
+  void _apiPut(String path, Map<String, dynamic> body) {
+    if (baseUrl == null) return;
+    unawaited(
+      client
+          .put(
+            Uri.parse('$baseUrl$path'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode(body),
+          )
+          .then((_) {})
+          .catchError((_) {}),
+    );
+  }
+
+  void _apiDelete(String path) {
+    if (baseUrl == null) return;
+    unawaited(
+      client.delete(Uri.parse('$baseUrl$path')).then((_) {}).catchError((_) {}),
+    );
+  }
+
   // ---- 班级 CRUD ----
 
   void createClass({
@@ -104,6 +142,7 @@ class CourseDataService extends ChangeNotifier {
       endDate: endDate,
     );
     _classes = [..._classes, newClass];
+    _apiPost('/classes', newClass.toJson());
     notifyListeners();
   }
 
@@ -138,11 +177,25 @@ class CourseDataService extends ChangeNotifier {
       studentIds: studentIds,
     );
     _classes = [..._classes];
+    final body = <String, dynamic>{};
+    if (name != null) body['name'] = name;
+    if (refName != null) body['refName'] = refName;
+    if (refType != null) body['refType'] = refType;
+    if (refId != null) body['refId'] = refId;
+    if (status != null) body['status'] = status.name;
+    if (startDate != null) body['startDate'] = startDate;
+    if (endDate != null) body['endDate'] = endDate;
+    if (studentCount != null) body['studentCount'] = studentCount;
+    if (progress != null) body['progress'] = progress;
+    if (teacherIds != null) body['teacherIds'] = teacherIds;
+    if (studentIds != null) body['studentIds'] = studentIds;
+    _apiPut('/classes/$id', body);
     notifyListeners();
   }
 
   void deleteClass(String id) {
     _classes = _classes.where((c) => c.id != id).toList();
+    _apiDelete('/classes/$id');
     notifyListeners();
   }
 

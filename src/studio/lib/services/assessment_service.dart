@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
@@ -101,6 +102,43 @@ class AssessmentService extends ChangeNotifier {
   static const _uuid = Uuid();
   String _nextId() => _uuid.v4();
 
+  // ── API Sync Helpers ──
+
+  void _apiPost(String path, Map<String, dynamic> body) {
+    if (baseUrl == null) return;
+    unawaited(
+      client
+          .post(
+            Uri.parse('$baseUrl$path'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode(body),
+          )
+          .then((_) {})
+          .catchError((_) {}),
+    );
+  }
+
+  void _apiPut(String path, Map<String, dynamic> body) {
+    if (baseUrl == null) return;
+    unawaited(
+      client
+          .put(
+            Uri.parse('$baseUrl$path'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode(body),
+          )
+          .then((_) {})
+          .catchError((_) {}),
+    );
+  }
+
+  void _apiDelete(String path) {
+    if (baseUrl == null) return;
+    unawaited(
+      client.delete(Uri.parse('$baseUrl$path')).then((_) {}).catchError((_) {}),
+    );
+  }
+
   // ---- 考核 CRUD ----
 
   void createAssessment({
@@ -121,6 +159,7 @@ class AssessmentService extends ChangeNotifier {
       deadline: deadline,
     );
     _assessments = [..._assessments, assessment];
+    _apiPost('/assessments', assessment.toJson());
     notifyListeners();
   }
 
@@ -142,12 +181,20 @@ class AssessmentService extends ChangeNotifier {
       deadline: deadline,
     );
     _assessments = [..._assessments];
+    final body = <String, dynamic>{};
+    if (title != null) body['title'] = title;
+    if (type != null) body['type'] = type.name;
+    if (fullScore != null) body['fullScore'] = fullScore;
+    if (passScore != null) body['passScore'] = passScore;
+    if (deadline != null) body['deadline'] = deadline;
+    _apiPut('/assessments/$id', body);
     notifyListeners();
   }
 
   void deleteAssessment(String id) {
     _assessments = _assessments.where((a) => a.id != id).toList();
     _submissions = _submissions.where((s) => s.assessmentId != id).toList();
+    _apiDelete('/assessments/$id');
     notifyListeners();
   }
 
@@ -161,6 +208,10 @@ class AssessmentService extends ChangeNotifier {
       comment: comment,
     );
     _submissions = [..._submissions];
+    _apiPut('/submissions/$submissionId', {
+      'score': score,
+      if (comment != null) 'comment': comment,
+    });
     notifyListeners();
   }
 }

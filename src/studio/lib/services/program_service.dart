@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/services.dart';
@@ -129,6 +130,37 @@ class ProgramService extends ChangeNotifier {
     return lesson;
   }
 
+  // ── API Sync Helpers ──
+
+  Future<void> _apiPost(String path, Map<String, dynamic> body) async {
+    if (baseUrl == null) return;
+    try {
+      await client.post(
+        Uri.parse('$baseUrl$path'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(body),
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _apiPut(String path, Map<String, dynamic> body) async {
+    if (baseUrl == null) return;
+    try {
+      await client.put(
+        Uri.parse('$baseUrl$path'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(body),
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _apiDelete(String path) async {
+    if (baseUrl == null) return;
+    try {
+      await client.delete(Uri.parse('$baseUrl$path'));
+    } catch (_) {}
+  }
+
   static const _uuid = Uuid();
   String _nextId() => _uuid.v4();
 
@@ -141,6 +173,7 @@ class ProgramService extends ChangeNotifier {
       description: description,
     );
     _programs.add(program);
+    _apiPost('/programs', program.toJson());
     notifyListeners();
     return program;
   }
@@ -158,11 +191,17 @@ class ProgramService extends ChangeNotifier {
       description: description,
       status: status,
     );
+    final body = <String, dynamic>{};
+    if (name != null) body['name'] = name;
+    if (description != null) body['description'] = description;
+    if (status != null) body['status'] = status.name;
+    _apiPut('/programs/$id', body);
     notifyListeners();
   }
 
   void deleteProgram(String id) {
     _programs.removeWhere((p) => p.id == id);
+    _apiDelete('/programs/$id');
     notifyListeners();
   }
 
@@ -179,6 +218,7 @@ class ProgramService extends ChangeNotifier {
       sortOrder: program.courses.length,
     );
     _programs[pi] = program.copyWith(courses: [...program.courses, course]);
+    _apiPost('/courses', {...course.toJson(), 'programId': programId});
     notifyListeners();
     return course;
   }
@@ -205,6 +245,12 @@ class ProgramService extends ChangeNotifier {
     final courses = [...program.courses];
     courses[ci] = updated;
     _programs[pi] = program.copyWith(courses: courses);
+    final body = <String, dynamic>{};
+    if (name != null) body['name'] = name;
+    if (description != null) body['description'] = description;
+    if (status != null) body['status'] = status.name;
+    if (sortOrder != null) body['sortOrder'] = sortOrder;
+    _apiPut('/courses/$courseId', body);
     notifyListeners();
   }
 
@@ -215,6 +261,7 @@ class ProgramService extends ChangeNotifier {
     _programs[pi] = program.copyWith(
       courses: program.courses.where((c) => c.id != courseId).toList(),
     );
+    _apiDelete('/courses/$courseId');
     notifyListeners();
   }
 
@@ -235,6 +282,7 @@ class ProgramService extends ChangeNotifier {
     final courses = [...program.courses];
     courses[ci] = course.copyWith(phases: [...course.phases, phase]);
     _programs[pi] = program.copyWith(courses: courses);
+    _apiPost('/phases', {...phase.toJson(), 'courseId': courseId});
     notifyListeners();
     return phase;
   }
@@ -267,6 +315,12 @@ class ProgramService extends ChangeNotifier {
     final courses = [...program.courses];
     courses[ci] = course.copyWith(phases: phases);
     _programs[pi] = program.copyWith(courses: courses);
+    final body = <String, dynamic>{};
+    if (name != null) body['name'] = name;
+    if (description != null) body['description'] = description;
+    if (status != null) body['status'] = status.name;
+    if (sortOrder != null) body['sortOrder'] = sortOrder;
+    _apiPut('/phases/$phaseId', body);
     notifyListeners();
   }
 
@@ -282,6 +336,7 @@ class ProgramService extends ChangeNotifier {
       phases: course.phases.where((ph) => ph.id != phaseId).toList(),
     );
     _programs[pi] = program.copyWith(courses: courses);
+    _apiDelete('/phases/$phaseId');
     notifyListeners();
   }
 
@@ -312,6 +367,7 @@ class ProgramService extends ChangeNotifier {
     final courses = [...program.courses];
     courses[ci] = course.copyWith(phases: phases);
     _programs[pi] = program.copyWith(courses: courses);
+    _apiPost('/lessons', {...lesson.toJson(), 'phaseId': phaseId});
     notifyListeners();
     return lesson;
   }
@@ -352,6 +408,13 @@ class ProgramService extends ChangeNotifier {
     final courses = [...program.courses];
     courses[ci] = course.copyWith(phases: phases);
     _programs[pi] = program.copyWith(courses: courses);
+    final body = <String, dynamic>{};
+    if (title != null) body['title'] = title;
+    if (description != null) body['description'] = description;
+    if (status != null) body['status'] = status.name;
+    if (sortOrder != null) body['sortOrder'] = sortOrder;
+    if (duration != null) body['duration'] = duration;
+    _apiPut('/lessons/$lessonId', body);
     notifyListeners();
   }
 
@@ -377,6 +440,93 @@ class ProgramService extends ChangeNotifier {
     final courses = [...program.courses];
     courses[ci] = course.copyWith(phases: phases);
     _programs[pi] = program.copyWith(courses: courses);
+    _apiDelete('/lessons/$lessonId');
+    notifyListeners();
+  }
+
+  // ── Reorder ──
+
+  void reorderProgram(int oldIndex, int newIndex) {
+    if (oldIndex == newIndex) return;
+    final p = _programs.removeAt(oldIndex);
+    _programs.insert(newIndex, p);
+    notifyListeners();
+  }
+
+  void reorderCourses(String programId, int oldIndex, int newIndex) {
+    if (oldIndex == newIndex) return;
+    final pi = _programs.indexWhere((p) => p.id == programId);
+    if (pi == -1) return;
+    final program = _programs[pi];
+    final courses = [...program.courses];
+    final c = courses.removeAt(oldIndex);
+    courses.insert(newIndex, c);
+    _programs[pi] = program.copyWith(courses: courses);
+    for (int i = 0; i < courses.length; i++) {
+      if (courses[i].sortOrder != i) {
+        updateCourse(programId, courses[i].id, sortOrder: i);
+      }
+    }
+    notifyListeners();
+  }
+
+  void reorderPhases(
+    String programId,
+    String courseId,
+    int oldIndex,
+    int newIndex,
+  ) {
+    if (oldIndex == newIndex) return;
+    final pi = _programs.indexWhere((p) => p.id == programId);
+    if (pi == -1) return;
+    final program = _programs[pi];
+    final ci = program.courses.indexWhere((c) => c.id == courseId);
+    if (ci == -1) return;
+    final course = program.courses[ci];
+    final phases = [...course.phases];
+    final ph = phases.removeAt(oldIndex);
+    phases.insert(newIndex, ph);
+    final courses = [...program.courses];
+    courses[ci] = course.copyWith(phases: phases);
+    _programs[pi] = program.copyWith(courses: courses);
+    for (int i = 0; i < phases.length; i++) {
+      if (phases[i].sortOrder != i) {
+        updatePhase(programId, courseId, phases[i].id, sortOrder: i);
+      }
+    }
+    notifyListeners();
+  }
+
+  void reorderLessons(
+    String programId,
+    String courseId,
+    String phaseId,
+    int oldIndex,
+    int newIndex,
+  ) {
+    if (oldIndex == newIndex) return;
+    final pi = _programs.indexWhere((p) => p.id == programId);
+    if (pi == -1) return;
+    final program = _programs[pi];
+    final ci = program.courses.indexWhere((c) => c.id == courseId);
+    if (ci == -1) return;
+    final course = program.courses[ci];
+    final phi = course.phases.indexWhere((ph) => ph.id == phaseId);
+    if (phi == -1) return;
+    final phase = course.phases[phi];
+    final lessons = [...phase.lessons];
+    final l = lessons.removeAt(oldIndex);
+    lessons.insert(newIndex, l);
+    final phases = [...course.phases];
+    phases[phi] = phase.copyWith(lessons: lessons);
+    final courses = [...program.courses];
+    courses[ci] = course.copyWith(phases: phases);
+    _programs[pi] = program.copyWith(courses: courses);
+    for (int i = 0; i < lessons.length; i++) {
+      if (lessons[i].sortOrder != i) {
+        updateLesson(programId, courseId, phaseId, lessons[i].id, sortOrder: i);
+      }
+    }
     notifyListeners();
   }
 

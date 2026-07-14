@@ -10,6 +10,22 @@ import 'preview_screen.dart';
 
 enum _NodeType { program, course, phase, lesson }
 
+class _FlatNode {
+  final _NodeType type;
+  final dynamic data;
+  final int depth;
+  final List<String> ids;
+
+  const _FlatNode({
+    required this.type,
+    required this.data,
+    required this.depth,
+    required this.ids,
+  });
+
+  String get id => ids.last;
+}
+
 class ProgramScreen extends StatefulWidget {
   const ProgramScreen({super.key});
 
@@ -18,6 +34,183 @@ class ProgramScreen extends StatefulWidget {
 }
 
 class _ProgramScreenState extends State<ProgramScreen> {
+  final Set<String> _expandedIds = {};
+
+  List<_FlatNode> _buildFlatList(ProgramService service) {
+    final nodes = <_FlatNode>[];
+    for (final p in service.programs) {
+      nodes.add(
+        _FlatNode(type: _NodeType.program, data: p, depth: 0, ids: [p.id]),
+      );
+      if (_expandedIds.contains(p.id)) {
+        for (final c in p.courses) {
+          nodes.add(
+            _FlatNode(
+              type: _NodeType.course,
+              data: c,
+              depth: 1,
+              ids: [p.id, c.id],
+            ),
+          );
+          if (_expandedIds.contains(c.id)) {
+            for (final ph in c.phases) {
+              nodes.add(
+                _FlatNode(
+                  type: _NodeType.phase,
+                  data: ph,
+                  depth: 2,
+                  ids: [p.id, c.id, ph.id],
+                ),
+              );
+              if (_expandedIds.contains(ph.id)) {
+                for (final l in ph.lessons) {
+                  nodes.add(
+                    _FlatNode(
+                      type: _NodeType.lesson,
+                      data: l,
+                      depth: 3,
+                      ids: [p.id, c.id, ph.id, l.id],
+                    ),
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return nodes;
+  }
+
+  bool _hasChildren(_FlatNode node, ProgramService service) {
+    switch (node.type) {
+      case _NodeType.program:
+        return (node.data as Program).courses.isNotEmpty;
+      case _NodeType.course:
+        return (node.data as Course).phases.isNotEmpty;
+      case _NodeType.phase:
+        return (node.data as Phase).lessons.isNotEmpty;
+      case _NodeType.lesson:
+        return false;
+    }
+  }
+
+  void _onReorder(int oldIndex, int newIndex, List<_FlatNode> nodes) {
+    if (oldIndex == newIndex) return;
+    final node = nodes[oldIndex];
+    final adjustedNew = oldIndex < newIndex ? newIndex - 1 : newIndex;
+
+    final targetNode = adjustedNew < nodes.length ? nodes[adjustedNew] : null;
+    final targetBefore = adjustedNew > 0 ? nodes[adjustedNew - 1] : null;
+    if ((targetNode == null || targetNode.type != node.type) &&
+        (targetBefore == null || targetBefore.type != node.type)) {
+      return;
+    }
+
+    if (node.type == _NodeType.course) {
+      final parentId = node.ids[0];
+      if ((targetNode != null &&
+              targetNode.type == _NodeType.course &&
+              targetNode.ids[0] != parentId) ||
+          (targetBefore != null &&
+              targetBefore.type == _NodeType.course &&
+              targetBefore.ids[0] != parentId)) {
+        return;
+      }
+    }
+    if (node.type == _NodeType.phase) {
+      final parentId = node.ids[0];
+      final parentId2 = node.ids[1];
+      if ((targetNode != null &&
+              targetNode.type == _NodeType.phase &&
+              (targetNode.ids[0] != parentId ||
+                  targetNode.ids[1] != parentId2)) ||
+          (targetBefore != null &&
+              targetBefore.type == _NodeType.phase &&
+              (targetBefore.ids[0] != parentId ||
+                  targetBefore.ids[1] != parentId2))) {
+        return;
+      }
+    }
+    if (node.type == _NodeType.lesson) {
+      final parentId = node.ids[0];
+      final parentId2 = node.ids[1];
+      final parentId3 = node.ids[2];
+      if ((targetNode != null &&
+              targetNode.type == _NodeType.lesson &&
+              (targetNode.ids[0] != parentId ||
+                  targetNode.ids[1] != parentId2 ||
+                  targetNode.ids[2] != parentId3)) ||
+          (targetBefore != null &&
+              targetBefore.type == _NodeType.lesson &&
+              (targetBefore.ids[0] != parentId ||
+                  targetBefore.ids[1] != parentId2 ||
+                  targetBefore.ids[2] != parentId3))) {
+        return;
+      }
+    }
+
+    final service = context.read<ProgramService>();
+    List<_FlatNode> siblings;
+    switch (node.type) {
+      case _NodeType.program:
+        siblings = nodes.where((n) => n.type == _NodeType.program).toList();
+      case _NodeType.course:
+        siblings = nodes
+            .where((n) => n.type == _NodeType.course && n.ids[0] == node.ids[0])
+            .toList();
+      case _NodeType.phase:
+        siblings = nodes
+            .where(
+              (n) =>
+                  n.type == _NodeType.phase &&
+                  n.ids[0] == node.ids[0] &&
+                  n.ids[1] == node.ids[1],
+            )
+            .toList();
+      case _NodeType.lesson:
+        siblings = nodes
+            .where(
+              (n) =>
+                  n.type == _NodeType.lesson &&
+                  n.ids[0] == node.ids[0] &&
+                  n.ids[1] == node.ids[1] &&
+                  n.ids[2] == node.ids[2],
+            )
+            .toList();
+    }
+
+    final oldSiblingIndex = siblings.indexWhere((n) => n.id == node.id);
+    final nodesBeforeNew = nodes.take(adjustedNew);
+    final siblingsBeforeNew = nodesBeforeNew
+        .where((n) => siblings.any((s) => s.id == n.id))
+        .length;
+
+    switch (node.type) {
+      case _NodeType.program:
+        service.reorderProgram(oldSiblingIndex, siblingsBeforeNew);
+      case _NodeType.course:
+        service.reorderCourses(node.ids[0], oldSiblingIndex, siblingsBeforeNew);
+      case _NodeType.phase:
+        service.reorderPhases(
+          node.ids[0],
+          node.ids[1],
+          oldSiblingIndex,
+          siblingsBeforeNew,
+        );
+      case _NodeType.lesson:
+        service.reorderLessons(
+          node.ids[0],
+          node.ids[1],
+          node.ids[2],
+          oldSiblingIndex,
+          siblingsBeforeNew,
+        );
+    }
+  }
+
+  // ── Dialog methods ──
+
   void _showCreateProgramDialog() {
     final nameCtrl = TextEditingController();
     final descCtrl = TextEditingController();
@@ -52,125 +245,6 @@ class _ProgramScreenState extends State<ProgramScreen> {
                 context.read<ProgramService>().createProgram(
                   nameCtrl.text,
                   descCtrl.text,
-                );
-                Navigator.pop(ctx);
-              }
-            },
-            child: const Text('创建'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showCreateCourseDialog(String programId) {
-    final nameCtrl = TextEditingController();
-    final descCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('新建课程'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              autofocus: true,
-              decoration: const InputDecoration(labelText: '名称'),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: descCtrl,
-              decoration: const InputDecoration(labelText: '描述'),
-              maxLines: 2,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (nameCtrl.text.isNotEmpty) {
-                context.read<ProgramService>().createCourse(
-                  programId,
-                  nameCtrl.text,
-                  descCtrl.text,
-                );
-                Navigator.pop(ctx);
-              }
-            },
-            child: const Text('创建'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showCreatePhaseDialog(String programId, String courseId) {
-    final nameCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('新建阶段'),
-        content: TextField(
-          controller: nameCtrl,
-          autofocus: true,
-          decoration: const InputDecoration(labelText: '名称'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (nameCtrl.text.isNotEmpty) {
-                context.read<ProgramService>().createPhase(
-                  programId,
-                  courseId,
-                  nameCtrl.text,
-                );
-                Navigator.pop(ctx);
-              }
-            },
-            child: const Text('创建'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showCreateLessonDialog(
-    String programId,
-    String courseId,
-    String phaseId,
-  ) {
-    final titleCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('新建课时'),
-        content: TextField(
-          controller: titleCtrl,
-          autofocus: true,
-          decoration: const InputDecoration(labelText: '标题'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (titleCtrl.text.isNotEmpty) {
-                context.read<ProgramService>().createLesson(
-                  programId,
-                  courseId,
-                  phaseId,
-                  titleCtrl.text,
                 );
                 Navigator.pop(ctx);
               }
@@ -370,9 +444,13 @@ class _ProgramScreenState extends State<ProgramScreen> {
     ).showSnackBar(SnackBar(content: Text(ok ? '导入成功' : '导入失败：JSON 格式错误')));
   }
 
+  // ── Build ──
+
   @override
   Widget build(BuildContext context) {
     final service = context.watch<ProgramService>();
+    final nodes = _buildFlatList(service);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('课程研发'),
@@ -389,16 +467,16 @@ class _ProgramScreenState extends State<ProgramScreen> {
           ),
         ],
       ),
-      body: service.programs.isEmpty
+      body: nodes.isEmpty
           ? const Center(child: Text('暂无数据'))
-          : ListView.builder(
+          : ReorderableListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: service.programs.length,
-              itemBuilder: (_, i) => _ProgramTile(
-                service: service,
-                program: service.programs[i],
-                parent: this,
-              ),
+              itemCount: nodes.length,
+              onReorder: (oldIndex, newIndex) =>
+                  _onReorder(oldIndex, newIndex, nodes),
+              proxyDecorator: (child, index, animation) =>
+                  Material(elevation: 2, child: child),
+              itemBuilder: (_, i) => _buildTile(service, nodes[i], i),
             ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'add_program',
@@ -407,525 +485,277 @@ class _ProgramScreenState extends State<ProgramScreen> {
       ),
     );
   }
-}
 
-class _ProgramTile extends StatefulWidget {
-  final ProgramService service;
-  final Program program;
-  final _ProgramScreenState parent;
+  Widget _buildTile(ProgramService service, _FlatNode node, int index) {
+    final expanded = _expandedIds.contains(node.id);
+    final hasChildren = _hasChildren(node, service);
 
-  const _ProgramTile({
-    required this.service,
-    required this.program,
-    required this.parent,
-  });
+    Widget titleWidget;
+    String? subtitleText;
+    Widget? leadingIcon;
+    List<Widget> actions = [];
 
-  @override
-  State<_ProgramTile> createState() => _ProgramTileState();
-}
-
-class _ProgramTileState extends State<_ProgramTile> {
-  bool _expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final program = widget.program;
-    final canDelete = program.status != ContentStatus.published;
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        children: [
-          ListTile(
-            leading: const Icon(Icons.folder, size: 32, color: Colors.blue),
-            title: InkWell(
-              onTap: () => widget.parent._rename(
-                widget.service,
-                _NodeType.program,
-                [program.id],
-                program.name,
-              ),
-              child: Text(
-                program.name,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            subtitle: Text(
-              program.description,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                StatusChip(status: program.status),
-                const SizedBox(width: 8),
-                Text(
-                  '${program.courses.length} 门',
-                  style: TextStyle(color: Colors.grey[500]),
-                ),
-                IconButton(
-                  icon: Icon(
-                    program.status == ContentStatus.draft
-                        ? Icons.cloud_upload_outlined
-                        : Icons.cloud_download_outlined,
-                    size: 18,
-                    color: program.status == ContentStatus.draft
-                        ? Colors.green
-                        : Colors.orange,
-                  ),
-                  tooltip: program.status == ContentStatus.draft ? '发布' : '下架',
-                  onPressed: () => widget.parent._togglePublish(
-                    widget.service,
-                    _NodeType.program,
-                    [program.id],
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-                if (canDelete)
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, size: 18),
-                    onPressed: () => widget.parent._confirmDelete(
-                      widget.service,
-                      _NodeType.program,
-                      [program.id],
-                      program.courses.length,
-                    ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                IconButton(
-                  icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-                  onPressed: () => setState(() => _expanded = !_expanded),
-                ),
-              ],
-            ),
+    switch (node.type) {
+      case _NodeType.program:
+        final p = node.data as Program;
+        leadingIcon = const Icon(Icons.folder, size: 24, color: Colors.blue);
+        subtitleText = p.description;
+        actions = [
+          StatusChip(status: p.status),
+          const SizedBox(width: 4),
+          Text(
+            '${p.courses.length} 门',
+            style: TextStyle(color: Colors.grey[500], fontSize: 12),
           ),
-          if (_expanded) ..._buildCourses(program.courses, program.id),
-        ],
-      ),
-    );
-  }
-
-  List<Widget> _buildCourses(List<Course> courses, String programId) {
-    final tiles = <Widget>[
-      for (final c in courses)
-        _CourseTile(
-          service: widget.service,
-          course: c,
-          programId: programId,
-          parent: widget.parent,
-        ),
-    ];
-    tiles.add(
-      Padding(
-        padding: const EdgeInsets.only(left: 56, top: 4, bottom: 4),
-        child: TextButton.icon(
-          icon: const Icon(Icons.add, size: 16),
-          label: const Text('新建课程'),
-          onPressed: () => widget.parent._showCreateCourseDialog(programId),
-        ),
-      ),
-    );
-    return tiles;
-  }
-}
-
-class _CourseTile extends StatefulWidget {
-  final ProgramService service;
-  final Course course;
-  final String programId;
-  final _ProgramScreenState parent;
-
-  const _CourseTile({
-    required this.service,
-    required this.course,
-    required this.programId,
-    required this.parent,
-  });
-
-  @override
-  State<_CourseTile> createState() => _CourseTileState();
-}
-
-class _CourseTileState extends State<_CourseTile> {
-  bool _expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final course = widget.course;
-    final canDelete = course.status != ContentStatus.published;
-    return Container(
-      padding: const EdgeInsets.only(left: 56, right: 16),
-      child: Column(
-        children: [
-          const Divider(height: 1),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.book, size: 20, color: Colors.green),
-            title: InkWell(
-              onTap: () => widget.parent._rename(
-                widget.service,
-                _NodeType.course,
-                [widget.programId, course.id],
-                course.name,
-              ),
-              child: Text(
-                course.name,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-            subtitle: Text(
-              course.description,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                StatusChip(status: course.status),
-                const SizedBox(width: 8),
-                Text(
-                  '$_lessonCount 课时',
-                  style: TextStyle(color: Colors.grey[500]),
-                ),
-                IconButton(
-                  icon: Icon(
-                    course.status == ContentStatus.draft
-                        ? Icons.cloud_upload_outlined
-                        : Icons.cloud_download_outlined,
-                    size: 18,
-                    color: course.status == ContentStatus.draft
-                        ? Colors.green
-                        : Colors.orange,
-                  ),
-                  tooltip: course.status == ContentStatus.draft ? '发布' : '下架',
-                  onPressed: () => widget.parent._togglePublish(
-                    widget.service,
-                    _NodeType.course,
-                    [widget.programId, course.id],
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-                if (canDelete)
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, size: 18),
-                    onPressed: () => widget.parent._confirmDelete(
-                      widget.service,
-                      _NodeType.course,
-                      [widget.programId, course.id],
-                      course.phases.fold(0, (s, p) => s + p.lessons.length),
-                    ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                IconButton(
-                  icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-                  onPressed: () => setState(() => _expanded = !_expanded),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
-          ),
-          if (_expanded)
-            ..._buildPhases(course.phases, widget.programId, course.id),
-        ],
-      ),
-    );
-  }
-
-  int get _lessonCount =>
-      widget.course.phases.fold(0, (s, p) => s + p.lessons.length);
-
-  List<Widget> _buildPhases(
-    List<Phase> phases,
-    String programId,
-    String courseId,
-  ) {
-    final tiles = <Widget>[
-      for (final p in phases)
-        _PhaseTile(
-          service: widget.service,
-          phase: p,
-          programId: programId,
-          courseId: courseId,
-          parent: widget.parent,
-        ),
-    ];
-    tiles.add(
-      Padding(
-        padding: const EdgeInsets.only(left: 56, top: 2, bottom: 2),
-        child: TextButton.icon(
-          icon: const Icon(Icons.add, size: 14),
-          label: const Text('新建阶段', style: TextStyle(fontSize: 13)),
-          onPressed: () =>
-              widget.parent._showCreatePhaseDialog(programId, courseId),
-        ),
-      ),
-    );
-    return tiles;
-  }
-}
-
-class _PhaseTile extends StatefulWidget {
-  final ProgramService service;
-  final Phase phase;
-  final String programId;
-  final String courseId;
-  final _ProgramScreenState parent;
-
-  const _PhaseTile({
-    required this.service,
-    required this.phase,
-    required this.programId,
-    required this.courseId,
-    required this.parent,
-  });
-
-  @override
-  State<_PhaseTile> createState() => _PhaseTileState();
-}
-
-class _PhaseTileState extends State<_PhaseTile> {
-  bool _expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final phase = widget.phase;
-    return Container(
-      padding: const EdgeInsets.only(left: 56),
-      child: Column(
-        children: [
-          const Divider(height: 1),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.layers, size: 18, color: Colors.teal),
-            title: InkWell(
-              onTap: () => widget.parent._rename(
-                widget.service,
-                _NodeType.phase,
-                [widget.programId, widget.courseId, phase.id],
-                phase.name,
-              ),
-              child: Text(
-                phase.name,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            subtitle: Text(
-              '${phase.lessons.length} 课时',
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                StatusChip(status: phase.status),
-                const SizedBox(width: 4),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 16),
-                  onPressed: () => widget.parent._confirmDelete(
-                    widget.service,
-                    _NodeType.phase,
-                    [widget.programId, widget.courseId, phase.id],
-                    phase.lessons.length,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-                IconButton(
-                  icon: Icon(
-                    _expanded ? Icons.expand_less : Icons.expand_more,
-                    size: 18,
-                  ),
-                  onPressed: () => setState(() => _expanded = !_expanded),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
-          ),
-          if (_expanded)
-            ..._buildLessons(
-              phase.lessons,
-              widget.programId,
-              widget.courseId,
-              phase.id,
-            ),
-        ],
-      ),
-    );
-  }
-
-  List<Widget> _buildLessons(
-    List<Lesson> lessons,
-    String programId,
-    String courseId,
-    String phaseId,
-  ) {
-    final tiles = <Widget>[
-      for (final l in lessons)
-        _LessonTile(
-          service: widget.service,
-          lesson: l,
-          programId: programId,
-          courseId: courseId,
-          phaseId: phaseId,
-          parent: widget.parent,
-        ),
-    ];
-    tiles.add(
-      Padding(
-        padding: const EdgeInsets.only(left: 56, top: 2, bottom: 2),
-        child: TextButton.icon(
-          icon: const Icon(Icons.add, size: 14),
-          label: const Text('新建课时', style: TextStyle(fontSize: 13)),
-          onPressed: () => widget.parent._showCreateLessonDialog(
-            programId,
-            courseId,
-            phaseId,
-          ),
-        ),
-      ),
-    );
-    return tiles;
-  }
-}
-
-class _LessonTile extends StatefulWidget {
-  final ProgramService service;
-  final Lesson lesson;
-  final String programId;
-  final String courseId;
-  final String phaseId;
-  final _ProgramScreenState parent;
-
-  const _LessonTile({
-    required this.service,
-    required this.lesson,
-    required this.programId,
-    required this.courseId,
-    required this.phaseId,
-    required this.parent,
-  });
-
-  @override
-  State<_LessonTile> createState() => _LessonTileState();
-}
-
-class _LessonTileState extends State<_LessonTile> {
-  bool _expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final lesson = widget.lesson;
-    final canDelete = lesson.status != ContentStatus.published;
-    return Container(
-      padding: const EdgeInsets.only(left: 56),
-      child: Column(
-        children: [
-          const Divider(height: 1),
-          ListTile(
-            dense: true,
-            leading: const Icon(
-              Icons.description,
+          IconButton(
+            icon: Icon(
+              p.status == ContentStatus.draft
+                  ? Icons.cloud_upload_outlined
+                  : Icons.cloud_download_outlined,
               size: 18,
-              color: Colors.orange,
+              color: p.status == ContentStatus.draft
+                  ? Colors.green
+                  : Colors.orange,
             ),
-            title: InkWell(
-              onTap: () => widget.parent._rename(
-                widget.service,
-                _NodeType.lesson,
-                [widget.programId, widget.courseId, widget.phaseId, lesson.id],
-                lesson.title,
-              ),
-              child: Text(lesson.title, style: const TextStyle(fontSize: 14)),
-            ),
-            subtitle: Text(
-              '${lesson.duration}分钟',
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                StatusChip(status: lesson.status),
-                const SizedBox(width: 4),
-                IconButton(
-                  icon: Icon(
-                    lesson.status == ContentStatus.draft
-                        ? Icons.cloud_upload_outlined
-                        : Icons.cloud_download_outlined,
-                    size: 18,
-                    color: lesson.status == ContentStatus.draft
-                        ? Colors.green
-                        : Colors.orange,
-                  ),
-                  tooltip: lesson.status == ContentStatus.draft ? '发布' : '下架',
-                  onPressed: () => widget.parent._togglePublish(
-                    widget.service,
-                    _NodeType.lesson,
-                    [
-                      widget.programId,
-                      widget.courseId,
-                      widget.phaseId,
-                      lesson.id,
-                    ],
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.headphones, size: 18),
-                  tooltip: '试听',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => PreviewScreen(lessonId: lesson.id),
-                      ),
-                    );
-                  },
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-                if (canDelete)
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, size: 16),
-                    onPressed: () => widget.parent._confirmDelete(
-                      widget.service,
-                      _NodeType.lesson,
-                      [
-                        widget.programId,
-                        widget.courseId,
-                        widget.phaseId,
-                        lesson.id,
-                      ],
-                      lesson.scenes.length,
-                    ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                IconButton(
-                  icon: Icon(
-                    _expanded ? Icons.expand_less : Icons.expand_more,
-                    size: 18,
-                  ),
-                  onPressed: () => setState(() => _expanded = !_expanded),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
+            tooltip: p.status == ContentStatus.draft ? '发布' : '下架',
+            onPressed: () => _togglePublish(service, _NodeType.program, [p.id]),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
           ),
-          if (_expanded) ..._buildScenes(lesson.scenes),
+          if (p.status != ContentStatus.published)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, size: 18),
+              onPressed: () => _confirmDelete(service, _NodeType.program, [
+                p.id,
+              ], p.courses.length),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          if (hasChildren)
+            IconButton(
+              icon: Icon(expanded ? Icons.expand_less : Icons.expand_more),
+              onPressed: () => setState(() => _toggleExpanded(node.id)),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+        ];
+        titleWidget = InkWell(
+          onTap: () => _rename(service, _NodeType.program, [p.id], p.name),
+          child: Text(
+            p.name,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        );
+
+      case _NodeType.course:
+        final c = node.data as Course;
+        leadingIcon = const Icon(Icons.book, size: 20, color: Colors.green);
+        subtitleText = c.description;
+        final lessonCount = c.phases.fold(
+          0,
+          (sum, ph) => sum + ph.lessons.length,
+        );
+        actions = [
+          StatusChip(status: c.status),
+          const SizedBox(width: 4),
+          Text(
+            '$lessonCount 课时',
+            style: TextStyle(color: Colors.grey[500], fontSize: 12),
+          ),
+          IconButton(
+            icon: Icon(
+              c.status == ContentStatus.draft
+                  ? Icons.cloud_upload_outlined
+                  : Icons.cloud_download_outlined,
+              size: 18,
+              color: c.status == ContentStatus.draft
+                  ? Colors.green
+                  : Colors.orange,
+            ),
+            tooltip: c.status == ContentStatus.draft ? '发布' : '下架',
+            onPressed: () =>
+                _togglePublish(service, _NodeType.course, [node.ids[0], c.id]),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          if (c.status != ContentStatus.published)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, size: 18),
+              onPressed: () => _confirmDelete(service, _NodeType.course, [
+                node.ids[0],
+                c.id,
+              ], lessonCount),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          if (hasChildren)
+            IconButton(
+              icon: Icon(expanded ? Icons.expand_less : Icons.expand_more),
+              onPressed: () => setState(() => _toggleExpanded(node.id)),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+        ];
+        titleWidget = InkWell(
+          onTap: () =>
+              _rename(service, _NodeType.course, [node.ids[0], c.id], c.name),
+          child: Text(
+            c.name,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        );
+
+      case _NodeType.phase:
+        final ph = node.data as Phase;
+        leadingIcon = const Icon(Icons.layers, size: 18, color: Colors.teal);
+        subtitleText = '${ph.lessons.length} 课时';
+        actions = [
+          StatusChip(status: ph.status),
+          const SizedBox(width: 4),
+          IconButton(
+            icon: const Icon(Icons.delete_outline, size: 16),
+            onPressed: () => _confirmDelete(service, _NodeType.phase, [
+              node.ids[0],
+              node.ids[1],
+              ph.id,
+            ], ph.lessons.length),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          if (hasChildren)
+            IconButton(
+              icon: Icon(
+                expanded ? Icons.expand_less : Icons.expand_more,
+                size: 18,
+              ),
+              onPressed: () => setState(() => _toggleExpanded(node.id)),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+        ];
+        titleWidget = InkWell(
+          onTap: () => _rename(service, _NodeType.phase, [
+            node.ids[0],
+            node.ids[1],
+            ph.id,
+          ], ph.name),
+          child: Text(
+            ph.name,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+        );
+
+      case _NodeType.lesson:
+        final l = node.data as Lesson;
+        leadingIcon = const Icon(
+          Icons.description,
+          size: 18,
+          color: Colors.orange,
+        );
+        subtitleText = '${l.duration}分钟';
+        actions = [
+          StatusChip(status: l.status),
+          const SizedBox(width: 4),
+          IconButton(
+            icon: Icon(
+              l.status == ContentStatus.draft
+                  ? Icons.cloud_upload_outlined
+                  : Icons.cloud_download_outlined,
+              size: 18,
+              color: l.status == ContentStatus.draft
+                  ? Colors.green
+                  : Colors.orange,
+            ),
+            tooltip: l.status == ContentStatus.draft ? '发布' : '下架',
+            onPressed: () => _togglePublish(service, _NodeType.lesson, [
+              node.ids[0],
+              node.ids[1],
+              node.ids[2],
+              l.id,
+            ]),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.headphones, size: 18),
+            tooltip: '试听',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PreviewScreen(lessonId: l.id),
+                ),
+              );
+            },
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          if (l.status != ContentStatus.published)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, size: 16),
+              onPressed: () => _confirmDelete(service, _NodeType.lesson, [
+                node.ids[0],
+                node.ids[1],
+                node.ids[2],
+                l.id,
+              ], l.scenes.length),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          if (l.scenes.isNotEmpty)
+            IconButton(
+              icon: Icon(
+                expanded ? Icons.expand_less : Icons.expand_more,
+                size: 18,
+              ),
+              onPressed: () => setState(() => _toggleExpanded(node.id)),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+        ];
+        titleWidget = InkWell(
+          onTap: () => _rename(service, _NodeType.lesson, [
+            node.ids[0],
+            node.ids[1],
+            node.ids[2],
+            l.id,
+          ], l.title),
+          child: Text(l.title, style: const TextStyle(fontSize: 14)),
+        );
+    }
+
+    return Card(
+      key: ValueKey(node.id),
+      margin: EdgeInsets.only(left: node.depth * 24.0, bottom: 4),
+      child: Column(
+        children: [
+          ListTile(
+            dense: true,
+            leading: leadingIcon,
+            title: titleWidget,
+            subtitle: subtitleText.isNotEmpty
+                ? Text(
+                    subtitleText,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  )
+                : null,
+            trailing: Row(mainAxisSize: MainAxisSize.min, children: actions),
+          ),
+          if (expanded && node.type == _NodeType.lesson)
+            ..._buildScenes((node.data as Lesson).scenes),
         ],
       ),
     );
+  }
+
+  void _toggleExpanded(String id) {
+    if (_expandedIds.contains(id)) {
+      _expandedIds.remove(id);
+    } else {
+      _expandedIds.add(id);
+    }
   }
 
   List<Widget> _buildScenes(List<Scene> scenes) {
@@ -937,27 +767,12 @@ class _LessonTileState extends State<_LessonTile> {
         ),
       ];
     }
-    return scenes.map((s) => _SceneTile(scene: s)).toList();
+    return scenes.map((s) => _buildSceneTile(s)).toList();
   }
-}
 
-class _SceneTile extends StatefulWidget {
-  final Scene scene;
-
-  const _SceneTile({required this.scene});
-
-  @override
-  State<_SceneTile> createState() => _SceneTileState();
-}
-
-class _SceneTileState extends State<_SceneTile> {
-  bool _expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final scene = widget.scene;
+  Widget _buildSceneTile(Scene scene) {
     return Container(
-      padding: const EdgeInsets.only(left: 56),
+      padding: const EdgeInsets.only(left: 56, right: 16),
       child: Column(
         children: [
           const Divider(height: 1),
@@ -984,53 +799,11 @@ class _SceneTileState extends State<_SceneTile> {
                   '${scene.steps.length} 步',
                   style: TextStyle(color: Colors.grey[500], fontSize: 12),
                 ),
-                IconButton(
-                  icon: Icon(
-                    _expanded ? Icons.expand_less : Icons.expand_more,
-                    size: 16,
-                  ),
-                  onPressed: () => setState(() => _expanded = !_expanded),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
               ],
             ),
           ),
-          if (_expanded) ..._buildSteps(scene.steps),
         ],
       ),
     );
-  }
-
-  List<Widget> _buildSteps(List<Step> steps) {
-    return steps
-        .map(
-          (s) => Container(
-            padding: const EdgeInsets.only(
-              left: 72,
-              right: 16,
-              top: 4,
-              bottom: 4,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 10,
-                  backgroundColor: Colors.blue.withValues(alpha: 0.1),
-                  child: Text(
-                    '${s.order}',
-                    style: const TextStyle(fontSize: 10, color: Colors.blue),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(s.content, style: const TextStyle(fontSize: 12)),
-                ),
-              ],
-            ),
-          ),
-        )
-        .toList();
   }
 }

@@ -66,4 +66,80 @@ void main() {
       expect(service.classes.length, 1);
     });
   });
+
+  group('CourseDataService API write-back', () {
+    test('createClass sends POST /classes', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = CourseDataService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      service.createClass(
+        name: 'Test',
+        refName: 'P1',
+        refId: 'p1',
+        startDate: '2026-07-01',
+        endDate: '2026-08-01',
+      );
+      await Future(() {});
+      expect(method, 'POST');
+      expect(path, '/classes');
+    });
+
+    test('updateClass sends PUT /classes/:id', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = CourseDataService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      service.createClass(
+        name: 'Test',
+        refName: 'P1',
+        refId: 'p1',
+        startDate: '2026-07-01',
+        endDate: '2026-08-01',
+      );
+      final id = service.classes.first.id;
+      method = null;
+      path = null;
+      service.updateClass(id, name: 'Updated');
+      await Future(() {});
+      expect(method, 'PUT');
+      expect(path, '/classes/$id');
+    });
+
+    test('deleteClass sends DELETE /classes/:id', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = CourseDataService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      service.createClass(
+        name: 'Test',
+        refName: 'P1',
+        refId: 'p1',
+        startDate: '2026-07-01',
+        endDate: '2026-08-01',
+      );
+      final id = service.classes.first.id;
+      method = null;
+      path = null;
+      service.deleteClass(id);
+      await Future(() {});
+      expect(method, 'DELETE');
+      expect(path, '/classes/$id');
+    });
+  });
 }

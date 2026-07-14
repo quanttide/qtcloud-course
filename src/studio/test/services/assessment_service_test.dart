@@ -154,4 +154,80 @@ void main() {
       expect(service.submissions.length, 1);
     });
   });
+
+  group('AssessmentService API write-back', () {
+    test('createAssessment sends POST /assessments', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = AssessmentService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      service.createAssessment(
+        classId: 'c1',
+        title: 'Test',
+        fullScore: 100,
+        passScore: 60,
+        deadline: '2026-08-01',
+      );
+      await Future(() {});
+      expect(method, 'POST');
+      expect(path, '/assessments');
+    });
+
+    test('updateAssessment sends PUT /assessments/:id', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = AssessmentService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      service.createAssessment(
+        classId: 'c1',
+        title: 'Test',
+        fullScore: 100,
+        passScore: 60,
+        deadline: '2026-08-01',
+      );
+      final id = service.assessments.first.id;
+      method = null;
+      path = null;
+      service.updateAssessment(id, title: 'Updated');
+      await Future(() {});
+      expect(method, 'PUT');
+      expect(path, '/assessments/$id');
+    });
+
+    test('deleteAssessment sends DELETE /assessments/:id', () async {
+      String? method;
+      String? path;
+      final client = MockClient((req) async {
+        method = req.method;
+        path = req.url.path;
+        return http.Response('{}', 200);
+      });
+      final service = AssessmentService(baseUrl: 'http://localhost:8080');
+      service.client = client;
+      service.createAssessment(
+        classId: 'c1',
+        title: 'Test',
+        fullScore: 100,
+        passScore: 60,
+        deadline: '2026-08-01',
+      );
+      final id = service.assessments.first.id;
+      method = null;
+      path = null;
+      service.deleteAssessment(id);
+      await Future(() {});
+      expect(method, 'DELETE');
+      expect(path, '/assessments/$id');
+    });
+  });
 }
