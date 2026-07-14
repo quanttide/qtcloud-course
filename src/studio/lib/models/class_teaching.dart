@@ -11,6 +11,8 @@ class ClassTeaching {
   final String endDate;
   final int studentCount;
   final double progress;
+  final List<String> teacherIds;
+  final List<String> studentIds;
 
   const ClassTeaching({
     required this.id,
@@ -23,6 +25,8 @@ class ClassTeaching {
     required this.endDate,
     this.studentCount = 0,
     this.progress = 0.0,
+    this.teacherIds = const [],
+    this.studentIds = const [],
   });
 
   factory ClassTeaching.fromJson(Map<String, dynamic> json) {
@@ -37,6 +41,14 @@ class ClassTeaching {
       endDate: json['endDate'] as String,
       studentCount: json['studentCount'] as int? ?? 0,
       progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
+      teacherIds: (json['teacherIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      studentIds: (json['studentIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
     );
   }
 
@@ -51,6 +63,8 @@ class ClassTeaching {
     String? endDate,
     int? studentCount,
     double? progress,
+    List<String>? teacherIds,
+    List<String>? studentIds,
   }) {
     return ClassTeaching(
       id: id ?? this.id,
@@ -63,6 +77,8 @@ class ClassTeaching {
       endDate: endDate ?? this.endDate,
       studentCount: studentCount ?? this.studentCount,
       progress: progress ?? this.progress,
+      teacherIds: teacherIds ?? this.teacherIds,
+      studentIds: studentIds ?? this.studentIds,
     );
   }
 
@@ -77,5 +93,7 @@ class ClassTeaching {
     'endDate': endDate,
     'studentCount': studentCount,
     'progress': progress,
+    'teacherIds': teacherIds,
+    'studentIds': studentIds,
   };
 }

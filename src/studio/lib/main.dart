@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/program_service.dart';
 import 'services/data_service.dart';
+import 'services/assessment_service.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/program_screen.dart';
 import 'screens/class_screen.dart';
@@ -19,6 +20,9 @@ void main() {
         ),
         ChangeNotifierProvider(
           create: (_) => CourseDataService(baseUrl: baseUrl)..load(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AssessmentService(baseUrl: baseUrl)..load(),
         ),
       ],
       child: const QtCloudCourseApp(),
@@ -55,17 +59,16 @@ class _MainShellState extends State<MainShell> {
 
   static const _titles = ['仪表盘', '课程研发', '教学管理'];
 
-  static const _screens = [
-    DashboardScreen(),
-    ProgramScreen(),
-    ClassScreen(),
-  ];
+  static const _screens = [DashboardScreen(), ProgramScreen(), ClassScreen()];
 
   @override
   Widget build(BuildContext context) {
     final programService = context.watch<ProgramService>();
     final classService = context.watch<CourseDataService>();
-    if (!programService.loaded || !classService.loaded) {
+    final assessmentService = context.watch<AssessmentService>();
+    if (!programService.loaded ||
+        !classService.loaded ||
+        !assessmentService.loaded) {
       return const MaterialApp(
         home: Scaffold(body: Center(child: CircularProgressIndicator())),
       );
@@ -79,10 +82,7 @@ class _MainShellState extends State<MainShell> {
             onDestinationSelected: (i) => setState(() => _currentIndex = i),
           ),
           Expanded(
-            child: IndexedStack(
-              index: _currentIndex,
-              children: _screens,
-            ),
+            child: IndexedStack(index: _currentIndex, children: _screens),
           ),
         ],
       ),

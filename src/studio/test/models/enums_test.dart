@@ -53,4 +53,56 @@ void main() {
       expect(ClassStatus.ended.label, '已结束');
     });
   });
+
+  group('AssessmentType', () {
+    test('fromString returns exam for "exam"', () {
+      expect(AssessmentType.fromString('exam'), AssessmentType.exam);
+    });
+
+    test('fromString returns homework for unknown value', () {
+      expect(AssessmentType.fromString('unknown'), AssessmentType.homework);
+    });
+
+    test('fromString returns homework for empty value', () {
+      expect(AssessmentType.fromString(''), AssessmentType.homework);
+    });
+
+    test('label returns Chinese for homework', () {
+      expect(AssessmentType.homework.label, '作业');
+    });
+
+    test('label returns Chinese for exam', () {
+      expect(AssessmentType.exam.label, '考试');
+    });
+  });
+
+  group('SubmissionStatus', () {
+    test('fromString returns late for "late"', () {
+      expect(SubmissionStatus.fromString('late'), SubmissionStatus.late);
+    });
+
+    test('fromString returns resubmitted for "resubmitted"', () {
+      expect(SubmissionStatus.fromString('resubmitted'), SubmissionStatus.resubmitted);
+    });
+
+    test('fromString returns submitted for unknown value', () {
+      expect(SubmissionStatus.fromString('unknown'), SubmissionStatus.submitted);
+    });
+
+    test('fromString returns submitted for empty value', () {
+      expect(SubmissionStatus.fromString(''), SubmissionStatus.submitted);
+    });
+
+    test('label returns Chinese for submitted', () {
+      expect(SubmissionStatus.submitted.label, '已提交');
+    });
+
+    test('label returns Chinese for late', () {
+      expect(SubmissionStatus.late.label, '迟交');
+    });
+
+    test('label returns Chinese for resubmitted', () {
+      expect(SubmissionStatus.resubmitted.label, '已重交');
+    });
+  });
 }

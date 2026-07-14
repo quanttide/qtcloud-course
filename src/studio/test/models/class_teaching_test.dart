@@ -14,6 +14,8 @@ void main() {
     'endDate': '2026-07-15',
     'studentCount': 45,
     'progress': 0.6,
+    'teacherIds': ['teacher-1'],
+    'studentIds': ['student-1', 'student-2'],
   };
 
   final minimalJson = {
@@ -38,6 +40,8 @@ void main() {
       expect(c.endDate, '2026-07-15');
       expect(c.studentCount, 45);
       expect(c.progress, 0.6);
+      expect(c.teacherIds, ['teacher-1']);
+      expect(c.studentIds, ['student-1', 'student-2']);
     });
 
     test('fromJson uses defaults for missing optional fields', () {
@@ -48,6 +52,8 @@ void main() {
       expect(c.status, ClassStatus.preparing);
       expect(c.studentCount, 0);
       expect(c.progress, 0.0);
+      expect(c.teacherIds, []);
+      expect(c.studentIds, []);
     });
 
     test('fromJson parses progress from int', () {
@@ -78,6 +84,8 @@ void main() {
       expect(copy.endDate, c.endDate);
       expect(copy.studentCount, c.studentCount);
       expect(copy.progress, c.progress);
+      expect(copy.teacherIds, c.teacherIds);
+      expect(copy.studentIds, c.studentIds);
     });
   });
 }

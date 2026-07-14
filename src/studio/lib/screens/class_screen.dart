@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import '../models/class_teaching.dart';
 import '../models/enums.dart';
 import '../services/data_service.dart';
-import '../widgets/cards.dart';
 import '../widgets/status_chip.dart';
+import 'assessment_list_screen.dart';
 
 class ClassScreen extends StatelessWidget {
   const ClassScreen({super.key});
@@ -52,7 +52,7 @@ class ClassScreen extends StatelessWidget {
                       children: [
                         StatusChip(status: c.status),
                         const SizedBox(height: 2),
-                        Text('👥 ${c.studentCount}',
+                        Text('👤 ${c.studentCount}',
                             style: TextStyle(color: Colors.grey[600], fontSize: 13)),
                         const SizedBox(height: 2),
                         SizedBox(
@@ -64,59 +64,163 @@ class ClassScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    onTap: () => _showClassDetail(context, c),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ClassDetailScreen(classTeaching: c),
+                      ),
+                    ),
                   ),
                 );
               },
             ),
     );
   }
+}
 
-  void _showClassDetail(BuildContext context, ClassTeaching classTeaching) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (_, scrollController) => Padding(
-          padding: const EdgeInsets.all(24),
-          child: ListView(
-            controller: scrollController,
-            children: [
-              Text(classTeaching.name,
-                  style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
-              Row(
+class ClassDetailScreen extends StatelessWidget {
+  final ClassTeaching classTeaching;
+
+  const ClassDetailScreen({super.key, required this.classTeaching});
+
+  @override
+  Widget build(BuildContext context) {
+    final courseDataService = context.watch<CourseDataService>();
+    final students = courseDataService.getStudentsByClass(classTeaching.id);
+    final teachers = courseDataService.getTeachersByClass(classTeaching.id);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(classTeaching.name)),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // 班级信息卡片
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  DetailCard(
-                      label: '学员数', value: '${classTeaching.studentCount}'),
-                  const SizedBox(width: 12),
-                  DetailCard(label: '出勤率', value: '92%'),
-                  const SizedBox(width: 12),
-                  DetailCard(label: '完成率',
-                      value: '${(classTeaching.progress * 100).toInt()}%'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(classTeaching.name,
+                            style: const TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold)),
+                      ),
+                      StatusChip(status: classTeaching.status),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _infoRow('引用', classTeaching.refName),
+                  _infoRow('学段', '${classTeaching.startDate} - ${classTeaching.endDate}'),
+                  _infoRow('学员数', '${classTeaching.studentCount}'),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(value: classTeaching.progress),
+                  const SizedBox(height: 4),
+                  Text('进度 ${(classTeaching.progress * 100).toInt()}%',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                 ],
               ),
-              const SizedBox(height: 24),
-              Text('班级信息',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              InfoRow(label: '引用内容', value: classTeaching.refName),
-              InfoRow(label: '教学周期', value:
-                  '${classTeaching.startDate} - ${classTeaching.endDate}'),
-              InfoRow(label: '状态', value: classTeaching.status.label),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(height: 16),
+
+          // 教师配置入口
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('授课教师',
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  if (teachers.isEmpty)
+                    Text('暂无教师', style: TextStyle(color: Colors.grey[500]))
+                  else
+                    ...teachers.map((t) => ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: CircleAvatar(
+                            child: Text(t.name.isNotEmpty
+                                ? t.name[0]
+                                : '?'),
+                          ),
+                          title: Text(t.name),
+                          subtitle: Text(t.title ?? t.email),
+                        )),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 学生列表
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('学员列表 (${students.length})',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  if (students.isEmpty)
+                    Text('暂无学员', style: TextStyle(color: Colors.grey[500]))
+                  else
+                    ...students.map((s) => ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: CircleAvatar(
+                            child: Text(s.name.isNotEmpty ? s.name[0] : '?'),
+                          ),
+                          title: Text(s.name),
+                          subtitle: Text(s.email),
+                        )),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 考核管理入口
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AssessmentListScreen(
+                      classId: classTeaching.id,
+                      className: classTeaching.name,
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.assignment),
+              label: const Text('考核管理'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 60,
+            child: Text(label,
+                style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+          ),
+          Text(value, style: const TextStyle(fontSize: 13)),
+        ],
       ),
     );
   }
 }
-

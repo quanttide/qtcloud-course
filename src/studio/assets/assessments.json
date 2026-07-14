@@ -1,0 +1,29 @@
+[
+  {
+    "id": "assess-1",
+    "classId": "class-1",
+    "type": "exam",
+    "title": "期中考试",
+    "fullScore": 100,
+    "passScore": 60,
+    "deadline": "2026-07-01"
+  },
+  {
+    "id": "assess-2",
+    "classId": "class-1",
+    "type": "homework",
+    "title": "课后作业一",
+    "fullScore": 10,
+    "passScore": 6,
+    "deadline": "2026-06-15"
+  },
+  {
+    "id": "assess-3",
+    "classId": "class-2",
+    "type": "homework",
+    "title": "Python 练习一",
+    "fullScore": 20,
+    "passScore": 12,
+    "deadline": "2026-06-30"
+  }
+]

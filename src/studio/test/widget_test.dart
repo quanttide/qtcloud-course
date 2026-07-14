@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:qtcloud_course_studio/services/program_service.dart';
 import 'package:qtcloud_course_studio/services/data_service.dart';
+import 'package:qtcloud_course_studio/services/assessment_service.dart';
 import 'package:qtcloud_course_studio/main.dart';
 
 void main() {
@@ -16,11 +17,13 @@ void main() {
 
     final ps = ProgramService();
     final cs = CourseDataService();
+    final as = AssessmentService();
     await tester.pumpWidget(
       MultiProvider(
         providers: [
           ChangeNotifierProvider.value(value: ps),
           ChangeNotifierProvider.value(value: cs),
+          ChangeNotifierProvider.value(value: as),
         ],
         child: const QtCloudCourseApp(),
       ),
@@ -30,6 +33,7 @@ void main() {
 
     ps.markLoaded();
     cs.markLoaded();
+    as.markLoaded();
     await tester.pumpAndSettle();
 
     expect(find.text('仪表盘'), findsWidgets);
