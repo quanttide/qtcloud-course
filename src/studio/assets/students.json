@@ -1,0 +1,7 @@
+[
+  {"id": "student-1", "name": "张三", "email": "zhangsan@example.com"},
+  {"id": "student-2", "name": "李四", "email": "lisi@example.com"},
+  {"id": "student-3", "name": "王五", "email": "wangwu@example.com"},
+  {"id": "student-4", "name": "赵六", "email": "zhaoliu@example.com"},
+  {"id": "student-5", "name": "陈七", "email": "chenqi@example.com"}
+]

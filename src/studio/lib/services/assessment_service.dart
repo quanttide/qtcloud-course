@@ -57,17 +57,22 @@ class AssessmentService extends ChangeNotifier {
   }
 
   Future<void> _loadFromAssets() async {
-    final assessStr = await rootBundle.loadString('assets/assessments.json');
-    final assessList = json.decode(assessStr) as List<dynamic>;
-    _assessments = assessList
-        .map((e) => Assessment.fromJson(e as Map<String, dynamic>))
-        .toList();
-
-    final subStr = await rootBundle.loadString('assets/submissions.json');
-    final subList = json.decode(subStr) as List<dynamic>;
-    _submissions = subList
-        .map((e) => Submission.fromJson(e as Map<String, dynamic>))
-        .toList();
+    try {
+      final assessStr = await rootBundle.loadString('assets/assessments.json');
+      _assessments = (json.decode(assessStr) as List<dynamic>)
+          .map((e) => Assessment.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint('Failed to load assessments: $e');
+    }
+    try {
+      final subStr = await rootBundle.loadString('assets/submissions.json');
+      _submissions = (json.decode(subStr) as List<dynamic>)
+          .map((e) => Submission.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint('Failed to load submissions: $e');
+    }
   }
 
   Future<void> _loadFromApi() async {
@@ -92,6 +97,9 @@ class AssessmentService extends ChangeNotifier {
         .toList();
   }
 
+  int _idCounter = 0;
+  String _nextId() => '${++_idCounter}';
+
   // ---- 考核 CRUD ----
 
   void createAssessment({
@@ -103,7 +111,7 @@ class AssessmentService extends ChangeNotifier {
     AssessmentType type = AssessmentType.homework,
   }) {
     final assessment = Assessment(
-      id: 'assess-${DateTime.now().millisecondsSinceEpoch}',
+      id: _nextId(),
       classId: classId,
       type: type,
       title: title,

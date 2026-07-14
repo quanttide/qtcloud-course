@@ -1,0 +1,4 @@
+[
+  {"id": "teacher-1", "name": "王教授", "email": "wang@example.com", "title": "教授"},
+  {"id": "teacher-2", "name": "李老师", "email": "li@example.com", "title": "讲师"}
+]

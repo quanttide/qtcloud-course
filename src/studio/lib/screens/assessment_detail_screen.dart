@@ -6,6 +6,7 @@ import '../models/submission.dart';
 import '../services/assessment_service.dart';
 import '../services/data_service.dart';
 
+
 class AssessmentDetailScreen extends StatelessWidget {
   final Assessment assessment;
 
@@ -14,7 +15,11 @@ class AssessmentDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final assessmentService = context.watch<AssessmentService>();
-    final courseDataService = context.watch<CourseDataService>();
+    final courseDataService = context.read<CourseDataService>();
+    final studentNames = {
+      for (final s in courseDataService.getStudentsByClass(assessment.classId))
+        s.id: s.name,
+    };
     final submissions = assessmentService.getSubmissions(assessment.id);
 
     return Scaffold(
@@ -71,8 +76,7 @@ class AssessmentDetailScreen extends StatelessWidget {
             )
           else
             ...submissions.map((s) {
-              final studentName = _getStudentName(
-                  courseDataService, s.studentId);
+              final studentName = studentNames[s.studentId] ?? s.studentId;
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
@@ -119,12 +123,6 @@ class AssessmentDetailScreen extends StatelessWidget {
     );
   }
 
-  String _getStudentName(CourseDataService service, String studentId) {
-    final students = service.getStudentsByClass(assessment.classId);
-    final match = students.where((s) => s.id == studentId).toList();
-    return match.isNotEmpty ? match.first.name : studentId;
-  }
-
   Widget _statusBadge(SubmissionStatus status) {
     final color = switch (status) {
       SubmissionStatus.submitted => Colors.blue,
@@ -144,8 +142,10 @@ class AssessmentDetailScreen extends StatelessWidget {
 
   void _showScoreDialog(BuildContext context,
       AssessmentService service, Submission submission, Assessment assessment) {
-    final courseDataService = context.read<CourseDataService>();
-    final studentName = _getStudentName(courseDataService, submission.studentId);
+    final studentName = context.read<CourseDataService>()
+        .getStudentsByClass(assessment.classId)
+        .where((s) => s.id == submission.studentId)
+        .fold<String>('?', (prev, s) => s.name);
     double score = submission.score ?? 0;
     final commentController =
         TextEditingController(text: submission.comment ?? '');

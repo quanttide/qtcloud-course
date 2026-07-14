@@ -9,6 +9,8 @@ import '../models/teacher.dart';
 
 class CourseDataService extends ChangeNotifier {
   List<ClassTeaching> _classes = [];
+  List<Student> _students = [];
+  List<Teacher> _teachers = [];
   bool _loaded = false;
   String? _error;
   bool _loading = false;
@@ -16,26 +18,9 @@ class CourseDataService extends ChangeNotifier {
   final String? baseUrl;
   http.Client client;
 
-  /// Mock 学生/教师数据，嵌入在 assets/classes.json 或直接 mock
-  final List<Student> _students = [
-    Student(id: 'student-1', name: '张三', email: 'zhangsan@example.com'),
-    Student(id: 'student-2', name: '李四', email: 'lisi@example.com'),
-    Student(id: 'student-3', name: '王五', email: 'wangwu@example.com'),
-    Student(id: 'student-4', name: '赵六', email: 'zhaoliu@example.com'),
-    Student(id: 'student-5', name: '陈七', email: 'chenqi@example.com'),
-  ];
-
-  final List<Teacher> _teachers = [
-    Teacher(
-      id: 'teacher-1',
-      name: '王教授',
-      email: 'wang@example.com',
-      title: '教授',
-    ),
-    Teacher(id: 'teacher-2', name: '李老师', email: 'li@example.com', title: '讲师'),
-  ];
-
   List<ClassTeaching> get classes => _classes;
+  List<Student> get students => _students;
+  List<Teacher> get teachers => _teachers;
   bool get loaded => _loaded;
   String? get error => _error;
   bool get loading => _loading;
@@ -71,10 +56,19 @@ class CourseDataService extends ChangeNotifier {
   }
 
   Future<void> _loadFromAssets() async {
-    final jsonStr = await rootBundle.loadString('assets/classes.json');
-    final list = json.decode(jsonStr) as List<dynamic>;
-    _classes = list
+    final classesStr = await rootBundle.loadString('assets/classes.json');
+    _classes = (json.decode(classesStr) as List<dynamic>)
         .map((e) => ClassTeaching.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    final studentsStr = await rootBundle.loadString('assets/students.json');
+    _students = (json.decode(studentsStr) as List<dynamic>)
+        .map((e) => Student.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    final teachersStr = await rootBundle.loadString('assets/teachers.json');
+    _teachers = (json.decode(teachersStr) as List<dynamic>)
+        .map((e) => Teacher.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
@@ -84,8 +78,7 @@ class CourseDataService extends ChangeNotifier {
     if (response.statusCode != 200) {
       throw Exception('Failed to load classes: ${response.statusCode}');
     }
-    final list = json.decode(response.body) as List<dynamic>;
-    _classes = list
+    _classes = (json.decode(response.body) as List<dynamic>)
         .map((e) => ClassTeaching.fromJson(e as Map<String, dynamic>))
         .toList();
   }

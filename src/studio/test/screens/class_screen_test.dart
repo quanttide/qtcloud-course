@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:qtcloud_course_studio/services/data_service.dart';
-import 'package:qtcloud_course_studio/services/assessment_service.dart';
 import 'package:qtcloud_course_studio/models/class_teaching.dart';
 import 'package:qtcloud_course_studio/models/enums.dart';
+import 'package:qtcloud_course_studio/models/student.dart';
+import 'package:qtcloud_course_studio/models/teacher.dart';
+import 'package:qtcloud_course_studio/services/data_service.dart';
+import 'package:qtcloud_course_studio/services/assessment_service.dart';
 import 'package:qtcloud_course_studio/screens/class_screen.dart';
 
 Widget createClassTest(CourseDataService dataService,
@@ -60,6 +62,12 @@ void main() {
           studentCount: 45, progress: 0.6,
           teacherIds: ['teacher-1'], studentIds: ['student-1'],
         ),
+      ]);
+      service.students.addAll([
+        Student(id: 'student-1', name: '张三', email: 'z@example.com'),
+      ]);
+      service.teachers.addAll([
+        Teacher(id: 'teacher-1', name: '王教授', email: 'w@example.com', title: '教授'),
       ]);
 
       await tester.pumpWidget(createClassTest(service));
