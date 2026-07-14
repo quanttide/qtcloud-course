@@ -6,23 +6,7 @@
 - **PreviewScreen 真实场景播放**：Scene/Step/Choice 完整交互，6 个 Widget 测试
 - **发布**: [`studio/v0.0.3`](https://github.com/quanttide/qtcloud-course/releases/tag/studio/v0.0.3)
 
----
-
-## v0.0.4 — GUI 测试 & 联调验证
-
-**核心目标**：完成 GUI 自动化测试补充，首次 Provider ↔ Studio 联调验证通过。
-
-### GUI 测试补充
-
-- [ ] 更多交互测试（点击场景步骤、验证导航）
-- [ ] CI 集成文档（runner 依赖安装清单）
-- [ ] `smart_click` 模板管理脚本
-
-### 联调验证
-
-- [ ] `flutter run -d linux --dart-define=API_BASE_URL=http://localhost:8080` 正常加载
-- [ ] Provider `go run ./cmd/server/` 配合验证
-- [ ] 首次联调问题清单记录
+跨组件任务（GUI 测试补充、联调验证）已移至根级 [`TODO.md`](../../TODO.md)。
 
 ---
 
