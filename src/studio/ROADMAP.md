@@ -1,15 +1,5 @@
 # ROADMAP — Studio
 
-## 当前状态：v0.0.3 ✅
-
-- **DataSource 策略模式**：`CourseDataService` 支持双数据源，`--dart-define=API_BASE_URL` 切换，单元测试覆盖
-- **PreviewScreen 真实场景播放**：Scene/Step/Choice 完整交互，6 个 Widget 测试
-- **发布**: [`studio/v0.0.3`](https://github.com/quanttide/qtcloud-course/releases/tag/studio/v0.0.3)
-
-跨组件任务（GUI 测试补充、联调验证）已移至根级 [`TODO.md`](../../TODO.md)。
-
----
-
 ## v0.1.0 — 运营后台可用
 
 对应产品级 v0.2.0 里程碑。
