@@ -111,7 +111,7 @@ def find_window(display: str, *,
 
 def _xdotool_search(flag: str, pattern: str, env: dict) -> str | None:
     r = subprocess.run(
-        ["xdotool", "search", flag, pattern],
+        ["xdotool", "search", "--onlyvisible", flag, pattern],
         capture_output=True, text=True, timeout=5, env=env,
     )
     if r.returncode == 0 and r.stdout.strip():
