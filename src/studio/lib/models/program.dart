@@ -62,6 +62,7 @@ class Course {
   final String name;
   final String description;
   final ContentStatus status;
+  final int sortOrder;
   final List<Phase> phases;
 
   const Course({
@@ -69,6 +70,7 @@ class Course {
     required this.name,
     this.description = '',
     this.status = ContentStatus.draft,
+    this.sortOrder = 0,
     this.phases = const [],
   });
 
@@ -78,6 +80,7 @@ class Course {
       name: json['name'] as String,
       description: json['description'] as String? ?? '',
       status: ContentStatus.fromString(json['status'] as String? ?? 'draft'),
+      sortOrder: json['sortOrder'] as int? ?? 0,
       phases: (json['phases'] as List<dynamic>?)
               ?.map((e) => Phase.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -90,6 +93,7 @@ class Course {
     String? name,
     String? description,
     ContentStatus? status,
+    int? sortOrder,
     List<Phase>? phases,
   }) {
     return Course(
@@ -97,6 +101,7 @@ class Course {
       name: name ?? this.name,
       description: description ?? this.description,
       status: status ?? this.status,
+      sortOrder: sortOrder ?? this.sortOrder,
       phases: phases ?? this.phases,
     );
   }

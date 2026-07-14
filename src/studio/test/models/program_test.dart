@@ -29,6 +29,7 @@ void main() {
     'name': '数据工程',
     'description': '核心技术',
     'status': 'published',
+    'sortOrder': 1,
     'phases': [phaseJson],
   };
 
@@ -96,17 +97,20 @@ void main() {
       expect(course.phases.length, 1);
       expect(course.phases[0].name, '基础阶段');
       expect(course.phases[0].lessons[0].title, '数据工程概述');
+      expect(course.sortOrder, 1);
     });
 
-    test('fromJson defaults to empty phases list', () {
+    test('fromJson defaults to empty phases and sortOrder 0', () {
       final course = Course.fromJson({'id': 'c-1', 'name': 'test'});
       expect(course.phases, isEmpty);
+      expect(course.sortOrder, 0);
     });
 
-    test('copyWith replaces phases', () {
+    test('copyWith replaces phases and sortOrder', () {
       final course = Course.fromJson(courseJson);
-      final copy = course.copyWith(phases: []);
+      final copy = course.copyWith(phases: [], sortOrder: 3);
       expect(copy.phases, isEmpty);
+      expect(copy.sortOrder, 3);
       expect(copy.id, course.id);
     });
   });
