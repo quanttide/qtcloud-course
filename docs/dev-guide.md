@@ -4,8 +4,8 @@
 
 ## 入门
 
-1. 阅读 [specification/domain.md](../specification/domain.md) 了解领域架构
-2. 阅读 [specification/schema/course-tree.md](../specification/schema/course-tree.md) 了解课程树模型
+1. 阅读 [specification/index.md](../specification/index.md) 了解领域架构
+2. 阅读 [specification/schema/course/index.md](../specification/schema/course/index.md) 了解课程树模型
 3. 查看 [studio ROADMAP](../../src/studio/ROADMAP.md) 了解当前开发目标
 
 ## 技术映射
@@ -24,8 +24,7 @@
 
 ## 相关文档
 
-- [specification/domain.md](../specification/domain.md) — 领域架构与设计规则
-- [specification/schema/course-tree.md](../specification/schema/course-tree.md) — 课程树字段规格
-- [specification/schema/class.md](../specification/schema/class.md) — ClassTeaching 字段规格
-- [specification/schema/status.md](../specification/schema/status.md) — 状态枚举
+- [specification/index.md](../specification/index.md) — 领域架构与设计规则
+- [specification/schema/course/tree.md](../specification/schema/course/tree.md) — 课程树字段规格
+- [specification/schema/class/teaching.md](../specification/schema/class/teaching.md) — ClassTeaching 字段规格
 - [ROADMAP.md](../../ROADMAP.md) — 产品路线图
