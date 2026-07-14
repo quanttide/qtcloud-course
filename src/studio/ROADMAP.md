@@ -6,7 +6,20 @@
 
 **目标**：实现课程结构的 CRUD，让用户能通过 Studio 完成课程从无到有的搭建，不再依赖 CLI 导入或手动改 JSON。
 
+### 前提：数据持久化
+
+编辑操作需要写入目标。v0.0.5 需要先决定持久化策略：
+- API 写回（`POST/PUT/DELETE`）—— 配合 v0.0.4 的 Provider API
+- 纯内存 —— 刷新后重置，适合原型验证
+- localStorage / SharedPreferences —— 离线可用
+
+策略在 TODO 中前置为 P0 的第一个任务。
+
 ### 功能列表
+
+#### P0 — 模型补全
+
+Course 添加 `sortOrder` 字段，Phase 添加 `status` 和 `description` 字段。当前模型缺失这些字段，是 CRUD 和排序的前提。
 
 #### P0 — 新建层级节点
 
@@ -27,7 +40,7 @@
 
 - Program、Course、Phase、Lesson 四级支持删除
 - 弹出确认对话框，提示被删除项包含的子级数量
-- 删除 Program → 其下所有节点不再展示，但不删除独立资源
+- 删除后节点从树中移除（内部表现为从父级列表中移除）
 - 不可删除已发布状态的节点
 
 #### P1 — 发布/下架
@@ -46,7 +59,7 @@
 
 ```
 flutter test                          # ✅ 全部通过
-flutter analyze                       # ✅ 零报错
+dart analyze                          # ✅ 零报错
 ```
 
 ---
