@@ -1,14 +1,16 @@
-# ROADMAP — v0.0.3
+# ROADMAP — Provider
 
-## 目标
+## 当前状态：v0.0.2 ✅
 
-完成资源嵌套路由和 name/title 字段统一，让 API 与数据模型的层级关系对齐。
+REST API 覆盖 Program / Course / Phase / Lesson / Scene / Class 六类资源的 CRUD。纯 Go 标准库，无外部依赖。内存存储。
 
-## 背景
+## v0.0.3 — API 重构与数据加载
 
-当前 Scene/Phase 的 API 路径是扁平的，依赖查询参数表达归属关系，URL 不直观。需要将 Scenes 嵌套到 Lessons、Phases 嵌套到 Courses。同时统一所有资源的 name（URL slug）和 title（显示名）字段。
+对应产品级 v0.1.0 里程碑。详见 [`ROADMAP.md`](../../ROADMAP.md)。
 
-## 任务
+### 目标
+
+完成资源嵌套路由和 name/title 字段统一，支持从 JSON 文件加载种子数据，与 Studio v0.0.3 首次联调。
 
 ### 1. 路由重组：资源嵌套
 
@@ -45,8 +47,9 @@ DELETE /phases/{id}                 DELETE /courses/{id}/phases/{phaseId}
 ### 2. 数据加载
 
 - [ ] `data/profile/` 中的 lesson JSON 支持带 Steps 的完整场景数据导入
-- [ ] 启动时通过环境变量 `DATA_DIR` 加载 JSON 种子数据，替代 fixture 硬编码
-
+- [ ] 环境变量 `DATA_DIR` 支持启动时加载 JSON 种子数据，替代 fixture 硬编码
+- [ ] 提供 `make seed` 一键种子脚本
+- [ ] 种子数据与 Studio assets JSON 同源，确保数据结构一致
 
 ### 3. 统一 name/title 字段
 
@@ -70,8 +73,45 @@ DELETE /phases/{id}                 DELETE /courses/{id}/phases/{phaseId}
 ### 4. 自动化测试补充
 
 - [ ] name 重复校验测试
+- [ ] 嵌套路由 handler 测试
+- [ ] `go test ./... -count=1` 保持 90%+ 覆盖率
 
-## 交付标准
+### 交付标准
 
 - `go test ./... -count=1` 全部通过
-- `vibe-coding/lesson1.json` 中的 4 个场景均包含完整的 Steps
+- `data/profile/lesson1.json` 中的 4 个场景均包含完整的 Steps
+- Studio v0.0.3 通过 API 模式加载数据 ✅
+
+---
+
+## v0.1.0 — 持久化与业务增强
+
+对应产品级 v0.2.0 里程碑。
+
+- [ ] SQLite 持久化存储（内置，不依赖外部数据库）
+- [ ] 课程 CRUD 完整：添加/编辑/删除课程
+- [ ] 班级管理 API：报名、进度跟踪
+- [ ] 视频上传 API
+- [ ] Provider 接口测试套件（Python pytest → HTTP）
+
+---
+
+## v0.2.0 — 用户与权限
+
+对应产品级 v0.3.0 里程碑。
+
+- [ ] 用户认证（飞书登录）
+- [ ] 角色权限（管理员 / 讲师 / 学生）
+- [ ] 课程发布流程（草稿 → 审核 → 发布）
+- [ ] 学习进度追踪
+
+---
+
+## 架构演进
+
+```
+v0.0.x          v0.1.x              v0.2.x
+内存存储  ──→    SQLite         ──→  Postgres（可选）
+无认证    ──→    无认证/DevToken ──→  飞书 OAuth
+纯 CRUD   ──→    业务逻辑层      ──→  工作流引擎
+```
