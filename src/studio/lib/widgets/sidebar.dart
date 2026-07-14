@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../version.dart';
 
 class Sidebar extends StatelessWidget {
   final int currentIndex;
@@ -73,7 +74,7 @@ class Sidebar extends StatelessWidget {
               ),
             ),
             child: Text(
-              'v\${String.fromEnvironment("VERSION", defaultValue: "0.0.0")}',
+              'v$appVersion',
               style: TextStyle(
                 color: Theme.of(context).disabledColor,
                 fontSize: 12,
