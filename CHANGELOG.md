@@ -1,6 +1,31 @@
 # Changelog
 
 
+## [0.0.5] - 2026-07-14
+
+### Added
+- 课程树四级 CRUD（Program/Course/Phase/Lesson 新建/编辑/删除）
+- 发布/下架功能（Program/Course/Lesson，Course 发布检查草稿）
+- JSON 导入/导出（双轨互通，file_picker）
+- PreviewScreen 草稿课时提醒（MaterialBanner）
+- 所有模型 `toJson` 序列化方法
+- Sidebar 组件（240px 固定宽度）+ widget 测试
+- ProgramService 拆分（原 CourseDataService 拆为 ProgramService + CourseDataService）
+- CRUD 单元测试 × 10 + 发布测试 × 5 + 导入导出测试 × 3
+
+### Changed
+- 底部导航(NavigationBar) → 左侧导航(Sidebar)
+- `_NodeType` 枚举替代字符串分发（`_rename`/`_confirmDelete`/`_togglePublish`）
+- `loadLesson` 支持从内存树查找（兼容 CRUD 创建的课时）
+- MainShell → MultiProvider（ProgramService + CourseDataService）
+- 模型补全：Course.sortOrder, Phase.status/description
+
+### Fixed
+- 嵌套树 `List<_SpecificWidget>` 运行时协变问题（collection-for 字面量）
+- `_showClassDetail(dynamic)` → `(ClassTeaching)`
+- PreviewScreen CRUD 课时无法加载问题
+- 补全 fixtures 占位 JSON 文件
+
 ## [0.0.2] - 2026-07-13
 
 ### Added

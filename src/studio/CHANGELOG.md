@@ -1,6 +1,24 @@
 # Changelog
 
+## [0.0.5] - 2026-07-14
 
+### Added
+- 发布/下架功能：Program、Course、Lesson 可独立发布或下架
+- Course 发布时检查子级 Lesson 状态，有草稿课时则提示确认
+- 草稿课时在试听页顶部显示不可见提示横幅
+- 空场景课时在试听页显示引导说明
+
+### Changed
+- 重构 ProgramService 从 CourseDataService 分离，main.dart 使用 MultiProvider 管理双 Service
+- _ProgramScreen 重构：CRUD 类型分发从字符串改为 _NodeType 枚举
+- DashboardScreen 通过双 Service 独立读取课程和班级数据
+- PreviewScreen 导入 enums.dart 以支持 ContentStatus 判断
+
+### Fixed
+- 修复 loadLesson 回退逻辑：外部数据源失败后正确降级到树内版本
+- 课程树新建课时后试听页展示友好的空场景提示
+
+---
 
 ## [0.0.4] - 2026-07-14
 

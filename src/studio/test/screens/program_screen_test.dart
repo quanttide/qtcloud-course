@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:qtcloud_course_studio/models/enums.dart';
 import 'package:qtcloud_course_studio/services/program_service.dart';
 import 'package:qtcloud_course_studio/services/data_service.dart';
 import 'package:qtcloud_course_studio/screens/program_screen.dart';
@@ -111,6 +112,44 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.headphones), findsOneWidget);
+    });
+
+    testWidgets('draft program shows publish button', (tester) async {
+      final service = ProgramService();
+      service.createProgram('P1', '');
+      service.markLoaded();
+      await tester.pumpWidget(createProgramTest(service));
+
+      expect(find.byTooltip('发布'), findsOneWidget);
+    });
+
+    testWidgets('publishing toggles status and shows unpublish', (tester) async {
+      final service = ProgramService();
+      service.createProgram('P1', '');
+      service.markLoaded();
+      await tester.pumpWidget(createProgramTest(service));
+
+      await tester.tap(find.byTooltip('发布'));
+      await tester.pumpAndSettle();
+
+      expect(service.programs[0].status, ContentStatus.published);
+      expect(find.byTooltip('下架'), findsOneWidget);
+    });
+
+    testWidgets('course with draft lessons shows confirmation dialog', (tester) async {
+      final service = ProgramService();
+      final p = service.createProgram('P', '');
+      final c = service.createCourse(p.id, 'C', '');
+      final ph = service.createPhase(p.id, c!.id, 'Ph');
+      service.createLesson(p.id, c.id, ph!.id, 'Draft');
+      service.markLoaded();
+      await tester.pumpWidget(createProgramTest(service));
+
+      // expand to course level
+      await tester.tap(find.byIcon(Icons.expand_more));
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip('发布'), findsWidgets);
     });
   });
 }

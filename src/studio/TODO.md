@@ -44,14 +44,14 @@
   需先重构为扁平缩进列表，再接入 `ReorderableListView`
 - **API 写回延后**：当前 CRUD 仅操作内存，不写回服务端
 
-### 发布/下架
+### 发布/下架 ✅
 
-- [ ] 操作按钮 + 确认弹框
-- [ ] Program 发布/下架
-- [ ] Course 发布/下架（检查草稿 Lesson，有则提示确认）
-- [ ] Lesson 发布/下架
-- [ ] 下架/草稿 Lesson 在 PreviewScreen 中提示不可试听
-- [ ] widget 测试覆盖发布操作
+- [x] 操作按钮 + 确认弹框
+- [x] Program 发布/下架
+- [x] Course 发布/下架（检查草稿 Lesson，有则提示确认）
+- [x] Lesson 发布/下架
+- [x] 下架/草稿 Lesson 在 PreviewScreen 中提示不可试听
+- [x] widget 测试覆盖发布操作
 
 ### 拖拽排序
 

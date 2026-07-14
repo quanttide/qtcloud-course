@@ -18,14 +18,14 @@
 - 文件导入：选择 `.json` → 解析 → 合并到当前树
 - 冲突处理策略（覆盖/跳过/保留两者）
 
-### Phase 3（P1）：发布与排序
+### Phase 3（P1）：发布 ✅ / 排序 ❌
 
-放在 P2 之后，因为拖拽排序在嵌套树中实现成本较高（需扁平化列表 + 缩进）。
+发布/下架已完成，拖拽排序因树结构复杂延后。
 
-- 发布/下架操作（Program / Course / Lesson）
+- 发布/下架操作（Program / Course / Lesson）✅
 - Phase 有独立 `status` 字段和展示，但不提供发布/下架按钮
-- 发布 Course 时检查 Lesson 草稿并提示
-- 同级节点拖拽排序（需重构为扁平缩进列表，再用 `ReorderableListView`）
+- 发布 Course 时检查 Lesson 草稿并提示 ✅
+- 同级节点拖拽排序（需重构为扁平缩进列表，再用 `ReorderableListView`）❌
 
 ### 限制说明
 

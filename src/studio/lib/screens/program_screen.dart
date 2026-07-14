@@ -42,14 +42,17 @@ class _ProgramScreenState extends State<ProgramScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
                 context.read<ProgramService>().createProgram(
-                      nameCtrl.text,
-                      descCtrl.text,
-                    );
+                  nameCtrl.text,
+                  descCtrl.text,
+                );
                 Navigator.pop(ctx);
               }
             },
@@ -84,13 +87,18 @@ class _ProgramScreenState extends State<ProgramScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
                 context.read<ProgramService>().createCourse(
-                      programId, nameCtrl.text, descCtrl.text,
-                    );
+                  programId,
+                  nameCtrl.text,
+                  descCtrl.text,
+                );
                 Navigator.pop(ctx);
               }
             },
@@ -113,13 +121,18 @@ class _ProgramScreenState extends State<ProgramScreen> {
           decoration: const InputDecoration(labelText: '名称'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
                 context.read<ProgramService>().createPhase(
-                      programId, courseId, nameCtrl.text,
-                    );
+                  programId,
+                  courseId,
+                  nameCtrl.text,
+                );
                 Navigator.pop(ctx);
               }
             },
@@ -130,7 +143,11 @@ class _ProgramScreenState extends State<ProgramScreen> {
     );
   }
 
-  void _showCreateLessonDialog(String programId, String courseId, String phaseId) {
+  void _showCreateLessonDialog(
+    String programId,
+    String courseId,
+    String phaseId,
+  ) {
     final titleCtrl = TextEditingController();
     showDialog(
       context: context,
@@ -142,13 +159,19 @@ class _ProgramScreenState extends State<ProgramScreen> {
           decoration: const InputDecoration(labelText: '标题'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
           FilledButton(
             onPressed: () {
               if (titleCtrl.text.isNotEmpty) {
                 context.read<ProgramService>().createLesson(
-                      programId, courseId, phaseId, titleCtrl.text,
-                    );
+                  programId,
+                  courseId,
+                  phaseId,
+                  titleCtrl.text,
+                );
                 Navigator.pop(ctx);
               }
             },
@@ -159,10 +182,19 @@ class _ProgramScreenState extends State<ProgramScreen> {
     );
   }
 
-  String _nodeTypeLabel(_NodeType t) =>
-      switch (t) { _NodeType.program => '专业', _NodeType.course => '课程', _NodeType.phase => '阶段', _NodeType.lesson => '课时' };
+  String _nodeTypeLabel(_NodeType t) => switch (t) {
+    _NodeType.program => '专业',
+    _NodeType.course => '课程',
+    _NodeType.phase => '阶段',
+    _NodeType.lesson => '课时',
+  };
 
-  void _rename(ProgramService service, _NodeType type, List<String> ids, String current) {
+  void _rename(
+    ProgramService service,
+    _NodeType type,
+    List<String> ids,
+    String current,
+  ) {
     final ctrl = TextEditingController(text: current);
     final label = _nodeTypeLabel(type);
     showDialog(
@@ -175,7 +207,10 @@ class _ProgramScreenState extends State<ProgramScreen> {
           decoration: const InputDecoration(labelText: '名称'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
           FilledButton(
             onPressed: () {
               if (ctrl.text.isNotEmpty && ctrl.text != current) {
@@ -185,9 +220,20 @@ class _ProgramScreenState extends State<ProgramScreen> {
                   case _NodeType.course:
                     service.updateCourse(ids[0], ids[1], name: ctrl.text);
                   case _NodeType.phase:
-                    service.updatePhase(ids[0], ids[1], ids[2], name: ctrl.text);
+                    service.updatePhase(
+                      ids[0],
+                      ids[1],
+                      ids[2],
+                      name: ctrl.text,
+                    );
                   case _NodeType.lesson:
-                    service.updateLesson(ids[0], ids[1], ids[2], ids[3], title: ctrl.text);
+                    service.updateLesson(
+                      ids[0],
+                      ids[1],
+                      ids[2],
+                      ids[3],
+                      title: ctrl.text,
+                    );
                 }
                 Navigator.pop(ctx);
               }
@@ -199,17 +245,25 @@ class _ProgramScreenState extends State<ProgramScreen> {
     );
   }
 
-  void _confirmDelete(ProgramService service, _NodeType type, List<String> ids, int childCount) {
+  void _confirmDelete(
+    ProgramService service,
+    _NodeType type,
+    List<String> ids,
+    int childCount,
+  ) {
     final label = _nodeTypeLabel(type);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('删除$label'),
-        content: Text(childCount > 0
-            ? '该$label包含 $childCount 个子项，确认删除？'
-            : '确认删除该$label？'),
+        content: Text(
+          childCount > 0 ? '该$label包含 $childCount 个子项，确认删除？' : '确认删除该$label？',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -232,13 +286,77 @@ class _ProgramScreenState extends State<ProgramScreen> {
     );
   }
 
+  Future<bool> _confirmPublishWithDrafts(String label, int draftCount) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('发布$label'),
+            content: Text(
+              '该$label包含 $draftCount 个草稿课时，确认发布？\n\n学员将能看到已发布的课时，草稿课时暂不可见。',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('取消'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('确认发布'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  Future<void> _togglePublish(
+    ProgramService service,
+    _NodeType type,
+    List<String> ids,
+  ) async {
+    switch (type) {
+      case _NodeType.program:
+        final p = service.programs.firstWhere((p) => p.id == ids[0]);
+        if (p.status == ContentStatus.draft) {
+          service.publishProgram(ids[0]);
+        } else {
+          service.unpublishProgram(ids[0]);
+        }
+      case _NodeType.course:
+        final p = service.programs.firstWhere((p) => p.id == ids[0]);
+        final c = p.courses.firstWhere((c) => c.id == ids[1]);
+        if (c.status == ContentStatus.draft) {
+          final draftCount = service.draftLessonCountInCourse(ids[0], ids[1]);
+          if (draftCount > 0) {
+            final confirmed = await _confirmPublishWithDrafts('课程', draftCount);
+            if (!confirmed) return;
+          }
+          service.publishCourse(ids[0], ids[1]);
+        } else {
+          service.unpublishCourse(ids[0], ids[1]);
+        }
+      case _NodeType.lesson:
+        final p = service.programs.firstWhere((p) => p.id == ids[0]);
+        final c = p.courses.firstWhere((c) => c.id == ids[1]);
+        final ph = c.phases.firstWhere((ph) => ph.id == ids[2]);
+        final l = ph.lessons.firstWhere((l) => l.id == ids[3]);
+        if (l.status == ContentStatus.draft) {
+          service.publishLesson(ids[0], ids[1], ids[2], ids[3]);
+        } else {
+          service.unpublishLesson(ids[0], ids[1], ids[2], ids[3]);
+        }
+      case _NodeType.phase:
+        break;
+    }
+  }
+
   Future<void> _exportPrograms() async {
     final service = context.read<ProgramService>();
     final ok = await service.exportProgramsToFile();
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(ok ? '导出成功' : '导出已取消')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(ok ? '导出成功' : '导出已取消')));
   }
 
   Future<void> _importPrograms() async {
@@ -247,9 +365,9 @@ class _ProgramScreenState extends State<ProgramScreen> {
     if (jsonStr == null) return;
     final ok = service.mergeProgramsFromJson(jsonStr);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(ok ? '导入成功' : '导入失败：JSON 格式错误')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(ok ? '导入成功' : '导入失败：JSON 格式错误')));
   }
 
   @override
@@ -276,12 +394,11 @@ class _ProgramScreenState extends State<ProgramScreen> {
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: service.programs.length,
-              itemBuilder: (_, i) =>
-                  _ProgramTile(
-                    service: service,
-                    program: service.programs[i],
-                    parent: this,
-                  ),
+              itemBuilder: (_, i) => _ProgramTile(
+                service: service,
+                program: service.programs[i],
+                parent: this,
+              ),
             ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'add_program',
@@ -322,34 +439,64 @@ class _ProgramTileState extends State<_ProgramTile> {
             leading: const Icon(Icons.folder, size: 32, color: Colors.blue),
             title: InkWell(
               onTap: () => widget.parent._rename(
-                widget.service, _NodeType.program, [program.id], program.name,
+                widget.service,
+                _NodeType.program,
+                [program.id],
+                program.name,
               ),
-              child: Text(program.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(
+                program.name,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-            subtitle: Text(program.description,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.grey[600])),
+            subtitle: Text(
+              program.description,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Colors.grey[600]),
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 StatusChip(status: program.status),
                 const SizedBox(width: 8),
-                Text('${program.courses.length} 门',
-                    style: TextStyle(color: Colors.grey[500])),
+                Text(
+                  '${program.courses.length} 门',
+                  style: TextStyle(color: Colors.grey[500]),
+                ),
+                IconButton(
+                  icon: Icon(
+                    program.status == ContentStatus.draft
+                        ? Icons.cloud_upload_outlined
+                        : Icons.cloud_download_outlined,
+                    size: 18,
+                    color: program.status == ContentStatus.draft
+                        ? Colors.green
+                        : Colors.orange,
+                  ),
+                  tooltip: program.status == ContentStatus.draft ? '发布' : '下架',
+                  onPressed: () => widget.parent._togglePublish(
+                    widget.service,
+                    _NodeType.program,
+                    [program.id],
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
                 if (canDelete)
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 18),
                     onPressed: () => widget.parent._confirmDelete(
-                      widget.service, _NodeType.program, [program.id], program.courses.length,
+                      widget.service,
+                      _NodeType.program,
+                      [program.id],
+                      program.courses.length,
                     ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
                 IconButton(
-                  icon: Icon(
-                      _expanded ? Icons.expand_less : Icons.expand_more),
+                  icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
                   onPressed: () => setState(() => _expanded = !_expanded),
                 ),
               ],
@@ -419,33 +566,63 @@ class _CourseTileState extends State<_CourseTile> {
             leading: const Icon(Icons.book, size: 20, color: Colors.green),
             title: InkWell(
               onTap: () => widget.parent._rename(
-                widget.service, _NodeType.course, [widget.programId, course.id], course.name,
+                widget.service,
+                _NodeType.course,
+                [widget.programId, course.id],
+                course.name,
               ),
-              child: Text(course.name,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              child: Text(
+                course.name,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
-            subtitle: Text(course.description,
-                maxLines: 1, overflow: TextOverflow.ellipsis),
+            subtitle: Text(
+              course.description,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 StatusChip(status: course.status),
                 const SizedBox(width: 8),
-                Text('$_lessonCount 课时',
-                    style: TextStyle(color: Colors.grey[500])),
+                Text(
+                  '$_lessonCount 课时',
+                  style: TextStyle(color: Colors.grey[500]),
+                ),
+                IconButton(
+                  icon: Icon(
+                    course.status == ContentStatus.draft
+                        ? Icons.cloud_upload_outlined
+                        : Icons.cloud_download_outlined,
+                    size: 18,
+                    color: course.status == ContentStatus.draft
+                        ? Colors.green
+                        : Colors.orange,
+                  ),
+                  tooltip: course.status == ContentStatus.draft ? '发布' : '下架',
+                  onPressed: () => widget.parent._togglePublish(
+                    widget.service,
+                    _NodeType.course,
+                    [widget.programId, course.id],
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
                 if (canDelete)
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 18),
                     onPressed: () => widget.parent._confirmDelete(
-                      widget.service, _NodeType.course, [widget.programId, course.id],
+                      widget.service,
+                      _NodeType.course,
+                      [widget.programId, course.id],
                       course.phases.fold(0, (s, p) => s + p.lessons.length),
                     ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
                 IconButton(
-                  icon: Icon(
-                      _expanded ? Icons.expand_less : Icons.expand_more),
+                  icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
                   onPressed: () => setState(() => _expanded = !_expanded),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -453,7 +630,8 @@ class _CourseTileState extends State<_CourseTile> {
               ],
             ),
           ),
-          if (_expanded) ..._buildPhases(course.phases, widget.programId, course.id),
+          if (_expanded)
+            ..._buildPhases(course.phases, widget.programId, course.id),
         ],
       ),
     );
@@ -462,7 +640,11 @@ class _CourseTileState extends State<_CourseTile> {
   int get _lessonCount =>
       widget.course.phases.fold(0, (s, p) => s + p.lessons.length);
 
-  List<Widget> _buildPhases(List<Phase> phases, String programId, String courseId) {
+  List<Widget> _buildPhases(
+    List<Phase> phases,
+    String programId,
+    String courseId,
+  ) {
     final tiles = <Widget>[
       for (final p in phases)
         _PhaseTile(
@@ -479,7 +661,8 @@ class _CourseTileState extends State<_CourseTile> {
         child: TextButton.icon(
           icon: const Icon(Icons.add, size: 14),
           label: const Text('新建阶段', style: TextStyle(fontSize: 13)),
-          onPressed: () => widget.parent._showCreatePhaseDialog(programId, courseId),
+          onPressed: () =>
+              widget.parent._showCreatePhaseDialog(programId, courseId),
         ),
       ),
     );
@@ -522,13 +705,23 @@ class _PhaseTileState extends State<_PhaseTile> {
             leading: const Icon(Icons.layers, size: 18, color: Colors.teal),
             title: InkWell(
               onTap: () => widget.parent._rename(
-                widget.service, _NodeType.phase, [widget.programId, widget.courseId, phase.id], phase.name,
+                widget.service,
+                _NodeType.phase,
+                [widget.programId, widget.courseId, phase.id],
+                phase.name,
               ),
-              child: Text(phase.name,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              child: Text(
+                phase.name,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
-            subtitle: Text('${phase.lessons.length} 课时',
-                style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+            subtitle: Text(
+              '${phase.lessons.length} 课时',
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -537,14 +730,19 @@ class _PhaseTileState extends State<_PhaseTile> {
                 IconButton(
                   icon: const Icon(Icons.delete_outline, size: 16),
                   onPressed: () => widget.parent._confirmDelete(
-                    widget.service, _NodeType.phase, [widget.programId, widget.courseId, phase.id],
+                    widget.service,
+                    _NodeType.phase,
+                    [widget.programId, widget.courseId, phase.id],
                     phase.lessons.length,
                   ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
                 IconButton(
-                  icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more, size: 18),
+                  icon: Icon(
+                    _expanded ? Icons.expand_less : Icons.expand_more,
+                    size: 18,
+                  ),
                   onPressed: () => setState(() => _expanded = !_expanded),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -552,13 +750,24 @@ class _PhaseTileState extends State<_PhaseTile> {
               ],
             ),
           ),
-          if (_expanded) ..._buildLessons(phase.lessons, widget.programId, widget.courseId, phase.id),
+          if (_expanded)
+            ..._buildLessons(
+              phase.lessons,
+              widget.programId,
+              widget.courseId,
+              phase.id,
+            ),
         ],
       ),
     );
   }
 
-  List<Widget> _buildLessons(List<Lesson> lessons, String programId, String courseId, String phaseId) {
+  List<Widget> _buildLessons(
+    List<Lesson> lessons,
+    String programId,
+    String courseId,
+    String phaseId,
+  ) {
     final tiles = <Widget>[
       for (final l in lessons)
         _LessonTile(
@@ -576,7 +785,11 @@ class _PhaseTileState extends State<_PhaseTile> {
         child: TextButton.icon(
           icon: const Icon(Icons.add, size: 14),
           label: const Text('新建课时', style: TextStyle(fontSize: 13)),
-          onPressed: () => widget.parent._showCreateLessonDialog(programId, courseId, phaseId),
+          onPressed: () => widget.parent._showCreateLessonDialog(
+            programId,
+            courseId,
+            phaseId,
+          ),
         ),
       ),
     );
@@ -619,20 +832,53 @@ class _LessonTileState extends State<_LessonTile> {
           const Divider(height: 1),
           ListTile(
             dense: true,
-            leading: const Icon(Icons.description, size: 18, color: Colors.orange),
+            leading: const Icon(
+              Icons.description,
+              size: 18,
+              color: Colors.orange,
+            ),
             title: InkWell(
               onTap: () => widget.parent._rename(
-                widget.service, _NodeType.lesson, [widget.programId, widget.courseId, widget.phaseId, lesson.id], lesson.title,
+                widget.service,
+                _NodeType.lesson,
+                [widget.programId, widget.courseId, widget.phaseId, lesson.id],
+                lesson.title,
               ),
               child: Text(lesson.title, style: const TextStyle(fontSize: 14)),
             ),
-            subtitle: Text('${lesson.duration}分钟',
-                style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+            subtitle: Text(
+              '${lesson.duration}分钟',
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 StatusChip(status: lesson.status),
                 const SizedBox(width: 4),
+                IconButton(
+                  icon: Icon(
+                    lesson.status == ContentStatus.draft
+                        ? Icons.cloud_upload_outlined
+                        : Icons.cloud_download_outlined,
+                    size: 18,
+                    color: lesson.status == ContentStatus.draft
+                        ? Colors.green
+                        : Colors.orange,
+                  ),
+                  tooltip: lesson.status == ContentStatus.draft ? '发布' : '下架',
+                  onPressed: () => widget.parent._togglePublish(
+                    widget.service,
+                    _NodeType.lesson,
+                    [
+                      widget.programId,
+                      widget.courseId,
+                      widget.phaseId,
+                      lesson.id,
+                    ],
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
                 IconButton(
                   icon: const Icon(Icons.headphones, size: 18),
                   tooltip: '试听',
@@ -651,14 +897,24 @@ class _LessonTileState extends State<_LessonTile> {
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 16),
                     onPressed: () => widget.parent._confirmDelete(
-                      widget.service, _NodeType.lesson, [widget.programId, widget.courseId, widget.phaseId, lesson.id],
+                      widget.service,
+                      _NodeType.lesson,
+                      [
+                        widget.programId,
+                        widget.courseId,
+                        widget.phaseId,
+                        lesson.id,
+                      ],
                       lesson.scenes.length,
                     ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
                 IconButton(
-                  icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more, size: 18),
+                  icon: Icon(
+                    _expanded ? Icons.expand_less : Icons.expand_more,
+                    size: 18,
+                  ),
                   onPressed: () => setState(() => _expanded = !_expanded),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -678,7 +934,7 @@ class _LessonTileState extends State<_LessonTile> {
         const Padding(
           padding: EdgeInsets.only(left: 56, bottom: 8),
           child: Text('暂无场景', style: TextStyle(color: Colors.grey)),
-        )
+        ),
       ];
     }
     return scenes.map((s) => _SceneTile(scene: s)).toList();
@@ -707,21 +963,32 @@ class _SceneTileState extends State<_SceneTile> {
           const Divider(height: 1),
           ListTile(
             dense: true,
-            leading: const Icon(Icons.play_circle_outline, size: 16, color: Colors.purple),
+            leading: const Icon(
+              Icons.play_circle_outline,
+              size: 16,
+              color: Colors.purple,
+            ),
             title: Text(scene.title, style: const TextStyle(fontSize: 13)),
             subtitle: scene.verifyTip.isNotEmpty
-                ? Text(scene.verifyTip,
+                ? Text(
+                    scene.verifyTip,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey[500], fontSize: 11))
+                    style: TextStyle(color: Colors.grey[500], fontSize: 11),
+                  )
                 : null,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('${scene.steps.length} 步',
-                    style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                Text(
+                  '${scene.steps.length} 步',
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                ),
                 IconButton(
-                  icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more, size: 16),
+                  icon: Icon(
+                    _expanded ? Icons.expand_less : Icons.expand_more,
+                    size: 16,
+                  ),
                   onPressed: () => setState(() => _expanded = !_expanded),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -737,26 +1004,33 @@ class _SceneTileState extends State<_SceneTile> {
 
   List<Widget> _buildSteps(List<Step> steps) {
     return steps
-        .map((s) => Container(
-              padding: const EdgeInsets.only(left: 72, right: 16, top: 4, bottom: 4),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    radius: 10,
-                    backgroundColor: Colors.blue.withValues(alpha: 0.1),
-                    child: Text('${s.order}',
-                        style:
-                            const TextStyle(fontSize: 10, color: Colors.blue)),
+        .map(
+          (s) => Container(
+            padding: const EdgeInsets.only(
+              left: 72,
+              right: 16,
+              top: 4,
+              bottom: 4,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 10,
+                  backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                  child: Text(
+                    '${s.order}',
+                    style: const TextStyle(fontSize: 10, color: Colors.blue),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(s.content,
-                        style: const TextStyle(fontSize: 12)),
-                  ),
-                ],
-              ),
-            ))
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(s.content, style: const TextStyle(fontSize: 12)),
+                ),
+              ],
+            ),
+          ),
+        )
         .toList();
   }
 }

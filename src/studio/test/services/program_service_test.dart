@@ -116,6 +116,58 @@ void main() {
     });
   });
 
+  group('ProgramService Publish', () {
+    test('publishProgram changes status to published', () {
+      final service = ProgramService();
+      final p = service.createProgram('P', '');
+      expect(p.status, ContentStatus.draft);
+      service.publishProgram(p.id);
+      expect(service.programs[0].status, ContentStatus.published);
+    });
+
+    test('unpublishProgram changes status back to draft', () {
+      final service = ProgramService();
+      final p = service.createProgram('P', '');
+      service.publishProgram(p.id);
+      service.unpublishProgram(p.id);
+      expect(service.programs[0].status, ContentStatus.draft);
+    });
+
+    test('publishCourse changes course status', () {
+      final service = ProgramService();
+      final p = service.createProgram('P', '');
+      final c = service.createCourse(p.id, 'C', '');
+      expect(c!.status, ContentStatus.draft);
+      service.publishCourse(p.id, c.id);
+      expect(service.programs[0].courses[0].status, ContentStatus.published);
+    });
+
+    test('publishLesson changes lesson status', () {
+      final service = ProgramService();
+      final p = service.createProgram('P', '');
+      final c = service.createCourse(p.id, 'C', '');
+      final ph = service.createPhase(p.id, c!.id, 'Ph');
+      final l = service.createLesson(p.id, c.id, ph!.id, 'L');
+      expect(l!.status, ContentStatus.draft);
+      service.publishLesson(p.id, c.id, ph.id, l.id);
+      expect(
+        service.programs[0].courses[0].phases[0].lessons[0].status,
+        ContentStatus.published,
+      );
+    });
+
+    test('draftLessonCountInCourse counts correctly', () {
+      final service = ProgramService();
+      final p = service.createProgram('P', '');
+      final c = service.createCourse(p.id, 'C', '');
+      final ph = service.createPhase(p.id, c!.id, 'Ph');
+      service.createLesson(p.id, c.id, ph!.id, 'Draft1');
+      final l2 = service.createLesson(p.id, c.id, ph.id, 'Published');
+      service.publishLesson(p.id, c.id, ph.id, l2!.id);
+      expect(service.draftLessonCountInCourse(p.id, c.id), 1);
+    });
+  });
+
   group('ProgramService Import/Export', () {
     test('exportProgramsJson returns valid JSON', () {
       final service = ProgramService();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide Step;
 import 'package:provider/provider.dart';
+import '../models/enums.dart';
 import '../models/program.dart';
 import '../models/scene.dart';
 import '../services/program_service.dart';
@@ -113,68 +114,98 @@ class _PreviewScreenState extends State<PreviewScreen> {
   Widget _buildLessonLayout() {
     final scene = _currentScene;
     if (scene == null) {
-      return const Center(child: Text('未找到场景数据'));
-    }
-
-    return Row(
-      children: [
-        // 左侧：视频区域 + 场景标题
-        Expanded(
-          flex: 3,
-          child: _VideoArea(videoUrl: scene.videoUrl, sceneTitle: scene.title),
-        ),
-
-        // 右侧：操作步骤面板
-        SizedBox(
-          width: 360,
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(color: Theme.of(context).dividerColor),
-              ),
-            ),
+      if (_lesson!.scenes.isEmpty) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(48),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // 标题
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: Theme.of(context).dividerColor),
-                    ),
-                  ),
-                  child: const Text(
-                    '操作步骤',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+                Icon(Icons.info_outline, size: 48, color: Colors.grey[400]),
+                const SizedBox(height: 16),
+                Text(
+                  '该课时暂无场景数据',
+                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                 ),
-
-                // 场景导航
-                _SceneNavigator(
-                  scenes: _lesson!.scenes,
-                  currentSceneId: _currentSceneId,
-                  onSceneSelected: _goToScene,
-                ),
-
-                // 步骤面板 + 按钮
-                Expanded(
-                  child: _StepPanel(
-                    scene: scene,
-                    onChoice: _handleChoice,
-                    onFinish: _finish,
-                  ),
+                const SizedBox(height: 8),
+                Text(
+                  '请在蓝图中添加场景和步骤后再试听',
+                  style: TextStyle(fontSize: 13, color: Colors.grey[400]),
                 ),
               ],
             ),
+          ),
+        );
+      }
+      return const Center(child: Text('未找到当前场景'));
+    }
+
+    return Column(
+      children: [
+        if (_lesson!.status == ContentStatus.draft)
+          MaterialBanner(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            backgroundColor: Colors.orange.withValues(alpha: 0.1),
+            leading: const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+            content: const Text('该课时为草稿状态，学员不可见',
+                style: TextStyle(fontSize: 13)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('返回'),
+              ),
+            ],
+          ),
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: _VideoArea(videoUrl: scene.videoUrl, sceneTitle: scene.title),
+              ),
+              SizedBox(
+                width: 360,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      left: BorderSide(color: Theme.of(context).dividerColor),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: Theme.of(context).dividerColor),
+                          ),
+                        ),
+                        child: const Text(
+                          '操作步骤',
+                          style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600,
+                            color: Colors.grey, letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                      _SceneNavigator(
+                        scenes: _lesson!.scenes,
+                        currentSceneId: _currentSceneId,
+                        onSceneSelected: _goToScene,
+                      ),
+                      Expanded(
+                        child: _StepPanel(
+                          scene: scene,
+                          onChoice: _handleChoice,
+                          onFinish: _finish,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -253,10 +284,7 @@ class _VideoArea extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     videoUrl.isNotEmpty ? videoUrl : '视频播放区域',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -275,10 +303,7 @@ class _VideoArea extends StatelessWidget {
           ),
           child: Text(
             sceneTitle,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ),
       ],
@@ -382,11 +407,11 @@ class _StepPanel extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Theme.of(context).dividerColor,
-                    ),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -432,9 +457,7 @@ class _StepPanel extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: FilledButton(
               onPressed: onFinish,
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.green,
-              ),
+              style: FilledButton.styleFrom(backgroundColor: Colors.green),
               child: const Text('完成课时 🎉'),
             ),
           ),
