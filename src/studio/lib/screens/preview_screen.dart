@@ -121,55 +121,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
         // 左侧：视频区域 + 场景标题
         Expanded(
           flex: 3,
-          child: Column(
-            children: [
-              Expanded(
-                  child: Container(
-                    color: Colors.black,
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.play_circle_outline,
-                            size: 64,
-                            color: Colors.grey[700],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            scene.videoUrl.isNotEmpty
-                                ? scene.videoUrl
-                                : '视频播放区域',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  border: Border(
-                    top: BorderSide(color: Theme.of(context).dividerColor),
-                  ),
-                ),
-                child: Text(
-                  scene.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
+          child: _VideoArea(videoUrl: scene.videoUrl, sceneTitle: scene.title),
         ),
 
         // 右侧：操作步骤面板
@@ -207,132 +159,20 @@ class _PreviewScreenState extends State<PreviewScreen> {
                 ),
 
                 // 场景导航
-                SizedBox(
-                  height: 44 * _lesson!.scenes.length.toDouble(),
-                  child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    itemCount: _lesson!.scenes.length,
-                    separatorBuilder: (_, _) =>
-                        const Divider(height: 1, indent: 44),
-                    itemBuilder: (_, i) {
-                      final s = _lesson!.scenes[i];
-                      final isActive = s.id == _currentSceneId;
-                      return InkWell(
-                        onTap: () => _goToScene(s.id),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isActive
-                                      ? Colors.blue
-                                      : Colors.grey[400],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  s.title,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: isActive ? Colors.blue : null,
-                                    fontWeight: isActive
-                                        ? FontWeight.w600
-                                        : null,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                _SceneNavigator(
+                  scenes: _lesson!.scenes,
+                  currentSceneId: _currentSceneId,
+                  onSceneSelected: _goToScene,
                 ),
-                const Divider(height: 1),
 
-                // 步骤列表
+                // 步骤面板 + 按钮
                 Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.all(12),
-                    children: [
-                      ...scene.steps.map((step) => _StepTile(step: step)),
-                      const SizedBox(height: 12),
-
-                      // 验证提示
-                      if (scene.verifyTip.isNotEmpty)
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(12),
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: Theme.of(context).dividerColor,
-                            ),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('✅ ', style: TextStyle(fontSize: 13)),
-                              Expanded(
-                                child: Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: '验证：',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.primary,
-                                        ),
-                                      ),
-                                      TextSpan(text: scene.verifyTip),
-                                    ],
-                                  ),
-                                  style: const TextStyle(fontSize: 13),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+                  child: _StepPanel(
+                    scene: scene,
+                    onChoice: _handleChoice,
+                    onFinish: _finish,
                   ),
                 ),
-
-                // 继续/完成按钮
-                if (scene.choices.isNotEmpty)
-                  ...scene.choices.map(
-                    (c) => Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                      child: FilledButton(
-                        onPressed: () => _handleChoice(c.targetSceneId),
-                        child: Text('${c.label} →'),
-                      ),
-                    ),
-                  )
-                else
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                    child: FilledButton(
-                      onPressed: _finish,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.green,
-                      ),
-                      child: const Text('完成课时 🎉'),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -383,6 +223,222 @@ class _StepTile extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// 视频区域组件，包含视频播放占位和场景标题。
+class _VideoArea extends StatelessWidget {
+  final String videoUrl;
+  final String sceneTitle;
+
+  const _VideoArea({required this.videoUrl, required this.sceneTitle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: Container(
+            color: Colors.black,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.play_circle_outline,
+                    size: 64,
+                    color: Colors.grey[700],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    videoUrl.isNotEmpty ? videoUrl : '视频播放区域',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            border: Border(
+              top: BorderSide(color: Theme.of(context).dividerColor),
+            ),
+          ),
+          child: Text(
+            sceneTitle,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 场景导航组件，显示场景列表并支持选中切换。
+class _SceneNavigator extends StatelessWidget {
+  final List<Scene> scenes;
+  final String currentSceneId;
+  final ValueChanged<String> onSceneSelected;
+
+  const _SceneNavigator({
+    required this.scenes,
+    required this.currentSceneId,
+    required this.onSceneSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 44 * scenes.length.toDouble(),
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            itemCount: scenes.length,
+            separatorBuilder: (_, _) => const Divider(height: 1, indent: 44),
+            itemBuilder: (_, i) {
+              final s = scenes[i];
+              final isActive = s.id == currentSceneId;
+              return InkWell(
+                onTap: () => onSceneSelected(s.id),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isActive ? Colors.blue : Colors.grey[400],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          s.title,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isActive ? Colors.blue : null,
+                            fontWeight: isActive ? FontWeight.w600 : null,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const Divider(height: 1),
+      ],
+    );
+  }
+}
+
+/// 步骤面板组件，包含步骤列表、验证提示和继续/完成按钮。
+class _StepPanel extends StatelessWidget {
+  final Scene scene;
+  final void Function(String) onChoice;
+  final VoidCallback onFinish;
+
+  const _StepPanel({
+    required this.scene,
+    required this.onChoice,
+    required this.onFinish,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(12),
+            children: [
+              ...scene.steps.map((step) => _StepTile(step: step)),
+              const SizedBox(height: 12),
+
+              // 验证提示
+              if (scene.verifyTip.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('✅ ', style: TextStyle(fontSize: 13)),
+                      Expanded(
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: '验证：',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              TextSpan(text: scene.verifyTip),
+                            ],
+                          ),
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+
+        // 继续/完成按钮
+        if (scene.choices.isNotEmpty)
+          ...scene.choices.map(
+            (c) => Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: FilledButton(
+                onPressed: () => onChoice(c.targetSceneId),
+                child: Text('${c.label} →'),
+              ),
+            ),
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: FilledButton(
+              onPressed: onFinish,
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.green,
+              ),
+              child: const Text('完成课时 🎉'),
+            ),
+          ),
+      ],
     );
   }
 }
