@@ -80,18 +80,30 @@ class CourseDataService extends ChangeNotifier {
     final programsUri = Uri.parse('$baseUrl/programs');
     final classesUri = Uri.parse('$baseUrl/classes');
 
-    final programsResponse = await client.get(programsUri);
-    final classesResponse = await client.get(classesUri);
+    List<dynamic> programsList;
+    List<dynamic> classesList;
 
-    if (programsResponse.statusCode != 200) {
-      throw Exception('Failed to load programs: ${programsResponse.statusCode}');
-    }
-    if (classesResponse.statusCode != 200) {
-      throw Exception('Failed to load classes: ${classesResponse.statusCode}');
+    try {
+      final programsResponse = await client.get(programsUri);
+      if (programsResponse.statusCode != 200) {
+        throw Exception('Failed to load programs: ${programsResponse.statusCode}');
+      }
+      programsList = json.decode(programsResponse.body) as List<dynamic>;
+    } catch (e) {
+      debugPrint('Failed to load programs: $e');
+      rethrow;
     }
 
-    final programsList = json.decode(programsResponse.body) as List<dynamic>;
-    final classesList = json.decode(classesResponse.body) as List<dynamic>;
+    try {
+      final classesResponse = await client.get(classesUri);
+      if (classesResponse.statusCode != 200) {
+        throw Exception('Failed to load classes: ${classesResponse.statusCode}');
+      }
+      classesList = json.decode(classesResponse.body) as List<dynamic>;
+    } catch (e) {
+      debugPrint('Failed to load classes: $e');
+      rethrow;
+    }
 
     _programs = programsList
         .map((e) => Program.fromJson(e as Map<String, dynamic>))
@@ -110,7 +122,8 @@ class CourseDataService extends ChangeNotifier {
       } else {
         return await _loadLessonFromAssets(lessonId);
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Failed to load lesson $lessonId: $e');
       return null;
     }
   }
