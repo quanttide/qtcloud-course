@@ -1,21 +1,30 @@
 # ROADMAP — Provider
 
-## [0.0.2] — 已发布
+> Provider 的内部版本与产品版本对齐关系：
 
-REST API 覆盖 Program / Course / Phase / Lesson / Scene / Class 六类资源的 CRUD。纯 Go 标准库，无外部依赖。内存存储。
+| 产品版 | Provider 版 | 目标 |
+|--------|-------------|------|
+| v0.1 课程制作 | v0.0.3 → v0.1 | 嵌套路由 + SQLite 持久化 |
+| v0.2 考核 | v0.2 | 考核 API + CI |
+| v0.3 班级和学员 | v0.3 | 认证 + 权限 + 学习进度 |
 
-### Architecture
+## Architecture
 
 ```
-v0.0.x          v0.1.x              v0.2.x
+v0.0.x          v0.1                v0.3
 内存存储  ──→    SQLite         ──→  Postgres（可选）
 无认证    ──→    无认证/DevToken ──→  飞书 OAuth
 纯 CRUD   ──→    业务逻辑层      ──→  工作流引擎
 ```
 
-## [0.0.3] — 进行中
+## [v0.0.2] — 已发布
 
-> API 重构与数据加载。对应产品级 `v0.1.0` 里程碑。
+REST API 覆盖 Program / Course / Phase / Lesson / Scene / Class 六类资源的 CRUD。
+纯 Go 标准库，无外部依赖。内存存储。
+
+## [v0.0.3] — 进行中
+
+> API 重构与数据加载。对齐产品级 **v0.1 课程制作**。
 
 ### 1. 路由重组：资源嵌套
 
@@ -89,22 +98,31 @@ DELETE /phases/{id}                 DELETE /courses/{id}/phases/{phaseId}
 - [ ] 提取 `Handler[T, S]` 泛型：标准 CRUD HTTP handler + 校验函数注入
 - [ ] 迁移后删除 5 个冗余 Store 文件和 5 个冗余 Handler 文件
 
-## [0.1.0] — 规划中
+## [v0.1] — 规划中
 
-> 持久化与业务增强。对应产品级 `v0.2.0` 里程碑。
+> SQLite 持久化存储。对齐产品级 **v0.1 课程制作**。
 
 ### Added
 - [ ] SQLite 持久化存储（内置，不依赖外部数据库）
-- [ ] 班级管理 API：报名、进度跟踪
 - [ ] 视频上传 API
 - [ ] Provider 接口测试套件（Python pytest → HTTP）
 
-## [0.2.0] — 远期
+## [v0.2] — 规划中
 
-> 用户与权限。对应产品级 `v0.3.0` 里程碑。
+> 考核 API。对齐产品级 **v0.2 考核**。
+
+### Added
+- [ ] 考核 CRUD API
+- [ ] 提交/评分 API
+- [ ] 成绩统计 API
+
+## [v0.3] — 规划中
+
+> 用户与权限。对齐产品级 **v0.3 班级和学员**。
 
 ### Added
 - [ ] 用户认证（飞书登录）
 - [ ] 角色权限（管理员 / 讲师 / 学生）
+- [ ] 班级管理 API：报名、进度跟踪
 - [ ] 课程发布流程（草稿 → 审核 → 发布）
 - [ ] 学习进度追踪
