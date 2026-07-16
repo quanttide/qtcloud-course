@@ -140,13 +140,10 @@ fn render_course_content(data: &serde_json::Value) -> String {
 // ── Lesson ──
 
 fn render_lesson_content(data: &serde_json::Value) -> String {
-    let scenes = data["scenes"].as_array();
-    let main_scenes: Vec<&serde_json::Value> = scenes
-        .map(|s| s.iter().filter(|sc| !sc.get("exception").map_or(false, |e| e.is_object())).collect())
-        .unwrap_or_default();
-    let exc_scenes: Vec<&serde_json::Value> = scenes
-        .map(|s| s.iter().filter(|sc| sc.get("exception").map_or(false, |e| e.is_object())).collect())
-        .unwrap_or_default();
+    let scenes = data["scenes"].as_array().cloned().unwrap_or_default();
+    let total_exc = scenes.iter().filter(|sc| {
+        sc.get("exception").map_or(false, |e| e.is_object() && e["title"].as_str().is_some())
+    }).count();
 
     let mut html = format!(
         r#"<div style="display:flex;justify-content:center;gap:20px;margin-bottom:24px;">
@@ -154,10 +151,10 @@ fn render_lesson_content(data: &serde_json::Value) -> String {
 <div style="text-align:center;"><div style="font-size:28px;font-weight:700;color:#38bdf8;">{}</div><div style="font-size:11px;color:#64748b;">异常分支</div></div>
 </div>
 <div style="display:flex;align-items:flex-start;gap:0;overflow-x:auto;padding:10px 0;justify-content:center;">"#,
-        main_scenes.len(), exc_scenes.len(),
+        scenes.len(), total_exc,
     );
 
-    for (i, sc) in main_scenes.iter().enumerate() {
+    for (i, sc) in scenes.iter().enumerate() {
         html.push_str(&format!(
             r#"<div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;">
 <div class="node" style="background:#1e293b;border-radius:12px;padding:16px;min-width:200px;max-width:220px;border:1px solid #334155;flex-shrink:0;">
@@ -187,7 +184,7 @@ fn render_lesson_content(data: &serde_json::Value) -> String {
             }
         }
         html.push_str("</div>");
-        if i < main_scenes.len() - 1 {
+        if i < scenes.len() - 1 {
             html.push_str(r#"<div style="display:flex;align-items:center;font-size:22px;color:#475569;padding:0 6px;flex-shrink:0;align-self:center;">➜</div>"#);
         }
     }
@@ -231,7 +228,14 @@ fn render_scene_content(data: &serde_json::Value) -> String {
 fn esc(s: &str) -> String {
     s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 }
-
 fn truncate(s: &str, max: usize) -> String {
-    if s.len() <= max { s.to_string() } else { format!("{}...", &s[..max]) }
+    if s.len() <= max {
+        s.to_string()
+    } else {
+        let mut end = max;
+        while !s.is_char_boundary(end) {
+            end -= 1;
+        }
+        format!("{}...", &s[..end])
+    }
 }
