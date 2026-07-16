@@ -7,16 +7,16 @@
 > Scene 编辑器 MVP + 数据管线通路 + API 模式切换。
 
 ### Scene 编辑器 MVP
-- [ ] Scene 编辑器页面：创建/编辑场景（场景名、描述、课时归属）
-- [ ] 步骤编辑器：添加/编辑/删除/排序步骤（文本、选项、分支条件）
-- [ ] 编辑器与 Provider API 打通（CRUD Scene/Step）
+- [x] Scene 编辑器页面：创建/编辑场景（场景名、描述、课时归属）
+- [x] 步骤编辑器：添加/编辑/删除/排序步骤（文本、选项、分支条件）
+- [x] 编辑器与 Provider API 打通（CRUD Scene/Step）
 
 ### 数据管线
 - [ ] 一键导入 CLI blueprint 输出的结构化 JSON 为课程结构（Program → Course → Phase → Lesson）
 
 ### API 模式默认
-- [ ] 启动模式改为默认走 Provider API，不再依赖本地 JSON
-- [ ] 本地 JSON 降级为离线回退方案
+- [x] 启动模式改为默认走 Provider API，不再依赖本地 JSON
+- [x] 本地 JSON 降级为离线回退方案（API 失败自动回退 + 离线模式指示器）
 - [ ] 环境配置统一（`api_base_url`、`data_dir`）
 
 ---

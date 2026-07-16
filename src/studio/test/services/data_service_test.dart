@@ -45,13 +45,13 @@ void main() {
   });
 
   group('CourseDataService API mode', () {
-    test('load sets error on HTTP failure', () async {
+    test('load falls back to local JSON on HTTP failure', () async {
       final client = MockClient((_) async => http.Response('Not Found', 404));
       final service = CourseDataService(baseUrl: 'http://localhost:8080');
       service.client = client;
       await service.load();
-      expect(service.loaded, false);
-      expect(service.error, contains('404'));
+      expect(service.loaded, true);
+      expect(service.offlineFallback, true);
     });
 
     test('load parses classes on success', () async {

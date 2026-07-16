@@ -16,6 +16,7 @@ class CourseDataService extends ChangeNotifier {
   bool _loaded = false;
   String? _error;
   bool _loading = false;
+  bool _offlineFallback = false;
 
   final String? baseUrl;
   http.Client client;
@@ -26,6 +27,8 @@ class CourseDataService extends ChangeNotifier {
   bool get loaded => _loaded;
   String? get error => _error;
   bool get loading => _loading;
+  bool get offlineFallback => _offlineFallback;
+  bool get isApiMode => baseUrl != null;
 
   int get activeClasses =>
       _classes.where((c) => c.status.name == 'active').length;
@@ -42,10 +45,21 @@ class CourseDataService extends ChangeNotifier {
   Future<void> load() async {
     _loading = true;
     _error = null;
+    _offlineFallback = false;
     notifyListeners();
     try {
       if (baseUrl != null) {
-        await _loadFromApi();
+        try {
+          await _loadFromApi();
+        } catch (e) {
+          debugPrint('API load failed ($e), falling back to local JSON');
+          _offlineFallback = true;
+          try {
+            await _loadFromAssets();
+          } catch (e2) {
+            debugPrint('Fallback assets also failed: $e2');
+          }
+        }
       } else {
         await _loadFromAssets();
       }

@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../models/enums.dart';
 import '../models/program.dart';
 import '../models/phase.dart';
+import '../models/scene.dart';
 
 class ProgramService extends ChangeNotifier {
   List<Program> _programs = [];
@@ -16,6 +17,7 @@ class ProgramService extends ChangeNotifier {
   bool _loaded = false;
   String? _error;
   bool _loading = false;
+  bool _offlineFallback = false;
 
   final String? baseUrl;
   http.Client client;
@@ -24,6 +26,10 @@ class ProgramService extends ChangeNotifier {
   bool get loaded => _loaded;
   String? get error => _error;
   bool get loading => _loading;
+  bool get offlineFallback => _offlineFallback;
+
+  /// Whether API mode is active (baseUrl is set).
+  bool get isApiMode => baseUrl != null;
 
   int get totalPrograms => _programs.length;
   int get totalCourses => _programs.fold(0, (sum, p) => sum + p.courses.length);
@@ -48,10 +54,21 @@ class ProgramService extends ChangeNotifier {
   Future<void> load() async {
     _loading = true;
     _error = null;
+    _offlineFallback = false;
     notifyListeners();
     try {
       if (baseUrl != null) {
-        await _loadFromApi();
+        try {
+          await _loadFromApi();
+        } catch (e) {
+          debugPrint('API load failed ($e), falling back to local JSON');
+          _offlineFallback = true;
+          try {
+            await _loadFromAssets();
+          } catch (e2) {
+            debugPrint('Fallback assets also failed: $e2');
+          }
+        }
       } else {
         await _loadFromAssets();
       }
@@ -448,6 +465,245 @@ class ProgramService extends ChangeNotifier {
     _programs[pi] = program.copyWith(courses: courses);
     _apiDelete('/lessons/$lessonId');
     notifyListeners();
+  }
+
+  // ── Scene CRUD ──
+
+  Scene createScene(String lessonId, {required String name, String title = ''}) {
+    final scene = Scene(
+      id: _nextId(),
+      name: name,
+      title: title,
+    );
+    for (final p in _programs) {
+      for (final c in p.courses) {
+        for (final ph in c.phases) {
+          for (int li = 0; li < ph.lessons.length; li++) {
+            if (ph.lessons[li].id == lessonId) {
+              final lesson = ph.lessons[li];
+              _updateLessonInTree(p.id, c.id, ph.id, lessonId,
+                  lesson.copyWith(scenes: [...lesson.scenes, scene]));
+              _apiPost('/lessons/$lessonId/scenes', scene.toJson());
+              notifyListeners();
+              return scene;
+            }
+          }
+        }
+      }
+    }
+    return scene;
+  }
+
+  void updateScene(String lessonId, String sceneId, {String? name, String? title, String? verifyTip, String? videoUrl}) {
+    for (final p in _programs) {
+      for (final c in p.courses) {
+        for (final ph in c.phases) {
+          for (final l in ph.lessons) {
+            if (l.id == lessonId) {
+              final si = l.scenes.indexWhere((s) => s.id == sceneId);
+              if (si == -1) return;
+              final updated = l.scenes[si].copyWith(
+                name: name,
+                title: title,
+                verifyTip: verifyTip,
+                videoUrl: videoUrl,
+              );
+              final scenes = [...l.scenes];
+              scenes[si] = updated;
+              _updateLessonInTree(p.id, c.id, ph.id, lessonId,
+                  l.copyWith(scenes: scenes));
+              final body = <String, dynamic>{};
+              if (name != null) body['name'] = name;
+              if (title != null) body['title'] = title;
+              if (verifyTip != null) body['verifyTip'] = verifyTip;
+              if (videoUrl != null) body['videoUrl'] = videoUrl;
+              _apiPut('/lessons/$lessonId/scenes/$sceneId', body);
+              notifyListeners();
+              return;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void deleteScene(String lessonId, String sceneId) {
+    for (final p in _programs) {
+      for (final c in p.courses) {
+        for (final ph in c.phases) {
+          for (final l in ph.lessons) {
+            if (l.id == lessonId) {
+              _updateLessonInTree(p.id, c.id, ph.id, lessonId,
+                  l.copyWith(scenes: l.scenes.where((s) => s.id != sceneId).toList()));
+              _apiDelete('/lessons/$lessonId/scenes/$sceneId');
+              notifyListeners();
+              return;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void reorderScenes(String lessonId, int oldIndex, int newIndex) {
+    if (oldIndex == newIndex) return;
+    for (final p in _programs) {
+      for (final c in p.courses) {
+        for (final ph in c.phases) {
+          for (final l in ph.lessons) {
+            if (l.id == lessonId) {
+              final scenes = [...l.scenes];
+              final s = scenes.removeAt(oldIndex);
+              scenes.insert(newIndex, s);
+              _updateLessonInTree(p.id, c.id, ph.id, lessonId,
+                  l.copyWith(scenes: scenes));
+              notifyListeners();
+              return;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // ── Step CRUD within Scene ──
+
+  void createStep(String lessonId, String sceneId, String content) {
+    for (final p in _programs) {
+      for (final c in p.courses) {
+        for (final ph in c.phases) {
+          for (final l in ph.lessons) {
+            if (l.id == lessonId) {
+              final si = l.scenes.indexWhere((s) => s.id == sceneId);
+              if (si == -1) return;
+              final scene = l.scenes[si];
+              final step = Step(
+                order: scene.steps.length,
+                content: content,
+              );
+              final scenes = [...l.scenes];
+              scenes[si] = scene.copyWith(steps: [...scene.steps, step]);
+              _updateLessonInTree(p.id, c.id, ph.id, lessonId,
+                  l.copyWith(scenes: scenes));
+              notifyListeners();
+              return;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void updateStep(String lessonId, String sceneId, int order, {String? content}) {
+    for (final p in _programs) {
+      for (final c in p.courses) {
+        for (final ph in c.phases) {
+          for (final l in ph.lessons) {
+            if (l.id == lessonId) {
+              final si = l.scenes.indexWhere((s) => s.id == sceneId);
+              if (si == -1) return;
+              final scene = l.scenes[si];
+              final steps = [...scene.steps];
+              if (order >= steps.length) return;
+              steps[order] = steps[order].copyWith(content: content);
+              final scenes = [...l.scenes];
+              scenes[si] = scene.copyWith(steps: steps);
+              _updateLessonInTree(p.id, c.id, ph.id, lessonId,
+                  l.copyWith(scenes: scenes));
+              notifyListeners();
+              return;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void deleteStep(String lessonId, String sceneId, int order) {
+    for (final p in _programs) {
+      for (final c in p.courses) {
+        for (final ph in c.phases) {
+          for (final l in ph.lessons) {
+            if (l.id == lessonId) {
+              final si = l.scenes.indexWhere((s) => s.id == sceneId);
+              if (si == -1) return;
+              final scene = l.scenes[si];
+              final steps = [...scene.steps];
+              if (order >= steps.length) return;
+              steps.removeAt(order);
+              // Re-index orders
+              for (int i = 0; i < steps.length; i++) {
+                steps[i] = Step(order: i, content: steps[i].content);
+              }
+              final scenes = [...l.scenes];
+              scenes[si] = scene.copyWith(steps: steps);
+              _updateLessonInTree(p.id, c.id, ph.id, lessonId,
+                  l.copyWith(scenes: scenes));
+              notifyListeners();
+              return;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void reorderSteps(String lessonId, String sceneId, int oldIndex, int newIndex) {
+    if (oldIndex == newIndex) return;
+    for (final p in _programs) {
+      for (final c in p.courses) {
+        for (final ph in c.phases) {
+          for (final l in ph.lessons) {
+            if (l.id == lessonId) {
+              final si = l.scenes.indexWhere((s) => s.id == sceneId);
+              if (si == -1) return;
+              final scene = l.scenes[si];
+              final steps = [...scene.steps];
+              final s = steps.removeAt(oldIndex);
+              steps.insert(newIndex, s);
+              // Re-index orders
+              for (int i = 0; i < steps.length; i++) {
+                steps[i] = Step(order: i, content: steps[i].content);
+              }
+              final scenes = [...l.scenes];
+              scenes[si] = scene.copyWith(steps: steps);
+              _updateLessonInTree(p.id, c.id, ph.id, lessonId,
+                  l.copyWith(scenes: scenes));
+              notifyListeners();
+              return;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /// Helper: update a lesson deep in the tree by walking ids.
+  void _updateLessonInTree(
+    String programId,
+    String courseId,
+    String phaseId,
+    String lessonId,
+    Lesson updatedLesson,
+  ) {
+    final pi = _programs.indexWhere((p) => p.id == programId);
+    if (pi == -1) return;
+    final program = _programs[pi];
+    final ci = program.courses.indexWhere((c) => c.id == courseId);
+    if (ci == -1) return;
+    final course = program.courses[ci];
+    final phi = course.phases.indexWhere((ph) => ph.id == phaseId);
+    if (phi == -1) return;
+    final phase = course.phases[phi];
+    final li = phase.lessons.indexWhere((l) => l.id == lessonId);
+    if (li == -1) return;
+    final lessons = [...phase.lessons];
+    lessons[li] = updatedLesson;
+    final phases = [...course.phases];
+    phases[phi] = phase.copyWith(lessons: lessons);
+    final courses = [...program.courses];
+    courses[ci] = course.copyWith(phases: phases);
+    _programs[pi] = program.copyWith(courses: courses);
   }
 
   // ── Reorder ──

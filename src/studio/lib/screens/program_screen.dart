@@ -7,6 +7,7 @@ import '../models/scene.dart';
 import '../services/program_service.dart';
 import '../widgets/status_chip.dart';
 import 'preview_screen.dart';
+import 'scene_editor_screen.dart';
 
 enum _NodeType { program, course, phase, lesson }
 
@@ -673,6 +674,25 @@ class _ProgramScreenState extends State<ProgramScreen> {
               node.ids[2],
               l.id,
             ]),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit_note, size: 18),
+            tooltip: '编辑场景',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SceneEditorScreen(
+                    lesson: l,
+                    programId: node.ids[0],
+                    courseId: node.ids[1],
+                    phaseId: node.ids[2],
+                  ),
+                ),
+              );
+            },
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),

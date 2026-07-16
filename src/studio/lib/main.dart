@@ -8,10 +8,15 @@ import 'screens/program_screen.dart';
 import 'screens/class_screen.dart';
 import 'widgets/sidebar.dart';
 
+/// 默认 Provider API 地址。通过环境变量 `API_BASE_URL` 覆盖。
+/// 设为空字符串（`API_BASE_URL=`）强制使用本地 JSON 模式。
+const _defaultApiBaseUrl = 'http://localhost:8080';
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  const apiBaseUrl = String.fromEnvironment('API_BASE_URL');
-  final baseUrl = apiBaseUrl.isNotEmpty ? apiBaseUrl : null;
+  const envUrl = String.fromEnvironment('API_BASE_URL');
+  // 未设置时默认走 API；显式设为空时走本地 JSON
+  final baseUrl = envUrl.isNotEmpty ? envUrl : (envUrl == '' ? null : _defaultApiBaseUrl);
   runApp(
     MultiProvider(
       providers: [
@@ -73,8 +78,31 @@ class _MainShellState extends State<MainShell> {
         home: Scaffold(body: Center(child: CircularProgressIndicator())),
       );
     }
+    final fallback = programService.offlineFallback ||
+        classService.offlineFallback ||
+        assessmentService.offlineFallback;
     return Scaffold(
-      appBar: AppBar(title: Text(_titles[_currentIndex])),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            Text(_titles[_currentIndex]),
+            if (fallback) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text(
+                  '离线模式',
+                  style: TextStyle(fontSize: 11, color: Colors.orange),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
       body: Row(
         children: [
           Sidebar(
