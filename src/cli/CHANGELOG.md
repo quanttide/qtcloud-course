@@ -1,11 +1,27 @@
 # CHANGELOG
 
+## [0.1.0] - 2026-07-17
+
+### Added
+
+- `course blueprint` / `design` / `preview` — 课程蓝图（Program → Course → Phase → Lesson）
+- `lesson blueprint` / `design` / `preview` — 课时蓝图（Lesson → Scene，两遍 LLM）
+- `scene blueprint` / `design` / `preview` — 场景蓝图（Scene → Steps）
+- 从 Markdown 原始资料生成结构化 JSON 蓝图
+- `design` 子命令：基于已有 JSON + 人类指示迭代修改
+- `preview` 子命令：JSON → HTML 渲染，支持 `--template` 自定义模板
+- 两遍 LLM 调用：先切场景（提取），再编排（排序 + 挂异常分支）
+- Program → Course → Phase → Lesson → Scene → Step 六级数据层级
+- 场景类型为操作步骤，异常通过嵌套 `exception` 字段表达
+- JSON 校验：`validate_course_json` / `validate_lesson_json` / `validate_scene_json`
+- `qtcloud-devops` 集成：`release publish` 发布工作流
+- CI：build-cli（三平台构建）+ publish-cli（crates.io 发布）
+- 配置：`LLM_API_KEY` / `LLM_MODEL` / `LLM_BASE_URL` 环境变量
+- 40 个测试，45.68% 代码覆盖率
 
 ## [0.1.0-beta.3] - 2026-07-17
 
-Fixed: 补充Cargo.toml中缺失的描述、许可证和仓库地址元数据。  
-Changed: 添加单元测试和CLI集成测试，并将代码测试覆盖率从37.73%提升至45.68%。
-## [0.1.0-beta.2] - 2026-07-17
+### Fixed
 
 ### Fixed
 - lesson preview: 所有场景均作为主场景渲染，exception 嵌套在父场景下
