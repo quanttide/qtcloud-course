@@ -52,6 +52,9 @@ enum CourseAction {
         from: PathBuf,
         #[arg(long)]
         to: PathBuf,
+        /// 自定义 HTML 模板文件（含 {{TITLE}} {{DESCRIPTION}} {{CONTENT}} 占位符）
+        #[arg(long)]
+        template: Option<PathBuf>,
     },
 }
 
@@ -79,6 +82,9 @@ enum LessonAction {
         from: PathBuf,
         #[arg(long)]
         to: PathBuf,
+        /// 自定义 HTML 模板文件（含 {{TITLE}} {{DESCRIPTION}} {{CONTENT}} 占位符）
+        #[arg(long)]
+        template: Option<PathBuf>,
     },
 }
 
@@ -106,6 +112,9 @@ enum SceneAction {
         from: PathBuf,
         #[arg(long)]
         to: PathBuf,
+        /// 自定义 HTML 模板文件（含 {{TITLE}} {{DESCRIPTION}} {{CONTENT}} 占位符）
+        #[arg(long)]
+        template: Option<PathBuf>,
     },
 }
 
@@ -119,8 +128,8 @@ fn main() {
             CourseAction::Design { file, instruction, to } => {
                 qtcloud_course_cli::course::run_design(&file, &instruction, &to, None);
             }
-            CourseAction::Preview { from, to } => {
-                qtcloud_course_cli::preview::run_course(&from, &to);
+            CourseAction::Preview { from, to, template } => {
+                qtcloud_course_cli::preview::run_course(&from, &to, template.as_deref());
             }
         },
         Commands::Lesson { action } => match action {
@@ -130,8 +139,8 @@ fn main() {
             LessonAction::Design { file, instruction, to } => {
                 qtcloud_course_cli::lesson::run_design(&file, &instruction, &to, None);
             }
-            LessonAction::Preview { from, to } => {
-                qtcloud_course_cli::preview::run_lesson(&from, &to);
+            LessonAction::Preview { from, to, template } => {
+                qtcloud_course_cli::preview::run_lesson(&from, &to, template.as_deref());
             }
         },
         Commands::Scene { action } => match action {
@@ -141,8 +150,8 @@ fn main() {
             SceneAction::Design { file, instruction, to } => {
                 qtcloud_course_cli::scene::run_design(&file, &instruction, &to, None);
             }
-            SceneAction::Preview { from, to } => {
-                qtcloud_course_cli::preview::run_scene(&from, &to);
+            SceneAction::Preview { from, to, template } => {
+                qtcloud_course_cli::preview::run_scene(&from, &to, template.as_deref());
             }
         },
     }
