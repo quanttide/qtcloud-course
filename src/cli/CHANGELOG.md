@@ -1,6 +1,15 @@
 # CHANGELOG
 
-## [0.1.0-alpha.4] - 2026-07-16
+## [0.1.0-alpha.5] - 2026-07-16
+
+### Changed
+- 命令简化为 `course blueprint --from <md> --to <json>`
+- 移除 topic 位置参数，主题从文件名推断
+- 移除 `--format` 标记，始终输出结构化 JSON
+- 移除 `--output-path`，改为 `--to` 必选参数
+- 移除 `--input-path`，改为 `--from` 必选参数
+- 移除 validate/import/export 子命令
+- 提示词优化：区分
 
 ### Changed
 - `blueprint` 子命令重命名为 `course`，对应模块和文件同步改名
