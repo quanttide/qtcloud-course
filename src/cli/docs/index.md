@@ -76,6 +76,21 @@ qtcloud-course scene blueprint --from <资料.md> --to <场景.json>
 qtcloud-course scene design --file <场景.json> --instruction "增加一个验证步骤" --to <输出.json>
 ```
 
+## 预览命令
+
+将 JSON 蓝图渲染为 HTML 页面，不调用 LLM。
+
+```
+# 课程蓝图 → HTML（层级结构）
+qtcloud-course course preview --from <蓝图.json> --to <预览.html>
+
+# 课时蓝图 → HTML（DAG 图）
+qtcloud-course lesson preview --from <课时.json> --to <预览.html>
+
+# 场景蓝图 → HTML（步骤卡片）
+qtcloud-course scene preview --from <场景.json> --to <预览.html>
+```
+
 ## 配置
 
 | 环境变量 | 默认值 | 用途 |

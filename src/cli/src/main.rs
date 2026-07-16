@@ -30,19 +30,26 @@ enum Commands {
 
 #[derive(Subcommand)]
 enum CourseAction {
-    /// 从 Markdown 原始资料生成课程蓝图（Program → Course → Phase → Lesson）
+    /// 从 Markdown 原始资料生成课程蓝图
     Blueprint {
         #[arg(long)]
         from: PathBuf,
         #[arg(long)]
         to: PathBuf,
     },
-    /// 基于已有课程蓝图 + 人类指示迭代设计
+    /// 基于已有课程蓝图迭代设计
     Design {
         #[arg(long)]
         file: PathBuf,
         #[arg(long)]
         instruction: String,
+        #[arg(long)]
+        to: PathBuf,
+    },
+    /// 将课程蓝图 JSON 渲染为 HTML 预览
+    Preview {
+        #[arg(long)]
+        from: PathBuf,
         #[arg(long)]
         to: PathBuf,
     },
@@ -50,19 +57,26 @@ enum CourseAction {
 
 #[derive(Subcommand)]
 enum LessonAction {
-    /// 从 Markdown 原始资料生成课时蓝图（Lesson → Scene，两遍 LLM）
+    /// 从 Markdown 原始资料生成课时蓝图
     Blueprint {
         #[arg(long)]
         from: PathBuf,
         #[arg(long)]
         to: PathBuf,
     },
-    /// 基于已有课时蓝图 + 人类指示迭代设计
+    /// 基于已有课时蓝图迭代设计
     Design {
         #[arg(long)]
         file: PathBuf,
         #[arg(long)]
         instruction: String,
+        #[arg(long)]
+        to: PathBuf,
+    },
+    /// 将课时蓝图 JSON 渲染为 DAG HTML 预览
+    Preview {
+        #[arg(long)]
+        from: PathBuf,
         #[arg(long)]
         to: PathBuf,
     },
@@ -70,19 +84,26 @@ enum LessonAction {
 
 #[derive(Subcommand)]
 enum SceneAction {
-    /// 从 Markdown 原始资料生成场景蓝图（Scene → Steps，顺序无分支）
+    /// 从 Markdown 原始资料生成场景蓝图
     Blueprint {
         #[arg(long)]
         from: PathBuf,
         #[arg(long)]
         to: PathBuf,
     },
-    /// 基于已有场景蓝图 + 人类指示迭代设计
+    /// 基于已有场景蓝图迭代设计
     Design {
         #[arg(long)]
         file: PathBuf,
         #[arg(long)]
         instruction: String,
+        #[arg(long)]
+        to: PathBuf,
+    },
+    /// 将场景蓝图 JSON 渲染为 HTML 预览
+    Preview {
+        #[arg(long)]
+        from: PathBuf,
         #[arg(long)]
         to: PathBuf,
     },
@@ -98,6 +119,9 @@ fn main() {
             CourseAction::Design { file, instruction, to } => {
                 qtcloud_course_cli::course::run_design(&file, &instruction, &to, None);
             }
+            CourseAction::Preview { from, to } => {
+                qtcloud_course_cli::preview::run_course(&from, &to);
+            }
         },
         Commands::Lesson { action } => match action {
             LessonAction::Blueprint { from, to } => {
@@ -106,6 +130,9 @@ fn main() {
             LessonAction::Design { file, instruction, to } => {
                 qtcloud_course_cli::lesson::run_design(&file, &instruction, &to, None);
             }
+            LessonAction::Preview { from, to } => {
+                qtcloud_course_cli::preview::run_lesson(&from, &to);
+            }
         },
         Commands::Scene { action } => match action {
             SceneAction::Blueprint { from, to } => {
@@ -113,6 +140,9 @@ fn main() {
             }
             SceneAction::Design { file, instruction, to } => {
                 qtcloud_course_cli::scene::run_design(&file, &instruction, &to, None);
+            }
+            SceneAction::Preview { from, to } => {
+                qtcloud_course_cli::preview::run_scene(&from, &to);
             }
         },
     }
