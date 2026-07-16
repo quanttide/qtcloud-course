@@ -3,10 +3,10 @@ use std::path::Path;
 
 use quanttide_agent::{LLM, Message};
 
-/// 从 Markdown 源文件生成课程蓝图 JSON（Program → Course → Phase → Lesson）。
+/// 从 Markdown 源文件生成课时蓝图 JSON（单个 Lesson 的 Scene 级设计）。
 ///
 /// 主题从文件名推断，原始资料全文作为上下文。
-/// 输出不含 Scene 层级，Scene 级设计由 lesson blueprint 负责。
+/// 输出包含完整的 Lecture/Demo/Exercise/Discussion/Quiz/Review 场景编排。
 pub fn run(from: &Path, to: &Path, llm: Option<&LLM>) {
     let material = fs::read_to_string(from).unwrap_or_else(|e| {
         eprintln!("错误：读取 {} 失败 - {}", from.display(), e);
@@ -19,40 +19,28 @@ pub fn run(from: &Path, to: &Path, llm: Option<&LLM>) {
         .unwrap_or("untitled");
 
     let prompt = format!(
-        "你是一位课程设计专家。请以「{}」为主题设计完整的课程蓝图（Program → Course → Phase → Lesson 四级结构）。\n\n\
-         教学定位：主题是一个知识领域或实践方法，不是某个具体工具。\n\
-         原始资料中提供的是真实生产背景，作为课程中的案例素材和练习载体，\n\
-         但绝不把工具操作本身作为教学目标。\n\n\
+        "你是一位课程设计专家。请为课时「{}」设计详细的场景蓝图（Lesson → Scene 二级结构）。\n\n\
          要求：\n\
-         1. 找到初学者在学习 {} 时最常见的困惑，从设计源头解释\n\
-         2. 按 Program → Course → Phase → Lesson 四级结构组织（不含 Scene）\n\
-         3. 每节课（Lesson）给出明确的教学目标（description）和预估时长\n\
-         4. 使用原始资料中的真实案例作为演示和练习素材，但教学目标始终围绕 {} 的概念和实践\n\n\
+         1. 设计完整的场景序列，每个场景需注明类型和时长\n\
+         2. 场景类型包括：lecture（讲解）/ demo（演示）/ exercise（练习）/ discussion（讨论）/ quiz（测验）/ review（回顾）\n\
+         3. 场景编排要有节奏感：从引入 → 讲解 → 演示 → 练习 → 总结\n\
+         4. 每个场景描述具体教学内容和方法\n\
+         5. 使用原始资料中的真实案例作为演示和练习素材\n\n\
          请严格按照以下 JSON 格式输出，不要包含其他内容：\n\
          {{\n\
-             \"title\": \"课程项目名称\",\n\
-             \"description\": \"课程项目简介\",\n\
-             \"courses\": [\n\
+             \"title\": \"课时标题\",\n\
+             \"description\": \"教学目标\",\n\
+             \"duration_minutes\": 45,\n\
+             \"scenes\": [\n\
                  {{\n\
-                     \"title\": \"课程名称\",\n\
-                     \"description\": \"课程描述\",\n\
-                     \"phases\": [\n\
-                         {{\n\
-                             \"title\": \"阶段名称\",\n\
-                             \"description\": \"阶段描述\",\n\
-                             \"lessons\": [\n\
-                                 {{\n\
-                                     \"title\": \"课时标题\",\n\
-                                     \"description\": \"教学目标\",\n\
-                                     \"duration_minutes\": 45\n\
-                                 }}\n\
-                             ]\n\
-                         }}\n\
-                     ]\n\
+                     \"title\": \"场景标题\",\n\
+                     \"type\": \"lecture\",\n\
+                     \"description\": \"场景描述\",\n\
+                     \"duration_minutes\": 15\n\
                  }}\n\
              ]\n\
          }}",
-        topic, topic, topic
+        topic
     );
 
     let full_prompt = format!("{}\n\n## 原始资料\n\n{}", prompt, material);
@@ -80,7 +68,7 @@ pub fn run(from: &Path, to: &Path, llm: Option<&LLM>) {
         std::process::exit(1);
     });
 
-    let validation = crate::types::validate_course_json(&json);
+    let validation = crate::types::validate_lesson_json(&json);
     if !validation.valid {
         eprintln!("警告：生成的 JSON 不完整");
         for err in &validation.errors {
@@ -124,7 +112,7 @@ mod tests {
         let response = serde_json::json!({
             "choices": [{
                 "message": {
-                    "content": r#"{"title": "Test", "description": "Desc", "courses": []}"#
+                    "content": r#"{"title": "Test", "description": "Desc", "scenes": []}"#
                 },
                 "finish_reason": "stop"
             }],
@@ -141,7 +129,7 @@ mod tests {
         let llm = LLM::with_client("mock", "http://mock", "key", Box::new(client));
 
         let mut input = NamedTempFile::new().unwrap();
-        writeln!(input, "# DevOps 实践").unwrap();
+        writeln!(input, "# CI/CD 入门").unwrap();
         let output = NamedTempFile::new().unwrap();
 
         let _result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
@@ -153,12 +141,12 @@ mod tests {
     }
 
     #[test]
-    fn test_output_no_scenes() {
+    fn test_output_has_scenes() {
         let response = serde_json::json!({
             "choices": [{
                 "message": {
                     "content": r#"```json
-{"title": "DevOps", "description": "DevOps课程", "courses": [{"title": "基础", "description": "基础部分", "phases": [{"title": "入门", "description": "入门阶段", "lessons": [{"title": "第一课", "description": "学会基础", "duration_minutes": 45}]}]}]}
+{"title": "CI/CD 入门", "description": "学会基础CI流程", "duration_minutes": 45, "scenes": [{"title": "引入", "type": "lecture", "description": "引入CI概念", "duration_minutes": 10}]}
 ```"#
                 },
                 "finish_reason": "stop"
@@ -176,7 +164,7 @@ mod tests {
         let llm = LLM::with_client("mock", "http://mock", "key", Box::new(client));
 
         let mut input = NamedTempFile::new().unwrap();
-        writeln!(input, "# DevOps 实践").unwrap();
+        writeln!(input, "# CI/CD 入门").unwrap();
         let output = NamedTempFile::new().unwrap();
 
         let _result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {

@@ -1,22 +1,22 @@
 use serde::{Deserialize, Serialize};
 
-/// 课程数据层级：Program → Course → Phase → Lesson → Scene
-
+/// 课程蓝图（Program → Course → Phase → Lesson，不含 Scene）
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Program {
+pub struct CourseBlueprint {
     pub title: String,
     pub description: String,
     pub courses: Vec<Course>,
 }
 
+/// 课程（顶层下的一个子课程）
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Course {
-    pub id: Option<String>,
     pub title: String,
     pub description: String,
     pub phases: Vec<Phase>,
 }
 
+/// 阶段
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Phase {
     pub title: String,
@@ -24,14 +24,24 @@ pub struct Phase {
     pub lessons: Vec<Lesson>,
 }
 
+/// 课时（课程蓝图层级只含标题/描述/时长，不含 Scene）
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Lesson {
+    pub title: String,
+    pub description: String,
+    pub duration_minutes: Option<u32>,
+}
+
+/// 课时蓝图（单个 Lesson 的 Scene 级详细设计）
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct LessonBlueprint {
     pub title: String,
     pub description: String,
     pub duration_minutes: Option<u32>,
     pub scenes: Vec<Scene>,
 }
 
+/// 场景
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Scene {
     pub title: String,
@@ -59,11 +69,10 @@ pub struct ValidationResult {
     pub errors: Vec<String>,
 }
 
-/// 校验课程 JSON 数据结构完整性
+/// 校验课程蓝图 JSON 数据结构完整性（Program → Course → Phase → Lesson）
 pub fn validate_course_json(json: &serde_json::Value) -> ValidationResult {
     let mut errors = Vec::new();
 
-    // 检查顶层必需字段
     if !json.get("title").and_then(|v| v.as_str()).is_some_and(|s| !s.is_empty()) {
         errors.push("顶层缺少非空 'title' 字段".to_string());
     }
@@ -71,7 +80,6 @@ pub fn validate_course_json(json: &serde_json::Value) -> ValidationResult {
         errors.push("顶层缺少非空 'description' 字段".to_string());
     }
 
-    // 检查 courses 数组
     let courses = match json.get("courses") {
         Some(v) if v.is_array() => v.as_array().unwrap(),
         _ => {
@@ -120,6 +128,40 @@ pub fn validate_course_json(json: &serde_json::Value) -> ValidationResult {
                     errors.push(format!("courses[{}].phases[{}].lessons[{}] 缺少非空 'description' 字段", i, j, k));
                 }
             }
+        }
+    }
+
+    ValidationResult {
+        valid: errors.is_empty(),
+        errors,
+    }
+}
+
+/// 校验课时蓝图 JSON 数据结构完整性（Lesson + Scenes）
+pub fn validate_lesson_json(json: &serde_json::Value) -> ValidationResult {
+    let mut errors = Vec::new();
+
+    if !json.get("title").and_then(|v| v.as_str()).is_some_and(|s| !s.is_empty()) {
+        errors.push("缺少非空 'title' 字段".to_string());
+    }
+    if !json.get("description").and_then(|v| v.as_str()).is_some_and(|s| !s.is_empty()) {
+        errors.push("缺少非空 'description' 字段".to_string());
+    }
+
+    let scenes = match json.get("scenes") {
+        Some(v) if v.is_array() => v.as_array().unwrap(),
+        _ => {
+            errors.push("缺少 'scenes' 数组".to_string());
+            return ValidationResult { valid: false, errors };
+        }
+    };
+
+    for (i, scene) in scenes.iter().enumerate() {
+        if !scene.get("title").and_then(|v| v.as_str()).is_some_and(|s| !s.is_empty()) {
+            errors.push(format!("scenes[{}] 缺少非空 'title' 字段", i));
+        }
+        if scene.get("type").and_then(|v| v.as_str()).is_none() {
+            errors.push(format!("scenes[{}] 缺少 'type' 字段", i));
         }
     }
 
