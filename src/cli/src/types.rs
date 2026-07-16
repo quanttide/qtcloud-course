@@ -43,20 +43,23 @@ pub struct LessonBlueprint {
 
 /// 场景
 ///
-/// 每个场景是一个操作步骤。`exception: true` 标记异常/失败分支，
-/// 默认为正常步骤（不输出 exception 字段）。
-/// 场景序列按操作流程排序，正常步骤在前，异常分支紧随其后。
+/// 每个场景是一个操作步骤。异常分支通过嵌套的 `exception` 字段表达。
+/// 场景序列按操作流程排序。
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Scene {
     pub title: String,
     pub description: String,
     pub duration_minutes: Option<u32>,
-    #[serde(default, skip_serializing_if = "is_false")]
-    pub exception: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exception: Option<ExceptionScene>,
 }
 
-fn is_false(b: &bool) -> bool {
-    !b
+/// 异常场景（嵌套在父场景中）
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ExceptionScene {
+    pub title: String,
+    pub description: String,
+    pub duration_minutes: Option<u32>,
 }
 
 /// Schema 校验结果
@@ -158,8 +161,12 @@ pub fn validate_lesson_json(json: &serde_json::Value) -> ValidationResult {
             errors.push(format!("scenes[{}] 缺少非空 'title' 字段", i));
         }
         if let Some(exception) = scene.get("exception") {
-            if !exception.is_boolean() {
-                errors.push(format!("scenes[{}] 'exception' 必须为布尔值", i));
+            if !exception.is_object() {
+                errors.push(format!("scenes[{}] 'exception' 必须为对象（含 title/description/duration_minutes）", i));
+            } else {
+                if !exception.get("title").and_then(|v| v.as_str()).is_some_and(|s| !s.is_empty()) {
+                    errors.push(format!("scenes[{}].exception 缺少非空 'title' 字段", i));
+                }
             }
         }
     }
