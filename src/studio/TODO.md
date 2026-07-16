@@ -1,28 +1,38 @@
-# TODO — v0.2 考核
+# TODO — v0.1 课程制作
 
-## P0 — 考核导航独立
+> 补齐 Scene 编辑器，不再依赖手写 JSON，打通从蓝图到互动课时的端到端链路。
 
-- [ ] 侧边栏新增「考核管理」tab，与「班级管理」平级
-- [ ] `AssessmentManagementScreen`：考核全局视图（全部考核列表，按班级分组）
-- [ ] `ClassScreen` → `ClassManagementScreen` 重命名
+## P0 — Scene 编辑器
 
-## P1 — 考核工作流
+- [ ] Scene 编辑器页面：创建/编辑场景（场景名、描述、课时归属）
+- [ ] 步骤编辑器：添加/编辑/删除/排序步骤（文本、选项、分支条件）
+- [ ] 分支选项 UI：步骤内分支选择、跳转逻辑配置
+- [ ] 编辑器与 Provider API 打通（CRUD Scene/Step）
 
-- [ ] 学生提交（提交状态筛选、未提交标记、模拟提交、提交内容字段）
-- [ ] 批量评分（全班集中评分面板、连续评分模式、评分状态标记）
-- [ ] 成绩概览（统计卡片、分布图、及格率、CSV 导出）
+## P1 — 数据管线
 
-## P2 — 考试模式
+- [ ] 一键导入 CLI blueprint 输出的结构化 JSON 为课程结构（Program → Course → Phase → Lesson）
+- [ ] 导入预览：确认/回滚导入结果
+- [ ] JSON schema 校验 + 错误提示
 
-- [ ] 题型支持（Answer 模型：选择题/填空题/简答题）
-- [ ] 自动评分（预设答案匹配）
-- [ ] 考试计时（起止时间、倒计时、状态流转）
+## P2 — API 模式默认
 
-## P3 — 技术债
+- [ ] 启动模式改为默认走 Provider API，不再依赖本地 JSON
+- [ ] 本地 JSON 降级为离线回退方案
+- [ ] 环境配置统一（`api_base_url`、`data_dir`）
 
+## P3 — 多平台与 CI
+
+- [ ] iOS 构建验证（`flutter build ios`）
+- [ ] Android 构建验证（`flutter build apk`）
 - [ ] CI：push 自动跑 `flutter test` + `dart analyze`
+- [ ] CI：覆盖率门禁
+
+## P4 — 技术债
+
 - [ ] 三 Service `_apiPost/Put/Delete` 提取为 mixin
 - [ ] `analysis_options.yaml` 开启 `prefer_const_constructors` 等 lint
+- [ ] GUI 测试并行化：16 个 pytest 错误修复（无 Flutter 进程时跳过标记）
 
 ---
 
@@ -30,3 +40,5 @@
 
 - [ ] `flutter test` 全部通过
 - [ ] `dart analyze` 零报错
+- [ ] Scene 编辑器：创建 → 编辑 → 保存 → 回读链路完整
+- [ ] 数据管线：CLI 输出 JSON → Studio 导入 → Provider 持久化
