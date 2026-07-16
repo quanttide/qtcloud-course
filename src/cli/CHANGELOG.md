@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [0.1.0-beta.1] - 2026-07-16
+## [0.1.0-alpha.4] - 2026-07-16
 
 ### Changed
 - `blueprint` 子命令重命名为 `course`，对应模块和文件同步改名
