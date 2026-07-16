@@ -239,3 +239,88 @@ fn truncate(s: &str, max: usize) -> String {
         format!("{}...", &s[..end])
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_esc_escapes_html() {
+        assert_eq!(esc("<script>"), "&lt;script&gt;");
+        assert_eq!(esc("a&b"), "a&amp;b");
+        assert_eq!(esc("hello"), "hello");
+    }
+
+    #[test]
+    fn test_truncate_ascii() {
+        assert_eq!(truncate("hello world", 5), "hello...");
+        assert_eq!(truncate("hi", 5), "hi");
+    }
+
+    #[test]
+    fn test_truncate_utf8_boundary() {
+        let s = "你好世界";
+        // 每个中文字符 3 bytes, 所以 truncate at 4 应该停在 3
+        let r = truncate(s, 4);
+        assert_eq!(r, "你...");
+    }
+
+    #[test]
+    fn test_render_scene_content_has_title() {
+        let data = serde_json::json!({
+            "title": "测试场景",
+            "description": "描述",
+            "steps": [{"title": "步骤1", "description": "做某事"}]
+        });
+        let html = render_scene_content(&data);
+        assert!(html.contains("测试场景"));
+        assert!(html.contains("步骤1"));
+    }
+
+    #[test]
+    fn test_render_scene_empty_steps() {
+        let data = serde_json::json!({
+            "title": "空场景", "description": "无步骤"
+        });
+        let html = render_scene_content(&data);
+        assert!(html.contains("空场景"));
+    }
+
+    #[test]
+    fn test_render_lesson_content_has_scenes() {
+        let data = serde_json::json!({
+            "title": "测试课时",
+            "description": "描述",
+            "scenes": [
+                {"title": "场景A", "description": "第一个"},
+                {"title": "场景B", "description": "第二个", "exception": {"title": "异常B", "description": "处理"}}
+            ]
+        });
+        let html = render_lesson_content(&data);
+        assert!(html.contains("场景A"));
+        assert!(html.contains("场景B"));
+        assert!(html.contains("异常B"));
+        assert!(html.contains("场景A"));
+        assert!(html.contains("场景B"));
+        assert!(html.matches("场景 ").count() >= 2, "应有至少2个场景卡片"); // 2 个主场景
+    }
+
+    #[test]
+    fn test_render_course_content_has_courses() {
+        let data = serde_json::json!({
+            "title": "课程项目",
+            "description": "描述",
+            "courses": [
+                {"title": "课程1", "description": "第一个", "phases": [
+                    {"title": "阶段1", "description": "第一阶段", "lessons": [
+                        {"title": "课时1", "description": "第一课"}
+                    ]}
+                ]}
+            ]
+        });
+        let html = render_course_content(&data);
+        assert!(html.contains("课程1"));
+        assert!(html.contains("阶段1"));
+        assert!(html.contains("课时1"));
+    }
+}

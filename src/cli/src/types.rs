@@ -221,3 +221,74 @@ pub fn validate_scene_json(json: &serde_json::Value) -> ValidationResult {
         errors,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_validate_lesson_valid() {
+        let json = serde_json::json!({
+            "title": "版本发布",
+            "description": "掌握手动发布流程",
+            "scenes": [
+                {"title": "更新版本号", "description": "修改配置文件"},
+                {"title": "更新CHANGELOG", "description": "添加记录", "exception": {"title": "缺条目", "description": "补写"}}
+            ]
+        });
+        let r = validate_lesson_json(&json);
+        assert!(r.valid, "合法课时蓝图应通过: {:?}", r.errors);
+    }
+
+    #[test]
+    fn test_validate_lesson_missing_title() {
+        let json = serde_json::json!({"description": "test", "scenes": []});
+        let r = validate_lesson_json(&json);
+        assert!(!r.valid);
+        assert!(r.errors.iter().any(|e| e.contains("title")));
+    }
+
+    #[test]
+    fn test_validate_lesson_exception_must_be_object() {
+        let json = serde_json::json!({
+            "title": "t", "description": "d",
+            "scenes": [{"title": "s", "description": "d", "exception": true}]
+        });
+        let r = validate_lesson_json(&json);
+        assert!(!r.valid);
+        assert!(r.errors[0].contains("exception"));
+    }
+
+    #[test]
+    fn test_validate_scene_valid() {
+        let json = serde_json::json!({
+            "title": "更新版本号",
+            "description": "修改版本字段",
+            "steps": [
+                {"title": "找到配置文件", "description": "打开 pyproject.toml"},
+                {"title": "递增版本", "description": "按 SemVer 规则"}
+            ]
+        });
+        let r = validate_scene_json(&json);
+        assert!(r.valid, "合法场景蓝图应通过: {:?}", r.errors);
+    }
+
+    #[test]
+    fn test_validate_scene_missing_steps() {
+        let json = serde_json::json!({"title": "t", "description": "d"});
+        let r = validate_scene_json(&json);
+        assert!(!r.valid);
+        assert!(r.errors.iter().any(|e| e.contains("steps")));
+    }
+
+    #[test]
+    fn test_validate_scene_step_missing_title() {
+        let json = serde_json::json!({
+            "title": "t", "description": "d",
+            "steps": [{"description": "no title"}]
+        });
+        let r = validate_scene_json(&json);
+        assert!(!r.valid);
+        assert!(r.errors.iter().any(|e| e.contains("title")));
+    }
+}
