@@ -65,8 +65,7 @@ flutter:
     - assets/classes.json
     - assets/lesson1.json
     - assets/assessments.json
-        - assets/submissions.json
-        - assets/answers.json
+    - assets/submissions.json
     - assets/students.json
     - assets/teachers.json
   #
