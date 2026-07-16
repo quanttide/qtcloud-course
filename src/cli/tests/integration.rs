@@ -171,12 +171,10 @@ fn test_validate_deeply_nested_structure() {
                 "lessons": (0..2).map(|k| serde_json::json!({
                     "title": format!("第 {} 课", k),
                     "description": format!("课程描述"),
-                    "duration_minutes": 45,
                     "scenes": (0..2).map(|l| serde_json::json!({
                         "title": format!("场景 {}", l),
                         "type": if l == 0 { "lecture" } else { "exercise" },
                         "description": "场景描述",
-                        "duration_minutes": 15
                     })).collect::<Vec<_>>()
                 })).collect::<Vec<_>>()
             })).collect::<Vec<_>>()

@@ -29,7 +29,6 @@ pub struct Phase {
 pub struct Lesson {
     pub title: String,
     pub description: String,
-    pub duration_minutes: Option<u32>,
 }
 
 /// 课时蓝图（单个 Lesson 的 Scene 级详细设计）
@@ -37,7 +36,6 @@ pub struct Lesson {
 pub struct LessonBlueprint {
     pub title: String,
     pub description: String,
-    pub duration_minutes: Option<u32>,
     pub scenes: Vec<Scene>,
 }
 
@@ -50,7 +48,6 @@ pub struct LessonBlueprint {
 pub struct Scene {
     pub title: String,
     pub description: String,
-    pub duration_minutes: Option<u32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub exception: Option<ExceptionScene>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -62,7 +59,6 @@ pub struct Scene {
 pub struct ExceptionScene {
     pub title: String,
     pub description: String,
-    pub duration_minutes: Option<u32>,
 }
 
 /// 场景蓝图（单个 Scene 的 Step 级详细设计）
@@ -70,7 +66,6 @@ pub struct ExceptionScene {
 pub struct SceneBlueprint {
     pub title: String,
     pub description: String,
-    pub duration_minutes: Option<u32>,
     pub steps: Vec<Step>,
 }
 
@@ -79,7 +74,6 @@ pub struct SceneBlueprint {
 pub struct Step {
     pub title: String,
     pub description: String,
-    pub duration_minutes: Option<u32>,
 }
 
 /// Schema 校验结果
@@ -182,7 +176,7 @@ pub fn validate_lesson_json(json: &serde_json::Value) -> ValidationResult {
         }
         if let Some(exception) = scene.get("exception") {
             if !exception.is_object() {
-                errors.push(format!("scenes[{}] 'exception' 必须为对象（含 title/description/duration_minutes）", i));
+                errors.push(format!("scenes[{}] 'exception' 必须为对象（含 title/description）", i));
             } else {
                 if !exception.get("title").and_then(|v| v.as_str()).is_some_and(|s| !s.is_empty()) {
                     errors.push(format!("scenes[{}].exception 缺少非空 'title' 字段", i));
