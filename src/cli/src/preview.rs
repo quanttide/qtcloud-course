@@ -323,4 +323,48 @@ mod tests {
         assert!(html.contains("阶段1"));
         assert!(html.contains("课时1"));
     }
+
+    #[test]
+    fn test_wrap_html_builtin() {
+        let html = wrap_html("标题", "描述", "<p>内容</p>", None);
+        assert!(html.contains("标题"));
+        assert!(html.contains("描述"));
+        assert!(html.contains("<p>内容</p>"));
+        assert!(html.contains("</html>"));
+    }
+
+    #[test]
+    fn test_wrap_html_custom_template() {
+        let dir = tempfile::tempdir().unwrap();
+        let tpl_path = dir.path().join("template.html");
+        std::fs::write(&tpl_path, "<html><title>{{TITLE}}</title><body>{{CONTENT}}</body></html>").unwrap();
+        let html = wrap_html("测试", "", "hello", Some(&tpl_path));
+        assert!(html.contains("<title>测试</title>"));
+        assert!(html.contains("hello"));
+        assert!(!html.contains("内置深色主题"));
+    }
+
+    #[test]
+    fn test_run_scene_with_temp_files() {
+        let dir = tempfile::tempdir().unwrap();
+        let input = dir.path().join("input.json");
+        let output = dir.path().join("output.html");
+        std::fs::write(&input, r#"{"title":"测试","description":"d","steps":[{"title":"s","description":"d"}]}"#).unwrap();
+        run_scene(&input, &output, None);
+        let html = std::fs::read_to_string(&output).unwrap();
+        assert!(html.contains("测试"));
+        assert!(html.contains("s"));
+    }
+
+    #[test]
+    fn test_run_lesson_with_temp_files() {
+        let dir = tempfile::tempdir().unwrap();
+        let input = dir.path().join("input.json");
+        let output = dir.path().join("output.html");
+        std::fs::write(&input, r#"{"title":"课时","description":"d","scenes":[{"title":"场景1","description":"d"}]}"#).unwrap();
+        run_lesson(&input, &output, None);
+        let html = std::fs::read_to_string(&output).unwrap();
+        assert!(html.contains("课时"));
+        assert!(html.contains("场景1"));
+    }
 }

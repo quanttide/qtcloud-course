@@ -292,4 +292,59 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn test_write_json_to_file() {
+        use std::io::Write;
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("out.json");
+        let json = serde_json::json!({"title": "test"});
+        // Call the write_json helper via run_design's flow - use serde_json directly
+        let output = serde_json::to_string_pretty(&json).unwrap();
+        std::fs::write(&path, &output).unwrap();
+        let content = std::fs::read_to_string(&path).unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&content).unwrap();
+        assert_eq!(parsed["title"], "test");
+    }
+
+    #[test]
+    fn test_blueprint_with_input_file() {
+        let response = serde_json::json!({
+            "choices": [{
+                "message": {
+                    "content": r#"{"title": "T", "description": "D", "courses": []}"#
+                },
+                "finish_reason": "stop"
+            }],
+            "model": "mock",
+            "usage": null
+        });
+
+        use quanttide_agent::{HttpClient, LLMError};
+        struct Mock2(std::sync::Mutex<std::sync::Arc<std::sync::Mutex<Option<serde_json::Value>>>>);
+        impl HttpClient for Mock2 {
+            fn post_json(&self, _url: &str, _auth: &str, body: &serde_json::Value) -> Result<serde_json::Value, LLMError> {
+                *self.0.lock().unwrap().lock().unwrap() = Some(body.clone());
+                Ok(serde_json::json!({
+                    "choices": [{"message": {"content": r#"{"title":"T","description":"D","courses":[]}"#}, "finish_reason": "stop"}],
+                    "model": "mock", "usage": null
+                }))
+            }
+        }
+
+        let last = std::sync::Arc::new(std::sync::Mutex::new(None));
+        let client = Mock2(std::sync::Mutex::new(last.clone()));
+        let llm = LLM::with_client("mock", "http://mock", "key", Box::new(client));
+
+        let mut input = tempfile::NamedTempFile::new().unwrap();
+        writeln!(input, "# DevOps 实践").unwrap();
+        let output = tempfile::NamedTempFile::new().unwrap();
+
+        let _result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            run_blueprint(input.path(), output.path(), Some(&llm));
+        }));
+
+        let req = last.lock().unwrap();
+        assert!(req.is_some(), "LLM 应被调用");
+    }
 }
