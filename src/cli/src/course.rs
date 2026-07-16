@@ -26,7 +26,7 @@ pub fn run_blueprint(from: &Path, to: &Path, llm: Option<&LLM>) {
          要求：\n\
          1. 找到初学者在学习 {} 时最常见的困惑，从设计源头解释\n\
          2. 按 Program → Course → Phase → Lesson 四级结构组织（不含 Scene）\n\
-         3. 每节课（Lesson）给出明确的教学目标（description）和预估时长\n\
+         3. 每节课（Lesson）给出明确的教学目标（description）\n\
          4. 使用原始资料中的真实案例作为演示和练习素材，但教学目标始终围绕 {} 的概念和实践\n\n\
          请严格按照以下 JSON 格式输出，不要包含其他内容：\n\
          {{\n\
@@ -44,7 +44,6 @@ pub fn run_blueprint(from: &Path, to: &Path, llm: Option<&LLM>) {
                                  {{\n\
                                      \"title\": \"课时标题\",\n\
                                      \"description\": \"教学目标\",\n\
-                                     \"duration_minutes\": 45\n\
                                  }}\n\
                              ]\n\
                          }}\n\
@@ -112,7 +111,7 @@ pub fn run_design(file: &Path, instruction: &str, to: &Path, llm: Option<&LLM>) 
          注意事项：\n\
          1. 保持课程蓝图的结构完整性（Program → Course → Phase → Lesson）\n\
          2. 只修改用户要求的部分，其他部分保持不变\n\
-         3. 每节课（Lesson）需有明确的教学目标和预估时长\n\
+         3. 每节课（Lesson）需有明确的教学目标\n\
          4. 输出完整的课程蓝图 JSON，不要省略任何字段\n\n\
          请严格按照以下 JSON 格式输出，不要包含其他内容：\n\
          {{\n\
@@ -130,7 +129,6 @@ pub fn run_design(file: &Path, instruction: &str, to: &Path, llm: Option<&LLM>) 
                                  {{\n\
                                      \"title\": \"课时标题\",\n\
                                      \"description\": \"教学目标\",\n\
-                                     \"duration_minutes\": 45\n\
                                  }}\n\
                              ]\n\
                          }}\n\
