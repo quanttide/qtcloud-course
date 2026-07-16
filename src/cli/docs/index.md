@@ -62,6 +62,20 @@ qtcloud-course lesson blueprint --from <资料.md> --to <课时.json>
 qtcloud-course lesson design --file <课时.json> --instruction "第一个场景改成demo" --to <输出.json>
 ```
 
+### 场景蓝图 — 从生产材料生成
+
+```
+qtcloud-course scene blueprint --from <资料.md> --to <场景.json>
+```
+
+将场景拆解为 3-6 个按顺序执行的子步骤，不分支。
+
+### 场景设计 — 基于已有场景迭代修改
+
+```
+qtcloud-course scene design --file <场景.json> --instruction "增加一个验证步骤" --to <输出.json>
+```
+
 ## 配置
 
 | 环境变量 | 默认值 | 用途 |

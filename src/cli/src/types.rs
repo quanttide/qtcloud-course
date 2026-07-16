@@ -45,6 +45,7 @@ pub struct LessonBlueprint {
 ///
 /// 每个场景是一个操作步骤。异常分支通过嵌套的 `exception` 字段表达。
 /// 场景序列按操作流程排序。
+/// 如需更细粒度，可通过 `steps` 字段拆分子步骤。
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Scene {
     pub title: String,
@@ -52,11 +53,30 @@ pub struct Scene {
     pub duration_minutes: Option<u32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub exception: Option<ExceptionScene>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub steps: Option<Vec<Step>>,
 }
 
 /// 异常场景（嵌套在父场景中）
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ExceptionScene {
+    pub title: String,
+    pub description: String,
+    pub duration_minutes: Option<u32>,
+}
+
+/// 场景蓝图（单个 Scene 的 Step 级详细设计）
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SceneBlueprint {
+    pub title: String,
+    pub description: String,
+    pub duration_minutes: Option<u32>,
+    pub steps: Vec<Step>,
+}
+
+/// 步骤（场景内的子步骤，按顺序执行，不分支）
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Step {
     pub title: String,
     pub description: String,
     pub duration_minutes: Option<u32>,
@@ -168,6 +188,37 @@ pub fn validate_lesson_json(json: &serde_json::Value) -> ValidationResult {
                     errors.push(format!("scenes[{}].exception 缺少非空 'title' 字段", i));
                 }
             }
+        }
+    }
+
+    ValidationResult {
+        valid: errors.is_empty(),
+        errors,
+    }
+}
+
+/// 校验场景蓝图 JSON 数据结构完整性（Scene + Steps）
+pub fn validate_scene_json(json: &serde_json::Value) -> ValidationResult {
+    let mut errors = Vec::new();
+
+    if !json.get("title").and_then(|v| v.as_str()).is_some_and(|s| !s.is_empty()) {
+        errors.push("缺少非空 'title' 字段".to_string());
+    }
+    if !json.get("description").and_then(|v| v.as_str()).is_some_and(|s| !s.is_empty()) {
+        errors.push("缺少非空 'description' 字段".to_string());
+    }
+
+    let steps = match json.get("steps") {
+        Some(v) if v.is_array() => v.as_array().unwrap(),
+        _ => {
+            errors.push("缺少 'steps' 数组".to_string());
+            return ValidationResult { valid: false, errors };
+        }
+    };
+
+    for (i, step) in steps.iter().enumerate() {
+        if !step.get("title").and_then(|v| v.as_str()).is_some_and(|s| !s.is_empty()) {
+            errors.push(format!("steps[{}] 缺少非空 'title' 字段", i));
         }
     }
 

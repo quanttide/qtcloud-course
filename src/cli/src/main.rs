@@ -21,28 +21,28 @@ enum Commands {
         #[command(subcommand)]
         action: LessonAction,
     },
+    /// 场景相关操作
+    Scene {
+        #[command(subcommand)]
+        action: SceneAction,
+    },
 }
 
 #[derive(Subcommand)]
 enum CourseAction {
     /// 从 Markdown 原始资料生成课程蓝图（Program → Course → Phase → Lesson）
     Blueprint {
-        /// 原始资料 Markdown 文件路径
         #[arg(long)]
         from: PathBuf,
-        /// 输出课程蓝图 JSON 文件路径
         #[arg(long)]
         to: PathBuf,
     },
     /// 基于已有课程蓝图 + 人类指示迭代设计
     Design {
-        /// 已有的课程蓝图 JSON 文件路径
         #[arg(long)]
         file: PathBuf,
-        /// 人类设计指示
         #[arg(long)]
         instruction: String,
-        /// 输出课程蓝图 JSON 文件路径
         #[arg(long)]
         to: PathBuf,
     },
@@ -50,24 +50,39 @@ enum CourseAction {
 
 #[derive(Subcommand)]
 enum LessonAction {
-    /// 从 Markdown 原始资料生成课时蓝图（Lesson → Scene）
+    /// 从 Markdown 原始资料生成课时蓝图（Lesson → Scene，两遍 LLM）
     Blueprint {
-        /// 原始资料 Markdown 文件路径
         #[arg(long)]
         from: PathBuf,
-        /// 输出课时蓝图 JSON 文件路径
         #[arg(long)]
         to: PathBuf,
     },
     /// 基于已有课时蓝图 + 人类指示迭代设计
     Design {
-        /// 已有的课时蓝图 JSON 文件路径
         #[arg(long)]
         file: PathBuf,
-        /// 人类设计指示
         #[arg(long)]
         instruction: String,
-        /// 输出课时蓝图 JSON 文件路径
+        #[arg(long)]
+        to: PathBuf,
+    },
+}
+
+#[derive(Subcommand)]
+enum SceneAction {
+    /// 从 Markdown 原始资料生成场景蓝图（Scene → Steps，顺序无分支）
+    Blueprint {
+        #[arg(long)]
+        from: PathBuf,
+        #[arg(long)]
+        to: PathBuf,
+    },
+    /// 基于已有场景蓝图 + 人类指示迭代设计
+    Design {
+        #[arg(long)]
+        file: PathBuf,
+        #[arg(long)]
+        instruction: String,
         #[arg(long)]
         to: PathBuf,
     },
@@ -90,6 +105,14 @@ fn main() {
             }
             LessonAction::Design { file, instruction, to } => {
                 qtcloud_course_cli::lesson::run_design(&file, &instruction, &to, None);
+            }
+        },
+        Commands::Scene { action } => match action {
+            SceneAction::Blueprint { from, to } => {
+                qtcloud_course_cli::scene::run_blueprint(&from, &to, None);
+            }
+            SceneAction::Design { file, instruction, to } => {
+                qtcloud_course_cli::scene::run_design(&file, &instruction, &to, None);
             }
         },
     }
