@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.0-beta.2] - 2026-07-17
+
+### Fixed
+- lesson preview: 所有场景均作为主场景渲染，exception 嵌套在父场景下
+- lesson preview: truncate() 处理多字节 UTF-8 字符边界 panic
+- HTML 改为基于场景文件渲染，不再依赖课时蓝图的场景拆分
+- CI workflows: actions/checkout 和 upload-artifact 版本修正
+
+
 ## [0.1.0-beta.1] - 2026-07-17
 
 ### Added
