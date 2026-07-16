@@ -24,16 +24,16 @@
 > 从"蓝图生成器"升级为"课程数据工作台"。CLI 输出结构化 JSON，Studio 可直接导入；CLI 也可直接与 Provider API 交互。
 
 ### Added
-- [ ] `course --format json`：输出结构化 JSON，兼容 Studio 导入格式
-- [ ] `validate`：校验课程 JSON 数据结构完整性（schema 校验）
-- [ ] `import`：从蓝图 JSON 导入课程结构到 Provider API
-- [ ] `export`：从 Provider API 导出课程数据为 JSON
-- [ ] course 提示词优化：输出结构化课程框架（Program → Course → Phase → Lesson → Scene 层级）
-- [ ] 环境配置统一（`api_base_url` 默认 `http://localhost:8080`）
+- [x] `course --format json`：输出结构化 JSON，兼容 Studio 导入格式
+- [x] `validate`：校验课程 JSON 数据结构完整性（schema 校验）
+- [x] `import`：从蓝图 JSON 导入课程结构到 Provider API
+- [x] `export`：从 Provider API 导出课程数据为 JSON
+- [x] course 提示词优化：输出结构化课程框架（Program → Course → Phase → Lesson → Scene 层级）
+- [x] 环境配置统一（`QTCLOUD_API_BASE_URL` 默认 `http://localhost:8080`）
 
 ### TechDebt
-- [ ] **测试覆盖**：`course.rs` + `main.rs` 无对应 `*_test.rs`，当前零测试
-- [ ] **mock 注入**：`course::run` 硬依赖 `quanttide_agent::LLM`，无法单元测试
+- [x] **测试覆盖**：`course.rs` + `main.rs` 含 5 个单元测试，覆盖 validate/json format/prompt
+- [x] **mock 注入**：`course::run` 接受 `Option<&LLM>`，测试通过 `MockHttpClient` 注入 mock LLM
 
 ## [v0.2] — 考核（规划中）
 

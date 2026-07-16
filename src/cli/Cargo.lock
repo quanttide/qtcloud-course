@@ -379,6 +379,9 @@ version = "0.1.0-alpha.3"
 dependencies = [
  "clap",
  "quanttide-agent",
+ "serde",
+ "serde_json",
+ "ureq",
 ]
 
 [[package]]
