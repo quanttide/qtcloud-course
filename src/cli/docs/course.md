@@ -2,6 +2,15 @@
 
 Program → Course → Phase → Lesson 四级结构，不含 Scene。
 
+## design — 基于已有蓝图迭代
+
+```
+qtcloud-course course design --file <蓝图.json> --instruction "把第一阶段改成3节课" --to <输出.json>
+```
+
+读取已有 JSON，结合人类指示输出修改后的版本。只改指示部分，其余不变。
+
+
 ## blueprint — 从生产材料生成
 
 ```
@@ -32,13 +41,6 @@ qtcloud-course course blueprint --from <资料.md> --to <蓝图.json>
 }
 ```
 
-## design — 基于已有蓝图迭代
-
-```
-qtcloud-course course design --file <蓝图.json> --instruction "把第一阶段改成3节课" --to <输出.json>
-```
-
-读取已有 JSON，结合人类指示输出修改后的版本。只改指示部分，其余不变。
 
 ## preview — 渲染为 HTML
 

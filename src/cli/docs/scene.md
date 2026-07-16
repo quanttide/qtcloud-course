@@ -2,6 +2,13 @@
 
 Scene → Steps 二级结构。场景内的步骤按顺序执行，不分支。
 
+## design — 基于已有场景迭代
+
+```
+qtcloud-course scene design --file <场景.json> --instruction "增加一个验证步骤" --to <输出.json>
+```
+
+
 ## blueprint — 从生产材料生成
 
 ```
@@ -37,11 +44,6 @@ qtcloud-course scene blueprint --from <资料.md> --to <场景.json>
 }
 ```
 
-## design — 基于已有场景迭代
-
-```
-qtcloud-course scene design --file <场景.json> --instruction "增加一个验证步骤" --to <输出.json>
-```
 
 ## preview — 渲染为 HTML
 

@@ -4,6 +4,13 @@ Lesson → Scene 二级结构。每个场景是一个操作步骤，异常通过
 
 内部两遍 LLM 调用：先切场景（提取）→ 再编排（排序+挂异常）。
 
+## design — 基于已有课时迭代
+
+```
+qtcloud-course lesson design --file <课时.json> --instruction "增加一个验证步骤" --to <输出.json>
+```
+
+
 ## blueprint — 从生产材料生成
 
 ```
@@ -54,11 +61,6 @@ qtcloud-course lesson blueprint --from <资料.md> --to <课时.json>
 
 场景序列按操作流程排序。每个正常场景可带一个 `exception` 嵌套对象，表示该步骤的异常/失败分支。异常不单独成场景，而是挂在父场景下。
 
-## design — 基于已有课时迭代
-
-```
-qtcloud-course lesson design --file <课时.json> --instruction "增加一个验证步骤" --to <输出.json>
-```
 
 ## preview — 渲染为 DAG HTML
 
