@@ -4,7 +4,7 @@
 
 | CLI 版 | Studio 版 | 目标 |
 |--------|-----------|------|
-| v0.0 (已发布) | v0.0.5/v0.0.6 | blueprint 蓝图生成 |
+| v0.0 (已发布) | v0.0.5/v0.0.6 | course 课程生成 |
 | v0.1 | v0.1 | 课程制作：结构化数据 + 校验 + 导入导出 |
 | v0.2 | v0.2 | 考核：考核数据管理 |
 | v0.3 | v0.3 | 班级和学员：成员与进度管理 |
@@ -14,26 +14,26 @@
 > AI 生成课程蓝图。对应 Studio 基础 CRUD + 预览阶段。
 
 ### Added
-- [x] `blueprint` 子命令：AI 生成课程蓝图
+- [x] `course` 子命令：AI 生成课程蓝图
 - [x] `--input-path`：传入原始资料作为上下文
 - [x] `--output-path`：直接写入文件
-- [x] `src/lib.rs`：暴露 `blueprint` 模块作为库接口
+- [x] `src/lib.rs`：暴露 `course` 模块作为库接口
 
 ## [v0.1] — 课程制作（进行中）
 
 > 从"蓝图生成器"升级为"课程数据工作台"。CLI 输出结构化 JSON，Studio 可直接导入；CLI 也可直接与 Provider API 交互。
 
 ### Added
-- [ ] `blueprint --format json`：输出结构化 JSON，兼容 Studio 导入格式
+- [ ] `course --format json`：输出结构化 JSON，兼容 Studio 导入格式
 - [ ] `validate`：校验课程 JSON 数据结构完整性（schema 校验）
 - [ ] `import`：从蓝图 JSON 导入课程结构到 Provider API
 - [ ] `export`：从 Provider API 导出课程数据为 JSON
-- [ ] blueprint 提示词优化：输出结构化课程框架（Program → Course → Phase → Lesson → Scene 层级）
+- [ ] course 提示词优化：输出结构化课程框架（Program → Course → Phase → Lesson → Scene 层级）
 - [ ] 环境配置统一（`api_base_url` 默认 `http://localhost:8080`）
 
 ### TechDebt
-- [ ] **测试覆盖**：`blueprint.rs` + `main.rs` 无对应 `*_test.rs`，当前零测试
-- [ ] **mock 注入**：`blueprint::run` 硬依赖 `quanttide_agent::LLM`，无法单元测试
+- [ ] **测试覆盖**：`course.rs` + `main.rs` 无对应 `*_test.rs`，当前零测试
+- [ ] **mock 注入**：`course::run` 硬依赖 `quanttide_agent::LLM`，无法单元测试
 
 ## [v0.2] — 考核（规划中）
 
