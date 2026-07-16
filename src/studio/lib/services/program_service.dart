@@ -11,6 +11,13 @@ import '../models/program.dart';
 import '../models/phase.dart';
 import '../models/scene.dart';
 
+String _defaultDataDir() {
+  final home = Platform.environment['HOME']
+      ?? Platform.environment['USERPROFILE']
+      ?? '.';
+  return '$home/.qtcloud-course/data';
+}
+
 class ProgramService extends ChangeNotifier {
   List<Program> _programs = [];
   final Map<String, Lesson> _lessonCache = {};
@@ -19,6 +26,7 @@ class ProgramService extends ChangeNotifier {
   bool _loading = false;
   bool _offlineFallback = false;
 
+  final String localDataDir;
   final String? baseUrl;
   http.Client client;
 
@@ -43,8 +51,15 @@ class ProgramService extends ChangeNotifier {
         ),
   );
 
-  ProgramService({this.baseUrl, http.Client? client})
-    : client = client ?? http.Client();
+  ProgramService({this.baseUrl, String? localDataDir, http.Client? client})
+    : localDataDir = localDataDir ?? _defaultDataDir(),
+      client = client ?? http.Client();
+
+  @override
+  void notifyListeners() {
+    if (_loaded) _saveToLocal();
+    super.notifyListeners();
+  }
 
   void markLoaded() {
     _loaded = true;
@@ -80,12 +95,35 @@ class ProgramService extends ChangeNotifier {
     notifyListeners();
   }
 
+  void _saveToLocal() {
+    final dir = Directory(localDataDir);
+    if (!dir.existsSync()) dir.createSync(recursive: true);
+    final file = File('$localDataDir/programs.json');
+    file.writeAsStringSync(
+      const JsonEncoder.withIndent('  ').convert(
+        _programs.map((p) => p.toJson()).toList(),
+      ),
+    );
+  }
+
   Future<void> _loadFromAssets() async {
+    // Try local file first
+    final localFile = File('$localDataDir/programs.json');
+    if (localFile.existsSync()) {
+      final jsonStr = localFile.readAsStringSync();
+      final list = json.decode(jsonStr) as List<dynamic>;
+      _programs = list
+          .map((e) => Program.fromJson(e as Map<String, dynamic>))
+          .toList();
+      return;
+    }
+    // Fall back to bundled assets
     final jsonStr = await rootBundle.loadString('assets/programs.json');
     final list = json.decode(jsonStr) as List<dynamic>;
     _programs = list
         .map((e) => Program.fromJson(e as Map<String, dynamic>))
         .toList();
+    _saveToLocal(); // Seed local file
   }
 
   Future<void> _loadFromApi() async {
@@ -494,7 +532,7 @@ class ProgramService extends ChangeNotifier {
     return scene;
   }
 
-  void updateScene(String lessonId, String sceneId, {String? name, String? title, String? verifyTip, String? videoUrl}) {
+  void updateScene(String lessonId, String sceneId, {String? name, String? title, String? verifyTip, String? videoUrl, List<Choice>? choices}) {
     for (final p in _programs) {
       for (final c in p.courses) {
         for (final ph in c.phases) {
@@ -507,6 +545,7 @@ class ProgramService extends ChangeNotifier {
                 title: title,
                 verifyTip: verifyTip,
                 videoUrl: videoUrl,
+                choices: choices,
               );
               final scenes = [...l.scenes];
               scenes[si] = updated;

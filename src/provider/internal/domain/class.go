@@ -4,6 +4,7 @@ package domain
 type Class struct {
 	ID           string  `json:"id"`
 	Name         string  `json:"name"`
+	Slug         string  `json:"slug"`
 	RefName      string  `json:"refName"`                 // 引用的专业/课程名称（展示用）
 	RefType      string  `json:"refType,omitempty"`       // 引用类型："program" / "course"
 	RefID        string  `json:"refId"`                   // 引用的 Program/Course ID

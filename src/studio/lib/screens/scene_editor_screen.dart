@@ -4,6 +4,13 @@ import '../models/program.dart';
 import '../models/scene.dart';
 import '../services/program_service.dart';
 
+class _MutableChoice {
+  String label;
+  String targetSceneId;
+
+  _MutableChoice({required this.label, required this.targetSceneId});
+}
+
 /// 场景编辑器页面。
 ///
 /// 在一个课时内创建/编辑/删除/排序场景和步骤。

@@ -1,0 +1,43 @@
+{
+  "title": "Git 入门与协作",
+  "description": "从零掌握 Git 版本控制，理解核心概念并能在团队中协作",
+  "courses": [
+    {
+      "title": "Git 基础",
+      "description": "掌握 Git 的核心概念和日常操作",
+      "phases": [
+        {
+          "title": "理解版本控制",
+          "description": "建立版本控制的思维模型",
+          "lessons": [
+            {
+              "title": "为什么需要版本控制",
+              "description": "理解版本控制解决的核心问题",
+              "duration_minutes": 30,
+              "scenes": [
+                {
+                  "title": "一个没有版本控制的故事",
+                  "type": "lecture",
+                  "description": "通过一个文件混乱的真实案例引入版本控制的必要性",
+                  "duration_minutes": 10
+                },
+                {
+                  "title": "版本控制的三种模型",
+                  "type": "lecture",
+                  "description": "本地、集中式、分布式版本控制的对比",
+                  "duration_minutes": 15
+                },
+                {
+                  "title": "思考练习",
+                  "type": "exercise",
+                  "description": "思考自己工作中遇到的文件管理问题",
+                  "duration_minutes": 5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

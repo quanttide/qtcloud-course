@@ -8,15 +8,13 @@ import 'screens/program_screen.dart';
 import 'screens/class_screen.dart';
 import 'widgets/sidebar.dart';
 
-/// 默认 Provider API 地址。通过环境变量 `API_BASE_URL` 覆盖。
-/// 设为空字符串（`API_BASE_URL=`）强制使用本地 JSON 模式。
-const _defaultApiBaseUrl = 'http://localhost:8080';
+/// 默认本地模式。设 `API_BASE_URL` 环境变量可切回 Provider API 模式。
+const _defaultApiBaseUrl = null;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   const envUrl = String.fromEnvironment('API_BASE_URL');
-  // 未设置时默认走 API；显式设为空时走本地 JSON
-  final baseUrl = envUrl.isNotEmpty ? envUrl : (envUrl == '' ? null : _defaultApiBaseUrl);
+  final baseUrl = envUrl.isNotEmpty ? envUrl : _defaultApiBaseUrl;
   runApp(
     MultiProvider(
       providers: [
