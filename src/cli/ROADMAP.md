@@ -14,13 +14,16 @@
 
 ### Added
 - [ ] **结构化输出**：`blueprint --format json` 输出结构化 JSON，兼容 Studio 导入格式
-- [ ] **测试覆盖**：`blueprint.rs` + `main.rs` 对应 `*_test.rs`
 - [ ] **子命令扩展**：`validate` — 校验课程 JSON 数据结构完整性
 - [ ] **子命令扩展**：`import` — 从蓝图 JSON 生成 Studio 可加载的 Program 结构
 - [ ] **子命令扩展**：`export` — 从 Provider API 导出课程数据为 JSON
 
 ### Changed
 - [ ] blueprint 提示词优化：输出结构化课程框架（Program → Course → Phase → Lesson 层级）
+
+### TechDebt
+- [ ] **测试覆盖**：`blueprint.rs` + `main.rs` 无对应 `*_test.rs`，当前零测试
+- [ ] **mock 注入**：`blueprint::run` 硬依赖 `quanttide_agent::LLM`，无法单元测试
 
 ## [0.2.0] — 规划中
 

@@ -13,6 +13,7 @@
 - [ ] CI：push 自动跑 `flutter test` + `dart analyze`
 - [ ] 三 Service `_apiPost/Put/Delete` 提取为 mixin
 - [ ] `analysis_options.yaml` 开启 `prefer_const_constructors` 等 lint
+- [ ] GUI 测试并行化：16 个 pytest 错误因无 Flutter 进程，加 CI 跳过标记
 
 ## [0.0.6] — 已发布
 

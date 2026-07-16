@@ -79,6 +79,16 @@ DELETE /phases/{id}                 DELETE /courses/{id}/phases/{phaseId}
 - [ ] 嵌套路由 handler 测试
 - [ ] `go test ./... -count=1` 保持 90%+ 覆盖率
 
+### 5. TechDebt：泛型化 CRUD 重构
+
+6 个 Store（program/course/phase/lesson/scene/class）和 6 个 Handler 结构完全一致，
+每个 Store 都是 `NewXStore → nextID → List → Get → Create → Update → Delete`，
+仅类型名不同。Go 1.18+ 泛型可压缩为一份通用实现。
+
+- [ ] 提取 `Store[T]` 泛型：`sync.RWMutex` + `map[string]*T` + 自增 ID
+- [ ] 提取 `Handler[T, S]` 泛型：标准 CRUD HTTP handler + 校验函数注入
+- [ ] 迁移后删除 5 个冗余 Store 文件和 5 个冗余 Handler 文件
+
 ## [0.1.0] — 规划中
 
 > 持久化与业务增强。对应产品级 `v0.2.0` 里程碑。

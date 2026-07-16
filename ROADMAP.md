@@ -25,16 +25,20 @@
 - [x] Studio 班级管理：创建班级、统计学生数、进度条
 - [x] 集成测试套件：pytest 端到端测试 + JSON schema 校验
 - [x] DevOps 契约：contract.yaml + ROADMAP 可追踪
-- [ ] CLI 测试文件补充（`blueprint.rs` + `main.rs` 对应 `*_test.rs`）
 - [ ] CI 工作流：三 scope 自动构建+测试
 - [ ] 版本号对齐：三种语言统一发布节奏
 - [ ] Studio 考核管理：导航独立 + 提交工作流 + 批量评分（v0.0.7）
 - [ ] Provider 嵌套路由 + name/title 统一（v0.0.3）
-- [ ] Service mixin 提取：消除三 Service 重复的 API 调用代码
 
 ### Fixed
 - [x] Studio `dart analyze` 红线：assets 缩进错误
 - [x] DevOps 契约缺失：`.quanttide/devops/contract.yaml` 已创建
+
+### TechDebt
+- [ ] CLI 零测试：`blueprint.rs` + `main.rs` 无对应 `*_test.rs`
+- [ ] Provider 样板代码：6 Store + 6 Handler 结构完全一致，可用泛型消除 ~70% 重复
+- [ ] Studio Service 重复：三份 `_apiPost/Put/Delete` 待抽取 mixin
+- [ ] GUI 测试不可移植：16 个 pytest 测试依赖真实 Flutter 进程，CI 无法运行
 
 ## [0.3.0] — 远期
 
