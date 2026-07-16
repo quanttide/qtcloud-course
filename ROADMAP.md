@@ -1,68 +1,85 @@
 # ROADMAP
 
-> 产品级版本规划。各 scope 版本详见 `src/*/ROADMAP.md`。
+> 产品级版本规划，侧重测试与文档。各 scope 详细路线图见 `src/*/ROADMAP.md`。
 
 ## [v0.1] — 课程制作（进行中）
 
-> 从蓝图到互动课时的端到端链路打通。补齐 Scene 编辑器，不再依赖手写 JSON，数据管线连通 CLI → Studio → Provider。
+> **目标**：打通从蓝图到互动课时的端到端链路，三 scope 测试就绪。
 
-### Added
-- [x] CLI blueprint 子命令：AI 生成课程蓝图
-- [x] Studio 四级 CRUD：Program → Course → Phase → Lesson
-- [x] Studio 互动课堂预览：场景导航 + 步骤面板 + 分支选项 + 完成页
-- [x] Provider REST API：六类资源 CRUD
-- [x] Studio 班级管理：创建班级、统计学生数、进度条
-- [x] JSON 导入/导出：离线备份与迁移
-- [x] 集成测试套件：pytest 端到端测试 + JSON schema 校验
-- [x] DevOps 契约：contract.yaml + ROADMAP 可追踪
-- [x] Scene 编辑器：创建/编辑场景、步骤，与 Provider API 打通
-- [x] API 模式默认：Studio 默认走 Provider API，本地 JSON 降级为回退
-- [ ] 数据管线：CLI `blueprint --format json` 输出 → Studio 一键导入
-- [ ] 路由重组：Provider 嵌套路由 + name/title 统一
-- [ ] CLI 结构化输出：`blueprint --format json` + validate/import/export 子命令
-- [ ] 分支选项 UI：步骤内分支选择、跳转逻辑配置
-- [ ] 导入预览：确认/回滚导入结果
-- [ ] JSON schema 校验 + 错误提示
-- [ ] 持久化存储：Provider SQLite 替代内存存储，关闭不丢数据
-- [ ] 场景内容导入：支持 JSON 文件批量导入课时内容
-- [ ] CI 工作流：三 scope 自动构建+测试
-- [ ] CI：覆盖率门禁
-- [ ] iOS 构建验证
-- [ ] Android 构建验证
-- [ ] 版本号对齐：三种语言统一发布节奏
-- [ ] CLI 零测试补充：`blueprint.rs` + `main.rs` 对应 `*_test.rs`
-- [ ] Provider 泛型化 CRUD：6 Store + 6 Handler 消除 ~70% 重复
-- [ ] Studio Service mixin：三份 `_apiPost/Put/Delete` 抽取
-- [ ] GUI 测试修复：16 个 pytest 并行化 + CI 跳过标记
-- [ ] 全链路集成测试通过
+### 测试
+- [ ] Studio：`flutter test` 全部通过 + `dart analyze` 零报错
+- [ ] Studio：GUI 测试 16 个修复并行化 + CI 跳过标记
+- [ ] Provider：`go test ./... -count=1` 保持 90%+ 覆盖率
+- [ ] Provider：name 重复校验 + 嵌套路由 handler 测试
+- [ ] CLI：`blueprint.rs` + `main.rs` 对应 `*_test.rs` 测试覆盖
+- [ ] CLI：mock 注入解耦，`blueprint::run` 可单元测试
+- [ ] 集成测试：全链路场景（CLI 输出 → Studio 导入 → Provider 持久化）
+- [ ] CI 工作流：三 scope 自动构建 + 测试 + 覆盖率门禁
+
+### 文档
+- [ ] Studio：README 更新安装与开发指南
+- [ ] Provider：API 文档（路由表 / 请求响应示例）
+- [ ] CLI：子命令帮助文档 + README 使用示例
+- [ ] 集成测试：测试数据 fixture 文档 + JSON schema 说明
+
+### 交付物
+- [x] Scene 编辑器 —— 创建/编辑场景、步骤，与 Provider API 打通
+- [x] API 模式默认 —— Studio 默认走 Provider API，本地 JSON 降级为回退
+- [ ] 数据管线 —— CLI `blueprint --format json` → Studio 一键导入
+- [ ] Provider 嵌套路由 —— Scenes/Phases 按父级嵌套 + name/title 统一
+- [ ] CLI 结构化输出 —— `blueprint --format json` + validate/import/export
+- [ ] 分支选项 UI + 导入预览 + schema 校验
+- [ ] SQLite 持久化 + 场景内容 JSON 批量导入
+- [ ] 多平台构建 iOS/Android
+
+---
 
 ## [v0.2] — 考核（规划中）
 
-> 考核管理从教学管理分离，成为独立导航入口，覆盖完整考核流程。
+> **目标**：考核全流程可操作，三 scope 测试覆盖 + 文档完备。
 
-### Added
-- [ ] Studio 考核导航独立：侧边栏新增「考核管理」tab
-- [ ] Studio 学生提交工作流：筛选/标记/提交内容
-- [ ] Studio 批量评分面板：全班集中评分 + 连续评分模式
-- [ ] Studio 成绩概览：统计卡片 / 分布图 / 导出
-- [ ] Studio 考试模式：题型（选择/填空/简答）+ 自动评分 + 计时
-- [ ] Provider 考核相关 API
-- [ ] CLI `sync` 子命令：CLI ↔ Provider API 双向同步
-- [ ] CLI `publish` 子命令：批量发布/下架课程结构
-- [ ] CI 完善 + 技术债清扫（Studio Service mixin、lint 规则、GUI 测试并行化）
+### 测试
+- [ ] Studio：考核模块 `flutter test` 全覆盖
+- [ ] Provider：考核 CRUD + 提交/评分 API 测试 90%+ 覆盖率
+- [ ] CLI：assessment 子命令测试
+- [ ] 集成测试：考核全流程（创建 → 提交 → 评分 → 统计）
+
+### 文档
+- [ ] Studio：考核模块使用指南
+- [ ] Provider：考核 API 文档
+- [ ] CLI：assessment 子命令帮助文档
+- [ ] 用户手册：教师考核操作流程
+
+### 交付物
+- [ ] Studio 考核导航独立
+- [ ] Studio 学生提交工作流 + 批量评分 + 成绩概览
+- [ ] Studio 考试模式（题型 / 自动评分 / 计时）
+- [ ] Provider 考核 / 提交 / 评分 / 统计 API
+- [ ] CLI assessment 子命令（create / submit / grade / stats）
+
+---
 
 ## [v0.3] — 班级和学员（规划中）
 
-> 班级管理和学员体系完善，支持学员加入/退班、学习进度追踪。
+> **目标**：班级管理和学员体系完善，多角色认证就绪。
 
-### Added
-- [ ] Studio 班级 CRUD 完善：创建/编辑/删除/列表
-- [ ] Studio 学员管理：邀请加入/审核/退班/学员名单
-- [ ] Studio 班级仪表盘：统计卡片 / 进度分布 / 导出
-- [ ] Studio 学员学习进度追踪：个人学习记录 / 完成率 / 趋势
-- [ ] 用户认证（飞书登录）
-- [ ] 角色权限（管理员 / 讲师 / 学生）
+### 测试
+- [ ] Studio：班级/学员模块 `flutter test` 全覆盖
+- [ ] Provider：认证 + 权限测试
+- [ ] CLI：class / student 子命令测试
+- [ ] 集成测试：学员全流程（注册 → 加入班级 → 学习 → 进度查看）
+
+### 文档
+- [ ] Studio：班级管理使用指南
+- [ ] Provider：认证 / 权限 API 文档
+- [ ] CLI：class / student 子命令帮助文档
+- [ ] 部署文档：认证配置（飞书登录）
+
+### 交付物
+- [ ] Studio 班级 CRUD + 学员管理 + 班级仪表盘 + 学习进度追踪
+- [ ] 用户认证（飞书登录）+ 角色权限（管理员 / 讲师 / 学生）
 - [ ] 课程上架流程（草稿 → 审核 → 发布）
 - [ ] 学生端播放器（Web/移动端）
 - [ ] 互动视频上传与管理
-- [ ] Provider SQLite → Postgres（可选）
+- [ ] CLI class / student 子命令 + sync / publish
+- [ ] Postgres 支持（可选）
