@@ -64,6 +64,33 @@ qtcloud-course lesson blueprint --from <资料.md> --to <课时.json>
 
 ## preview — 渲染为 DAG HTML
 
+### 自定义模板
+
+通过 `--template <文件.html>` 使用自定义 HTML 模板。模板文件支持三个占位符：
+
+| 占位符 | 替换内容 |
+|--------|----------|
+| `{{TITLE}}` | 蓝图标题 |
+| `{{DESCRIPTION}}` | 蓝图描述 |
+| `{{CONTENT}}` | 渲染后的内容 HTML |
+
+示例模板：
+
+```html
+<!DOCTYPE html>
+<html>
+<head><title>{{TITLE}}</title></head>
+<body>
+<h1>📚 {{TITLE}}</h1>
+<p>{{DESCRIPTION}}</p>
+<hr>
+{{CONTENT}}
+</body>
+</html>
+```
+
+不传 `--template` 时使用内置深色主题模板。
+
 ```
 qtcloud-course lesson preview --from <课时.json> --to <预览.html>
 ```
