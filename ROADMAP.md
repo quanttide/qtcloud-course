@@ -4,33 +4,27 @@
 
 ## [v0.1] — 课程制作（进行中）
 
-> **目标**：打通从蓝图到互动课时的端到端链路，三 scope 测试就绪。
+> **目标**：Studio 作为独立本地软件完成课程制作，编辑内容持久化不丢失。
 
 ### 测试
-- [ ] Studio：`flutter test` 全部通过 + `dart analyze` 零报错
-- [ ] Studio：GUI 测试 16 个修复并行化 + CI 跳过标记
-- [ ] Provider：`go test ./... -count=1` 保持 90%+ 覆盖率
-- [ ] Provider：name 重复校验 + 嵌套路由 handler 测试
-- [ ] CLI：`blueprint.rs` + `main.rs` 对应 `*_test.rs` 测试覆盖
-- [ ] CLI：mock 注入解耦，`blueprint::run` 可单元测试
-- [ ] 集成测试：全链路场景（CLI 输出 → Studio 导入 → Provider 持久化）
-- [ ] CI 工作流：三 scope 自动构建 + 测试 + 覆盖率门禁
+- [x] Studio：`dart analyze` 零报错
+- [ ] Studio：`flutter test` 全部通过
+- [ ] CI：push 自动跑 `flutter test` + `dart analyze`
 
 ### 文档
-- [ ] Studio：README 更新安装与开发指南
-- [ ] Provider：API 文档（路由表 / 请求响应示例）
-- [ ] CLI：子命令帮助文档 + README 使用示例
-- [ ] 集成测试：测试数据 fixture 文档 + JSON schema 说明
+- [ ] README 更新：本地模式说明、开发指南
 
 ### 交付物
-- [x] Scene 编辑器 —— 创建/编辑场景、步骤，与 Provider API 打通
-- [x] API 模式默认 —— Studio 默认走 Provider API，本地 JSON 降级为回退
-- [ ] 数据管线 —— CLI `blueprint --format json` → Studio 一键导入
-- [ ] Provider 嵌套路由 —— Scenes/Phases 按父级嵌套 + name/title 统一
-- [ ] CLI 结构化输出 —— `blueprint --format json` + validate/import/export
-- [ ] 分支选项 UI + 导入预览 + schema 校验
-- [ ] SQLite 持久化 + 场景内容 JSON 批量导入
-- [ ] 多平台构建 iOS/Android
+- [x] Scene 编辑器 —— 创建/编辑/删除/排序场景和步骤
+- [x] 分支选项 UI —— 步骤内分支选择、跳转目标场景配置
+- [x] 本地模式默认 —— 不依赖 Provider API，默认读取本地 JSON
+- [x] 本地持久化 —— 编辑内容自动保存到 `~/.qtcloud-course/data/`
+- [x] JSON 导出/导入 —— 文件选择器导入导出课程结构
+- [ ] `flutter test` 全部通过
+
+---
+
+> 以下 Provider/CLI 条目延至后续版本，Studio v0.1.0 聚焦独立本地模式。
 
 ---
 
