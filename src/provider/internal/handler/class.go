@@ -1,69 +1,34 @@
 package handler
 
 import (
-	"encoding/json"
-	"net/http"
-
 	"github.com/quanttide/qtcloud-course-provider/internal/domain"
 	"github.com/quanttide/qtcloud-course-provider/internal/store"
 )
 
-type ClassHandler struct {
-	store *store.ClassStore
-}
+// ClassHandler 提供 Class 的标准 CRUD。
+type ClassHandler = CRUDHandler[domain.Class]
 
+// NewClassHandler 创建 Class handler。
 func NewClassHandler(s *store.ClassStore) *ClassHandler {
-	return &ClassHandler{store: s}
-}
-
-func (h *ClassHandler) ListClasses(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, h.store.List())
-}
-
-func (h *ClassHandler) CreateClass(w http.ResponseWriter, r *http.Request) {
-	var c domain.Class
-	if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
-		http.Error(w, `{"error":"invalid request body"}`, http.StatusBadRequest)
-		return
-	}
-	if c.Name == "" || c.RefID == "" {
-		http.Error(w, `{"error":"name and refId are required"}`, http.StatusBadRequest)
-		return
-	}
-	writeJSON(w, http.StatusCreated, h.store.Create(&c))
-}
-
-func (h *ClassHandler) GetClass(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	c, ok := h.store.Get(id)
-	if !ok {
-		http.Error(w, `{"error":"class not found"}`, http.StatusNotFound)
-		return
-	}
-	writeJSON(w, http.StatusOK, c)
-}
-
-func (h *ClassHandler) UpdateClass(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	var c domain.Class
-	if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
-		http.Error(w, `{"error":"invalid request body"}`, http.StatusBadRequest)
-		return
-	}
-	c.ID = id
-	updated, ok := h.store.Update(&c)
-	if !ok {
-		http.Error(w, `{"error":"class not found"}`, http.StatusNotFound)
-		return
-	}
-	writeJSON(w, http.StatusOK, updated)
-}
-
-func (h *ClassHandler) DeleteClass(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	if !h.store.Delete(id) {
-		http.Error(w, `{"error":"class not found"}`, http.StatusNotFound)
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
+	return NewCRUDHandler(
+		s,
+		func(c *domain.Class) string {
+			if c.Name == "" {
+				return "name is required"
+			}
+			if c.RefID == "" {
+				return "refId is required"
+			}
+			return ""
+		},
+		func(c *domain.Class, id string) { c.ID = id },
+	).WithNameCheck(
+		func(name string) string {
+			if s.NameExists(name, func(c *domain.Class) string { return c.Name }) {
+				return "name already exists"
+			}
+			return ""
+		},
+		func(c *domain.Class) string { return c.Name },
+	)
 }

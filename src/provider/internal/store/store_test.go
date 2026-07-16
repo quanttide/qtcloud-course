@@ -27,6 +27,9 @@ func TestProgramStore_CRUD(t *testing.T) {
 	if p.Name != "大数据微专业" {
 		t.Fatalf("Create().Name = %q, want %q", p.Name, "大数据微专业")
 	}
+	if p.Slug == "" {
+		t.Fatal("Create(): slug should not be empty")
+	}
 	if p.CourseIDs == nil {
 		t.Fatal("Create(): CourseIDs should not be nil")
 	}
@@ -96,7 +99,7 @@ func TestCourseStore_CRUD(t *testing.T) {
 	}
 
 	c := s.Create(&domain.Course{Name: "数据工程"})
-	if c.ID == "" || c.Name != "数据工程" {
+	if c.ID == "" || c.Name != "数据工程" || c.Slug == "" {
 		t.Fatalf("Create() = %+v", c)
 	}
 
@@ -135,7 +138,7 @@ func TestLessonStore_CRUD(t *testing.T) {
 	}
 
 	l := s.Create(&domain.Lesson{Title: "课时1", Duration: 45})
-	if l.ID == "" || l.Title != "课时1" || l.Duration != 45 {
+	if l.ID == "" || l.Title != "课时1" || l.Duration != 45 || l.Slug == "" {
 		t.Fatalf("Create() = %+v", l)
 	}
 
@@ -174,7 +177,7 @@ func TestPhaseStore_CRUD(t *testing.T) {
 	}
 
 	p := s.Create(&domain.Phase{Name: "数据采集阶段", CourseID: "cour-1", SortOrder: 1})
-	if p.ID == "" || p.Name != "数据采集阶段" || p.CourseID != "cour-1" || p.SortOrder != 1 {
+	if p.ID == "" || p.Name != "数据采集阶段" || p.CourseID != "cour-1" || p.SortOrder != 1 || p.Slug == "" {
 		t.Fatalf("Create() = %+v", p)
 	}
 	if p.LessonIDs == nil {
@@ -228,7 +231,7 @@ func TestSceneStore_CRUD(t *testing.T) {
 	}
 
 	sc := s.Create(&domain.Scene{LessonID: "lesson-1", VideoURL: "intro.mp4", Choices: []domain.Choice{{Label: "继续", TargetSceneID: "scene-2"}}})
-	if sc.ID == "" || sc.LessonID != "lesson-1" || sc.VideoURL != "intro.mp4" || len(sc.Choices) != 1 {
+	if sc.ID == "" || sc.LessonID != "lesson-1" || sc.VideoURL != "intro.mp4" || len(sc.Choices) != 1 || sc.Slug == "" {
 		t.Fatalf("Create() = %+v", sc)
 	}
 
@@ -284,7 +287,7 @@ func TestClassStore_CRUD(t *testing.T) {
 		Name: "浙理班级", RefName: "大数据微专业", RefType: "program", RefID: "prog-1",
 		StartDate: "2026-09-01", EndDate: "2027-01-15", StudentCount: 30,
 	})
-	if c.ID == "" || c.Name != "浙理班级" || c.StudentCount != 30 {
+	if c.ID == "" || c.Name != "浙理班级" || c.StudentCount != 30 || c.Slug == "" {
 		t.Fatalf("Create() = %+v", c)
 	}
 

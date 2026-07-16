@@ -3,23 +3,23 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 
+	"github.com/quanttide/qtcloud-course-provider/internal/config"
 	"github.com/quanttide/qtcloud-course-provider/internal/handler"
 	"github.com/quanttide/qtcloud-course-provider/internal/store"
 )
 
 func main() {
-	mux := newRouter()
-	addr := getEnv("LISTEN_ADDR", ":8080")
-	log.Printf("qtcloud-course-provider starting on %s", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
+	cfg := config.Load()
+	mux := newRouter(cfg)
+	log.Printf("qtcloud-course-provider starting on %s", cfg.ListenAddr)
+	if err := http.ListenAndServe(cfg.ListenAddr, mux); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
 }
 
 // newRouter 创建并配置所有路由，可单独测试。
-func newRouter() *http.ServeMux {
+func newRouter(cfg *config.Config) *http.ServeMux {
 	programStore := store.NewProgramStore()
 	courseStore := store.NewCourseStore()
 	lessonStore := store.NewLessonStore()
@@ -50,12 +50,14 @@ func newRouter() *http.ServeMux {
 	mux.HandleFunc("PUT /courses/{id}", ch.Update)
 	mux.HandleFunc("DELETE /courses/{id}", ch.Delete)
 
-	// Phase
+	// Phase（嵌套路由 + 全局列表）
 	mux.HandleFunc("GET /phases", psh.List)
-	mux.HandleFunc("POST /phases", psh.Create)
 	mux.HandleFunc("GET /phases/{id}", psh.Get)
 	mux.HandleFunc("PUT /phases/{id}", psh.Update)
 	mux.HandleFunc("DELETE /phases/{id}", psh.Delete)
+	mux.HandleFunc("GET /courses/{courseId}/phases", psh.ListByCourse)
+	mux.HandleFunc("POST /courses/{courseId}/phases", psh.CreateByCourse)
+	mux.HandleFunc("DELETE /courses/{courseId}/phases/{id}", psh.Delete)
 
 	// Lesson
 	mux.HandleFunc("GET /lessons", lh.List)
@@ -64,19 +66,19 @@ func newRouter() *http.ServeMux {
 	mux.HandleFunc("PUT /lessons/{id}", lh.Update)
 	mux.HandleFunc("DELETE /lessons/{id}", lh.Delete)
 
-	// Scene（按 lessonId 查询）
-	mux.HandleFunc("GET /scenes", sh.List)
-	mux.HandleFunc("POST /scenes", sh.Create)
+	// Scene（嵌套路由：场景作为课时的子资源）
 	mux.HandleFunc("GET /scenes/{id}", sh.Get)
 	mux.HandleFunc("PUT /scenes/{id}", sh.Update)
 	mux.HandleFunc("DELETE /scenes/{id}", sh.Delete)
+	mux.HandleFunc("GET /lessons/{lessonId}/scenes", sh.ListByLesson)
+	mux.HandleFunc("POST /lessons/{lessonId}/scenes", sh.CreateByLesson)
 
 	// Class
-	mux.HandleFunc("GET /classes", clh.ListClasses)
-	mux.HandleFunc("POST /classes", clh.CreateClass)
-	mux.HandleFunc("GET /classes/{id}", clh.GetClass)
-	mux.HandleFunc("PUT /classes/{id}", clh.UpdateClass)
-	mux.HandleFunc("DELETE /classes/{id}", clh.DeleteClass)
+	mux.HandleFunc("GET /classes", clh.List)
+	mux.HandleFunc("POST /classes", clh.Create)
+	mux.HandleFunc("GET /classes/{id}", clh.Get)
+	mux.HandleFunc("PUT /classes/{id}", clh.Update)
+	mux.HandleFunc("DELETE /classes/{id}", clh.Delete)
 
 	// Health
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
@@ -85,15 +87,7 @@ func newRouter() *http.ServeMux {
 	})
 
 	// 视频静态文件服务（本地磁盘路径）
-	videoDir := getEnv("VIDEO_DIR", "./data/video")
-	mux.Handle("GET /video/", http.StripPrefix("/video/", http.FileServer(http.Dir(videoDir))))
+	mux.Handle("GET /video/", http.StripPrefix("/video/", http.FileServer(http.Dir(cfg.VideoDir))))
 
 	return mux
-}
-
-func getEnv(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return fallback
 }

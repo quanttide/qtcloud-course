@@ -28,36 +28,43 @@ func setupMux() (*http.ServeMux, *store.ProgramStore, *store.CourseStore, *store
 	clh := NewClassHandler(cls)
 
 	mux := http.NewServeMux()
+	// Program
 	mux.HandleFunc("GET /programs", ph.List)
 	mux.HandleFunc("POST /programs", ph.Create)
 	mux.HandleFunc("GET /programs/{id}", ph.Get)
 	mux.HandleFunc("PUT /programs/{id}", ph.Update)
 	mux.HandleFunc("DELETE /programs/{id}", ph.Delete)
+	// Course
 	mux.HandleFunc("GET /courses", ch.List)
 	mux.HandleFunc("POST /courses", ch.Create)
 	mux.HandleFunc("GET /courses/{id}", ch.Get)
 	mux.HandleFunc("PUT /courses/{id}", ch.Update)
 	mux.HandleFunc("DELETE /courses/{id}", ch.Delete)
+	// Phase（嵌套路由 + 全局列表）
 	mux.HandleFunc("GET /phases", psh.List)
-	mux.HandleFunc("POST /phases", psh.Create)
 	mux.HandleFunc("GET /phases/{id}", psh.Get)
 	mux.HandleFunc("PUT /phases/{id}", psh.Update)
 	mux.HandleFunc("DELETE /phases/{id}", psh.Delete)
+	mux.HandleFunc("GET /courses/{courseId}/phases", psh.ListByCourse)
+	mux.HandleFunc("POST /courses/{courseId}/phases", psh.CreateByCourse)
+	// Lesson
 	mux.HandleFunc("GET /lessons", lh.List)
 	mux.HandleFunc("POST /lessons", lh.Create)
 	mux.HandleFunc("GET /lessons/{id}", lh.Get)
 	mux.HandleFunc("PUT /lessons/{id}", lh.Update)
 	mux.HandleFunc("DELETE /lessons/{id}", lh.Delete)
-	mux.HandleFunc("GET /scenes", sh.List)
-	mux.HandleFunc("POST /scenes", sh.Create)
+	// Scene（嵌套路由）
 	mux.HandleFunc("GET /scenes/{id}", sh.Get)
 	mux.HandleFunc("PUT /scenes/{id}", sh.Update)
 	mux.HandleFunc("DELETE /scenes/{id}", sh.Delete)
-	mux.HandleFunc("GET /classes", clh.ListClasses)
-	mux.HandleFunc("POST /classes", clh.CreateClass)
-	mux.HandleFunc("GET /classes/{id}", clh.GetClass)
-	mux.HandleFunc("PUT /classes/{id}", clh.UpdateClass)
-	mux.HandleFunc("DELETE /classes/{id}", clh.DeleteClass)
+	mux.HandleFunc("GET /lessons/{lessonId}/scenes", sh.ListByLesson)
+	mux.HandleFunc("POST /lessons/{lessonId}/scenes", sh.CreateByLesson)
+	// Class
+	mux.HandleFunc("GET /classes", clh.List)
+	mux.HandleFunc("POST /classes", clh.Create)
+	mux.HandleFunc("GET /classes/{id}", clh.Get)
+	mux.HandleFunc("PUT /classes/{id}", clh.Update)
+	mux.HandleFunc("DELETE /classes/{id}", clh.Delete)
 	return mux, ps, cs, ls, ss, phs, cls
 }
 
@@ -111,7 +118,7 @@ func TestProgramHandler_CRUD(t *testing.T) {
 	w = request(t, mux, "POST", "/programs", `{"name":"大数据微专业"}`)
 	assertStatus(t, w, 201)
 	p := assertJSON(t, w)
-	if p["name"] != "大数据微专业" || p["id"] == "" {
+	if p["name"] != "大数据微专业" || p["id"] == "" || p["slug"] == "" {
 		t.Fatalf("bad create: %v", p)
 	}
 	pid := p["id"].(string)
@@ -123,6 +130,10 @@ func TestProgramHandler_CRUD(t *testing.T) {
 	// Create with empty name
 	w = request(t, mux, "POST", "/programs", `{"name":""}`)
 	assertStatus(t, w, 400)
+
+	// Create duplicate name
+	w = request(t, mux, "POST", "/programs", `{"name":"大数据微专业"}`)
+	assertStatus(t, w, 409)
 
 	// Get
 	w = request(t, mux, "GET", fmt.Sprintf("/programs/%s", pid), "")
@@ -186,12 +197,19 @@ func TestCourseHandler_CRUD(t *testing.T) {
 	assertStatus(t, w, 201)
 	c := assertJSON(t, w)
 	cid := c["id"].(string)
+	if c["slug"] == "" {
+		t.Fatal("slug is empty")
+	}
 
 	w = request(t, mux, "POST", "/courses", `{invalid`)
 	assertStatus(t, w, 400)
 
 	w = request(t, mux, "POST", "/courses", `{"name":""}`)
 	assertStatus(t, w, 400)
+
+	// Create duplicate name
+	w = request(t, mux, "POST", "/courses", `{"name":"数据工程"}`)
+	assertStatus(t, w, 409)
 
 	w = request(t, mux, "GET", fmt.Sprintf("/courses/%s", cid), "")
 	assertStatus(t, w, 200)
@@ -230,46 +248,58 @@ func TestPhaseHandler_CRUD(t *testing.T) {
 	assertStatus(t, w, 200)
 	assertJSONArray(t, w)
 
-	// Create needs a course first
+	// Create a course first
 	w = request(t, mux, "POST", "/courses", `{"name":"数据工程"}`)
 	assertStatus(t, w, 201)
 	c := assertJSON(t, w)
 	cid := c["id"].(string)
 
-	// Create phase with missing courseId
-	w = request(t, mux, "POST", "/phases", `{"name":"数据采集阶段"}`)
-	assertStatus(t, w, 400)
+	// List phases under course (empty via nested route)
+	w = request(t, mux, "GET", fmt.Sprintf("/courses/%s/phases", cid), "")
+	assertStatus(t, w, 200)
+	arr := assertJSONArray(t, w)
+	if len(arr) != 0 {
+		t.Fatalf("ListByCourse = %d, want 0", len(arr))
+	}
 
-	// Create phase with nonexistent course
-	w = request(t, mux, "POST", "/phases", `{"name":"x","courseId":"nonexistent"}`)
-	assertStatus(t, w, 404)
-
-	w = request(t, mux, "POST", "/phases", fmt.Sprintf(`{"name":"数据采集阶段","courseId":"%s","sortOrder":1}`, cid))
+	// Create phase via nested route
+	w = request(t, mux, "POST", fmt.Sprintf("/courses/%s/phases", cid), `{"name":"数据采集阶段","sortOrder":1}`)
 	assertStatus(t, w, 201)
 	p := assertJSON(t, w)
 	pid := p["id"].(string)
-	if p["name"] != "数据采集阶段" || p["courseId"] != cid || p["sortOrder"] != float64(1) {
+	if p["name"] != "数据采集阶段" || p["courseId"] != cid || p["sortOrder"] != float64(1) || p["slug"] == "" {
 		t.Fatalf("create phase = %v", p)
 	}
 
-	w = request(t, mux, "POST", "/phases", `{invalid`)
+	// Create phase with invalid JSON
+	w = request(t, mux, "POST", fmt.Sprintf("/courses/%s/phases", cid), `{invalid`)
 	assertStatus(t, w, 400)
 
-	w = request(t, mux, "POST", "/phases", `{"name":""}`)
+	// Create phase with empty name
+	w = request(t, mux, "POST", fmt.Sprintf("/courses/%s/phases", cid), `{"name":""}`)
 	assertStatus(t, w, 400)
 
+	// Create phase under nonexistent course
+	w = request(t, mux, "POST", "/courses/nonexistent/phases", `{"name":"阶段"}`)
+	assertStatus(t, w, 404)
+
+	// List phases under nonexistent course
+	w = request(t, mux, "GET", "/courses/nonexistent/phases", "")
+	assertStatus(t, w, 404)
+
+	// Get
 	w = request(t, mux, "GET", "/phases/"+pid, "")
 	assertStatus(t, w, 200)
 
 	w = request(t, mux, "GET", "/phases/nonexistent", "")
 	assertStatus(t, w, 404)
 
-	// List by courseId
-	w = request(t, mux, "GET", fmt.Sprintf("/phases?courseId=%s", cid), "")
+	// List by courseId (nested)
+	w = request(t, mux, "GET", fmt.Sprintf("/courses/%s/phases", cid), "")
 	assertStatus(t, w, 200)
-	arr := assertJSONArray(t, w)
+	arr = assertJSONArray(t, w)
 	if len(arr) != 1 {
-		t.Fatalf("List by courseId = %d, want 1", len(arr))
+		t.Fatalf("ListByCourse = %d, want 1", len(arr))
 	}
 
 	w = request(t, mux, "PUT", "/phases/"+pid, `{"name":"v2","sortOrder":2,"lessonIds":["less-1"]}`)
@@ -306,12 +336,19 @@ func TestLessonHandler_CRUD(t *testing.T) {
 	assertStatus(t, w, 201)
 	l := assertJSON(t, w)
 	lid := l["id"].(string)
+	if l["slug"] == "" {
+		t.Fatal("slug is empty")
+	}
 
 	w = request(t, mux, "POST", "/lessons", `{invalid`)
 	assertStatus(t, w, 400)
 
 	w = request(t, mux, "POST", "/lessons", `{"title":""}`)
 	assertStatus(t, w, 400)
+
+	// Create duplicate title
+	w = request(t, mux, "POST", "/lessons", `{"title":"课时1"}`)
+	assertStatus(t, w, 409)
 
 	w = request(t, mux, "GET", fmt.Sprintf("/lessons/%s", lid), "")
 	assertStatus(t, w, 200)
@@ -345,12 +382,12 @@ func TestLessonHandler_CRUD(t *testing.T) {
 func TestSceneHandler_CRUD(t *testing.T) {
 	mux, _, _, _, _, _, _ := setupMux()
 
-	// List without lessonId
-	w := request(t, mux, "GET", "/scenes", "")
-	assertStatus(t, w, 400)
+	// List scenes under nonexistent lesson
+	w := request(t, mux, "GET", "/lessons/nonexistent/scenes", "")
+	assertStatus(t, w, 404)
 
-	// Create without lesson existing
-	w = request(t, mux, "POST", "/scenes", `{"lessonId":"nonexistent","videoUrl":"intro.mp4"}`)
+	// Create scene under nonexistent lesson
+	w = request(t, mux, "POST", "/lessons/nonexistent/scenes", `{"videoUrl":"intro.mp4"}`)
 	assertStatus(t, w, 404)
 
 	// Create a lesson first
@@ -359,17 +396,25 @@ func TestSceneHandler_CRUD(t *testing.T) {
 	l := assertJSON(t, w)
 	lid := l["id"].(string)
 
-	// Create scene
-	w = request(t, mux, "POST", "/scenes", fmt.Sprintf(`{"lessonId":"%s","videoUrl":"intro.mp4","choices":[{"label":"继续","targetSceneId":"scene-99"}]}`, lid))
+	// List scenes (empty via nested)
+	w = request(t, mux, "GET", fmt.Sprintf("/lessons/%s/scenes", lid), "")
+	assertStatus(t, w, 200)
+	arr := assertJSONArray(t, w)
+	if len(arr) != 0 {
+		t.Fatalf("ListByLesson = %d, want 0", len(arr))
+	}
+
+	// Create scene via nested route
+	w = request(t, mux, "POST", fmt.Sprintf("/lessons/%s/scenes", lid), `{"title":"开场","videoUrl":"intro.mp4","choices":[{"label":"继续","targetSceneId":"scene-99"}]}`)
 	assertStatus(t, w, 201)
 	sc := assertJSON(t, w)
 	scid := sc["id"].(string)
-	if sc["videoUrl"] != "intro.mp4" {
-		t.Fatalf("Create scene videoUrl=%q", sc["videoUrl"])
+	if sc["videoUrl"] != "intro.mp4" || sc["lessonId"] != lid || sc["slug"] == "" {
+		t.Fatalf("Create scene = %v", sc)
 	}
 
 	// Create scene with no choices
-	w = request(t, mux, "POST", "/scenes", fmt.Sprintf(`{"lessonId":"%s","videoUrl":"outro.mp4"}`, lid))
+	w = request(t, mux, "POST", fmt.Sprintf("/lessons/%s/scenes", lid), `{"title":"结尾","videoUrl":"outro.mp4"}`)
 	assertStatus(t, w, 201)
 	sc2 := assertJSON(t, w)
 	if choices, ok := sc2["choices"].([]any); !ok || len(choices) != 0 {
@@ -377,28 +422,20 @@ func TestSceneHandler_CRUD(t *testing.T) {
 	}
 
 	// Create with invalid JSON
-	w = request(t, mux, "POST", "/scenes", `{`)
+	w = request(t, mux, "POST", fmt.Sprintf("/lessons/%s/scenes", lid), `{`)
 	assertStatus(t, w, 400)
 
-	// Create with empty lessonId
-	w = request(t, mux, "POST", "/scenes", `{"videoUrl":"x.mp4"}`)
-	assertStatus(t, w, 400)
-
-	// List by lessonId
-	w = request(t, mux, "GET", fmt.Sprintf("/scenes?lessonId=%s", lid), "")
+	// List by lesson
+	w = request(t, mux, "GET", fmt.Sprintf("/lessons/%s/scenes", lid), "")
 	assertStatus(t, w, 200)
-	arr := assertJSONArray(t, w)
+	arr = assertJSONArray(t, w)
 	if len(arr) != 2 {
 		t.Fatalf("List scenes = %d, want 2", len(arr))
 	}
 
 	// List for nonexistent lesson
-	w = request(t, mux, "GET", "/scenes?lessonId=nonexistent", "")
-	assertStatus(t, w, 200)
-	arr = assertJSONArray(t, w)
-	if len(arr) != 0 {
-		t.Fatalf("List nonexistent = %d, want 0", len(arr))
-	}
+	w = request(t, mux, "GET", "/lessons/nonexistent/scenes", "")
+	assertStatus(t, w, 404)
 
 	// Get
 	w = request(t, mux, "GET", fmt.Sprintf("/scenes/%s", scid), "")
@@ -446,6 +483,9 @@ func TestClassHandler_CRUD(t *testing.T) {
 	assertStatus(t, w, 201)
 	c := assertJSON(t, w)
 	cid := c["id"].(string)
+	if c["slug"] == "" {
+		t.Fatal("slug is empty")
+	}
 
 	w = request(t, mux, "POST", "/classes", `{invalid`)
 	assertStatus(t, w, 400)
@@ -455,6 +495,10 @@ func TestClassHandler_CRUD(t *testing.T) {
 
 	w = request(t, mux, "POST", "/classes", `{"refId":"prog-1"}`)
 	assertStatus(t, w, 400)
+
+	// Create duplicate name
+	w = request(t, mux, "POST", "/classes", `{"name":"浙理班级","refId":"prog-2"}`)
+	assertStatus(t, w, 409)
 
 	w = request(t, mux, "GET", fmt.Sprintf("/classes/%s", cid), "")
 	assertStatus(t, w, 200)

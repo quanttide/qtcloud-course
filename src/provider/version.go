@@ -2,4 +2,7 @@
 package version
 
 // Version 是当前发布版本。
-const Version = "0.0.2"
+const Version = "0.1.0-alpha"
+
+// PreRelease 描述当前阶段。
+const PreRelease = "phase-1-route-refactor"

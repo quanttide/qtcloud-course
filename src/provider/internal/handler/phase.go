@@ -17,16 +17,30 @@ func NewPhaseHandler(s *store.PhaseStore, cs *store.CourseStore) *PhaseHandler {
 	return &PhaseHandler{store: s, courseStore: cs}
 }
 
+// List 返回所有阶段（全局列表）。
 func (h *PhaseHandler) List(w http.ResponseWriter, r *http.Request) {
-	courseID := r.URL.Query().Get("courseId")
-	if courseID != "" {
-		writeJSON(w, http.StatusOK, h.store.ListByCourse(courseID))
-		return
-	}
 	writeJSON(w, http.StatusOK, h.store.List())
 }
 
-func (h *PhaseHandler) Create(w http.ResponseWriter, r *http.Request) {
+// ListByCourse 返回指定课程下的所有阶段。
+// GET /courses/{courseId}/phases
+func (h *PhaseHandler) ListByCourse(w http.ResponseWriter, r *http.Request) {
+	courseID := r.PathValue("courseId")
+	if _, ok := h.courseStore.Get(courseID); !ok {
+		http.Error(w, `{"error":"course not found"}`, http.StatusNotFound)
+		return
+	}
+	writeJSON(w, http.StatusOK, h.store.ListByCourse(courseID))
+}
+
+// CreateByCourse 在指定课程下创建阶段。
+// POST /courses/{courseId}/phases
+func (h *PhaseHandler) CreateByCourse(w http.ResponseWriter, r *http.Request) {
+	courseID := r.PathValue("courseId")
+	if _, ok := h.courseStore.Get(courseID); !ok {
+		http.Error(w, `{"error":"course not found"}`, http.StatusNotFound)
+		return
+	}
 	var p domain.Phase
 	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
 		http.Error(w, `{"error":"invalid request body"}`, http.StatusBadRequest)
@@ -36,14 +50,7 @@ func (h *PhaseHandler) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"name is required"}`, http.StatusBadRequest)
 		return
 	}
-	if p.CourseID == "" {
-		http.Error(w, `{"error":"courseId is required"}`, http.StatusBadRequest)
-		return
-	}
-	if _, ok := h.courseStore.Get(p.CourseID); !ok {
-		http.Error(w, `{"error":"course not found"}`, http.StatusNotFound)
-		return
-	}
+	p.CourseID = courseID
 	writeJSON(w, http.StatusCreated, h.store.Create(&p))
 }
 

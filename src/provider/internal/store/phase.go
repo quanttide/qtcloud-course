@@ -1,39 +1,14 @@
 package store
 
-import (
-	"fmt"
-	"sync"
+import "github.com/quanttide/qtcloud-course-provider/internal/domain"
 
-	"github.com/quanttide/qtcloud-course-provider/internal/domain"
-)
-
+// PhaseStore 是 Phase 的内存存储。
 type PhaseStore struct {
-	mu   sync.RWMutex
-	data map[string]*domain.Phase
-	seq  int
+	*BaseStore[domain.Phase]
 }
 
 func NewPhaseStore() *PhaseStore {
-	return &PhaseStore{
-		data: make(map[string]*domain.Phase),
-		seq:  1,
-	}
-}
-
-func (s *PhaseStore) nextID() string {
-	id := fmt.Sprintf("phase-%d", s.seq)
-	s.seq++
-	return id
-}
-
-func (s *PhaseStore) List() []*domain.Phase {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	result := make([]*domain.Phase, 0, len(s.data))
-	for _, p := range s.data {
-		result = append(result, p)
-	}
-	return result
+	return &PhaseStore{BaseStore: NewBaseStore[domain.Phase]("phase")}
 }
 
 func (s *PhaseStore) ListByCourse(courseID string) []*domain.Phase {
@@ -48,18 +23,12 @@ func (s *PhaseStore) ListByCourse(courseID string) []*domain.Phase {
 	return result
 }
 
-func (s *PhaseStore) Get(id string) (*domain.Phase, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	p, ok := s.data[id]
-	return p, ok
-}
-
 func (s *PhaseStore) Create(p *domain.Phase) *domain.Phase {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	clone := *p
 	clone.ID = s.nextID()
+	clone.Slug = domain.MakeSlug(clone.Name, clone.ID)
 	if clone.LessonIDs == nil {
 		clone.LessonIDs = []string{}
 	}
@@ -79,14 +48,4 @@ func (s *PhaseStore) Update(p *domain.Phase) (*domain.Phase, bool) {
 	existing.SortOrder = p.SortOrder
 	existing.LessonIDs = p.LessonIDs
 	return existing, true
-}
-
-func (s *PhaseStore) Delete(id string) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	_, ok := s.data[id]
-	if ok {
-		delete(s.data, id)
-	}
-	return ok
 }
