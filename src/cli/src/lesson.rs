@@ -19,11 +19,11 @@ pub fn run_blueprint(from: &Path, to: &Path, llm: Option<&LLM>) {
 
     let prompt = format!(
         "你是一位课程设计专家。请为课时「{}」设计详细的场景蓝图。\n\n\
-         场景定义：每个场景是一个操作步骤。场景按操作流程排序，正常步骤在前，对应的异常分支紧随其后。\n\n\
+         场景定义：每个场景是一个操作步骤。场景按操作流程排序，正常步骤在前，异常分支紧随其后。\n\n\
          要求：\n\
-         1. 梳理该课时的核心操作流程，拆解为 4-8 个操作步骤\n\
-         2. 正常步骤类型为 step，异常/失败分支类型为 exception\n\
-         3. 场景序列按操作顺序排列：step → exception(可选) → step → exception(可选) → …\n\
+         1. 梳理该课时的核心操作流程，拆解为 4-8 个操作场景\n\
+         2. 场景序列按操作顺序排列，正常场景在前，异常场景紧随其后\n\
+         3. 异常场景设置 \"exception\": true，正常场景不设置\n\
          4. 每个场景需要有具体的操作描述和时长\n\
          5. 使用原始资料中的真实案例作为场景素材\n\n\
          请严格按照以下 JSON 格式输出，不要包含其他内容：\n\
@@ -33,14 +33,13 @@ pub fn run_blueprint(from: &Path, to: &Path, llm: Option<&LLM>) {
              \"duration_minutes\": 45,\n\
              \"scenes\": [\n\
                  {{\n\
-                     \"title\": \"步骤一：操作名称\",\n\
-                     \"type\": \"step\",\n\
+                     \"title\": \"操作名称\",\n\
                      \"description\": \"具体操作描述\",\n\
                      \"duration_minutes\": 10\n\
                  }},\n\
                  {{\n\
-                     \"title\": \"步骤一异常：异常说明\",\n\
-                     \"type\": \"exception\",\n\
+                     \"title\": \"异常说明\",\n\
+                     \"exception\": true,\n\
                      \"description\": \"异常处理描述\",\n\
                      \"duration_minutes\": 5\n\
                  }}\n\
@@ -70,9 +69,9 @@ pub fn run_design(file: &Path, instruction: &str, to: &Path, llm: Option<&LLM>) 
         "你是一位课程设计专家。请根据用户的设计指示，修改已有的课时蓝图。\n\n\
          设计要求：{}\n\n\
          注意事项：\n\
-         1. 保持课时蓝图的操作流程结构（step → exception 交替）\n\
+         1. 保持课时蓝图的操作流程结构（正常场景 → 异常场景 → ...）\n\
          2. 只修改用户要求的部分，其他部分保持不变\n\
-         3. 正常步骤 type 为 step，异常分支 type 为 exception\n\
+         3. 异常场景设置 \"exception\": true，正常场景不设置\n\
          4. 输出完整的课时蓝图 JSON，不要省略任何字段\n\n\
          请严格按照以下 JSON 格式输出，不要包含其他内容：\n\
          {{\n\
@@ -81,8 +80,7 @@ pub fn run_design(file: &Path, instruction: &str, to: &Path, llm: Option<&LLM>) 
              \"duration_minutes\": 45,\n\
              \"scenes\": [\n\
                  {{\n\
-                     \"title\": \"步骤名称\",\n\
-                     \"type\": \"step\",\n\
+                     \"title\": \"操作名称\",\n\
                      \"description\": \"操作描述\",\n\
                      \"duration_minutes\": 10\n\
                  }}\n\
@@ -192,12 +190,12 @@ mod tests {
     }
 
     #[test]
-    fn test_output_has_step_type() {
+    fn test_output_has_no_type_field() {
         let response = serde_json::json!({
             "choices": [{
                 "message": {
                     "content": r#"```json
-{"title": "版本发布", "description": "学会完整发布流程", "duration_minutes": 45, "scenes": [{"title": "步骤一：更新版本号", "type": "step", "description": "修改配置文件", "duration_minutes": 10}]}
+{"title": "版本发布", "description": "学会完整发布流程", "duration_minutes": 45, "scenes": [{"title": "更新版本号", "description": "修改配置文件", "duration_minutes": 10}]}
 ```"#
                 },
                 "finish_reason": "stop"

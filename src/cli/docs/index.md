@@ -26,7 +26,7 @@ qtcloud-course course design --file <蓝图.json> --instruction "把第一阶段
 qtcloud-course lesson blueprint --from <资料.md> --to <课时.json>
 ```
 
-输出 Lesson → Scene 二级结构。每个场景是一个操作步骤，`type: step` 为正常路径，`type: exception` 为异常/失败分支。场景序列按操作流程排序。
+输出 Lesson → Scene 二级结构。每个场景是一个操作步骤，按操作流程排序。异常场景设置 `"exception": true`，正常场景无 type 字段。
 
 ### 课时设计 — 基于已有课时迭代修改
 

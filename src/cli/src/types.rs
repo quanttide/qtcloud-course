@@ -43,25 +43,20 @@ pub struct LessonBlueprint {
 
 /// 场景
 ///
-/// 每个场景是一个操作步骤。`type` 区分正常路径和异常分支。
-/// 场景序列按操作流程排序（step → exception → step → exception → ...）。
+/// 每个场景是一个操作步骤。`exception: true` 标记异常/失败分支，
+/// 默认为正常步骤（不输出 exception 字段）。
+/// 场景序列按操作流程排序，正常步骤在前，异常分支紧随其后。
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Scene {
     pub title: String,
-    #[serde(rename = "type")]
-    pub scene_type: SceneType,
     pub description: String,
     pub duration_minutes: Option<u32>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub exception: bool,
 }
 
-/// 场景类型
-/// - `step`: 正常操作步骤
-/// - `exception`: 该步骤的异常/失败分支
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "snake_case")]
-pub enum SceneType {
-    Step,
-    Exception,
+fn is_false(b: &bool) -> bool {
+    !b
 }
 
 /// Schema 校验结果
@@ -162,10 +157,10 @@ pub fn validate_lesson_json(json: &serde_json::Value) -> ValidationResult {
         if !scene.get("title").and_then(|v| v.as_str()).is_some_and(|s| !s.is_empty()) {
             errors.push(format!("scenes[{}] 缺少非空 'title' 字段", i));
         }
-        match scene.get("type").and_then(|v| v.as_str()) {
-            Some("step") | Some("exception") => {}
-            Some(other) => errors.push(format!("scenes[{}] 'type' 无效：'{}'，应为 'step' 或 'exception'", i, other)),
-            None => errors.push(format!("scenes[{}] 缺少 'type' 字段", i)),
+        if let Some(exception) = scene.get("exception") {
+            if !exception.is_boolean() {
+                errors.push(format!("scenes[{}] 'exception' 必须为布尔值", i));
+            }
         }
     }
 
