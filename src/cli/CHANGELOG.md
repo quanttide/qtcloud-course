@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## [0.1.0-beta.1] - 2026-07-17
+
+### Added
+- `lesson blueprint` 两遍 LLM 调用（切场景 → 编排）
+- `lesson design` 子命令
+- `scene blueprint` 和 `scene design` 子命令
+- `course preview` / `lesson preview` / `scene preview` 命令（JSON→HTML）
+- preview `--template` 参数：支持自定义 HTML 模板
+- CI workflows：build-cli / publish-cli
+
+### Changed
+- 场景类型改为操作步骤（step），异常通过嵌套 exception 字段表达
+- `course blueprint` 输出不再含 Scene 层级
+- 移除所有 `duration_minutes`（时长是录制实测值，非设计数据）
+- CHANGELOG 按 Keep a Changelog 规范重排
+- docs 拆分为 course/lesson/scene 三份独立文档
+
 ## [0.1.0-alpha.6] - 2026-07-16
 
 ### Added
