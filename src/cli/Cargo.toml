@@ -2,6 +2,9 @@
 name = "qtcloud-course-cli"
 version = "0.1.0-beta.2"
 edition = "2021"
+description = "从 Markdown 原始资料生成结构化课程蓝图的 CLI 工具"
+license = "Apache-2.0"
+repository = "https://github.com/quanttide/qtcloud-course"
 
 [[bin]]
 name = "qtcloud-course"
