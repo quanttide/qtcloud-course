@@ -89,47 +89,239 @@ class _SceneEditorScreenState extends State<SceneEditorScreen> {
     final titleCtrl = TextEditingController(text: scene.title);
     final verifyCtrl = TextEditingController(text: scene.verifyTip);
     final videoCtrl = TextEditingController(text: scene.videoUrl);
+    final mutableChoices = scene.choices
+        .map((c) => _MutableChoice(label: c.label, targetSceneId: c.targetSceneId))
+        .toList();
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('编辑场景'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: '标识（name）')),
-              const SizedBox(height: 8),
-              TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: '标题（title）')),
-              const SizedBox(height: 8),
-              TextField(controller: verifyCtrl, decoration: const InputDecoration(labelText: '验证提示（verifyTip）'), maxLines: 2),
-              const SizedBox(height: 8),
-              TextField(controller: videoCtrl, decoration: const InputDecoration(labelText: '视频 URL'), maxLines: 1),
-            ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('编辑场景'),
+          content: SizedBox(
+            width: 400,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: '标识（name）')),
+                  const SizedBox(height: 8),
+                  TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: '标题（title）')),
+                  const SizedBox(height: 8),
+                  TextField(controller: verifyCtrl, decoration: const InputDecoration(labelText: '验证提示（verifyTip）'), maxLines: 2),
+                  const SizedBox(height: 8),
+                  TextField(controller: videoCtrl, decoration: const InputDecoration(labelText: '视频 URL'), maxLines: 1),
+
+                  const SizedBox(height: 16),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.alt_route, size: 18, color: Colors.purple),
+                      const SizedBox(width: 6),
+                      const Text('分支选项', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                      const Spacer(),
+                      TextButton.icon(
+                        icon: const Icon(Icons.add, size: 16),
+                        label: const Text('添加分支', style: TextStyle(fontSize: 12)),
+                        onPressed: () => _showAddChoiceDialog(
+                          ctx, setDialogState, mutableChoices,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (mutableChoices.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text('无分支选项，学员将直接完成课时',
+                          style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                    )
+                  else
+                    ...mutableChoices.asMap().entries.map((entry) => Card(
+                      margin: const EdgeInsets.only(bottom: 4),
+                      child: ListTile(
+                        dense: true,
+                        leading: Container(
+                          width: 22, height: 22,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle, color: Colors.purple,
+                          ),
+                          child: Center(
+                            child: Text('${entry.key + 1}',
+                                style: const TextStyle(fontSize: 11, color: Colors.white)),
+                          ),
+                        ),
+                        title: Text(entry.value.label, style: const TextStyle(fontSize: 13)),
+                        subtitle: Text('→ ${entry.value.targetSceneId}',
+                            style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, size: 16),
+                              onPressed: () => _showEditChoiceDialog(
+                                ctx, setDialogState, mutableChoices, entry.key,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 16, color: Colors.red),
+                              onPressed: () {
+                                setDialogState(() => mutableChoices.removeAt(entry.key));
+                              },
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )),
+                ],
+              ),
+            ),
           ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+            FilledButton(
+              onPressed: () {
+                _service.updateScene(
+                  _lessonId, scene.id,
+                  name: nameCtrl.text,
+                  title: titleCtrl.text,
+                  verifyTip: verifyCtrl.text,
+                  videoUrl: videoCtrl.text,
+                  choices: mutableChoices
+                      .map((c) => Choice(label: c.label, targetSceneId: c.targetSceneId))
+                      .toList(),
+                );
+                setState(() {
+                  final i = _scenes.indexWhere((s) => s.id == scene.id);
+                  if (i != -1) {
+                    _scenes[i] = _scenes[i].copyWith(
+                      name: nameCtrl.text,
+                      title: titleCtrl.text,
+                      verifyTip: verifyCtrl.text,
+                      videoUrl: videoCtrl.text,
+                      choices: mutableChoices
+                          .map((c) => Choice(label: c.label, targetSceneId: c.targetSceneId))
+                          .toList(),
+                    );
+                  }
+                });
+                Navigator.pop(ctx);
+              },
+              child: const Text('保存'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddChoiceDialog(
+    BuildContext dialogContext,
+    void Function(VoidCallback) setDialogState,
+    List<_MutableChoice> mutableChoices,
+  ) {
+    final labelCtrl = TextEditingController();
+    String selectedTargetId = _scenes.firstOrNull?.id ?? '';
+    showDialog(
+      context: dialogContext,
+      builder: (ctx) => AlertDialog(
+        title: const Text('添加分支'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: labelCtrl,
+              autofocus: true,
+              decoration: const InputDecoration(labelText: '按钮文字', hintText: '继续'),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: selectedTargetId,
+              decoration: const InputDecoration(labelText: '跳转目标场景'),
+              items: _scenes
+                  .map((s) => DropdownMenuItem(
+                    value: s.id,
+                    child: Text(s.title.isNotEmpty ? s.title : s.name, style: const TextStyle(fontSize: 13)),
+                  ))
+                  .toList(),
+              onChanged: (v) => selectedTargetId = v ?? selectedTargetId,
+            ),
+          ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
           FilledButton(
             onPressed: () {
-              _service.updateScene(
-                _lessonId, scene.id,
-                name: nameCtrl.text,
-                title: titleCtrl.text,
-                verifyTip: verifyCtrl.text,
-                videoUrl: videoCtrl.text,
-              );
-              setState(() {
-                final i = _scenes.indexWhere((s) => s.id == scene.id);
-                if (i != -1) {
-                  _scenes[i] = _scenes[i].copyWith(
-                    name: nameCtrl.text,
-                    title: titleCtrl.text,
-                    verifyTip: verifyCtrl.text,
-                    videoUrl: videoCtrl.text,
+              if (labelCtrl.text.isNotEmpty) {
+                setDialogState(() {
+                  mutableChoices.add(_MutableChoice(
+                    label: labelCtrl.text,
+                    targetSceneId: selectedTargetId,
+                  ));
+                });
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text('添加'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditChoiceDialog(
+    BuildContext dialogContext,
+    void Function(VoidCallback) setDialogState,
+    List<_MutableChoice> mutableChoices,
+    int index,
+  ) {
+    final existing = mutableChoices[index];
+    final labelCtrl = TextEditingController(text: existing.label);
+    String selectedTargetId = existing.targetSceneId;
+    showDialog(
+      context: dialogContext,
+      builder: (ctx) => AlertDialog(
+        title: const Text('编辑分支'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: labelCtrl,
+              autofocus: true,
+              decoration: const InputDecoration(labelText: '按钮文字'),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: selectedTargetId,
+              decoration: const InputDecoration(labelText: '跳转目标场景'),
+              items: _scenes
+                  .map((s) => DropdownMenuItem(
+                    value: s.id,
+                    child: Text(s.title.isNotEmpty ? s.title : s.name, style: const TextStyle(fontSize: 13)),
+                  ))
+                  .toList(),
+              onChanged: (v) => selectedTargetId = v ?? selectedTargetId,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          FilledButton(
+            onPressed: () {
+              if (labelCtrl.text.isNotEmpty) {
+                setDialogState(() {
+                  mutableChoices[index] = _MutableChoice(
+                    label: labelCtrl.text,
+                    targetSceneId: selectedTargetId,
                   );
-                }
-              });
-              Navigator.pop(ctx);
+                });
+                Navigator.pop(ctx);
+              }
             },
             child: const Text('保存'),
           ),

@@ -2,24 +2,22 @@
 
 ## [v0.1] — 课程制作（进行中）
 
-> 补齐 Scene 编辑器，不再依赖手写 JSON，打通从蓝图到互动课时的端到端链路。
+> Scene 编辑器 + 分支选项 + 本地持久化。Studio 作为独立本地软件，不依赖 Provider/CLI。
 
 ### Added
-- [x] Scene 编辑器：创建/编辑场景、步骤，与 Provider API 打通
-- [ ] 数据管线：一键导入 CLI blueprint 结构化 JSON 为课程结构
-- [x] API 模式默认：不再依赖本地 JSON 启动（本地 JSON 降级为离线回退）
+- [x] Scene 编辑器：创建/编辑/删除/排序场景和步骤
+- [x] 分支选项 UI：步骤内分支选择、跳转目标场景配置
+- [x] 本地模式默认：不再依赖 Provider API，默认读取本地 JSON
+- [x] 本地持久化：编辑内容自动保存到 `~/.qtcloud-course/data/`
+- [x] JSON 导出/导入：文件选择器导入导出课程结构
+- [x] `dart analyze` 零报错
+- [x] `flutter test` 165 个全通过
+- [ ] 导入预览 + JSON schema 校验
 - [ ] 环境配置统一（`api_base_url`、`data_dir`）
-- [ ] 分支选项 UI：步骤内分支选择、跳转逻辑配置
-- [ ] 导入预览：确认/回滚导入结果
-- [ ] JSON schema 校验 + 错误提示
-- [ ] iOS 构建验证（`flutter build ios`）
-- [ ] Android 构建验证（`flutter build apk`）
-- [ ] CI：push 自动跑 `flutter test` + `dart analyze`
-- [ ] CI：覆盖率门禁
-- [ ] 三 Service `_apiPost/Put/Delete` 提取为 mixin
-- [ ] `analysis_options.yaml` 开启 `prefer_const_constructors` 等 lint
-- [ ] GUI 测试并行化：16 个 pytest 错误修复（无 Flutter 进程时跳过标记）
-- [ ] `flutter test` 全部通过 + `dart analyze` 零报错
+- [ ] iOS/Android 构建验证
+- [ ] CI：自动构建+测试+覆盖率门禁
+- [ ] Service mixin 重构
+- [ ] GUI 测试并行化
 
 ## [v0.2] — 考核（规划中）
 
