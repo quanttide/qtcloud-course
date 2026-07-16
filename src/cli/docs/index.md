@@ -4,21 +4,35 @@
 
 ## 命令
 
-### 课程蓝图（Program → Course → Phase → Lesson）
+### 课程蓝图 — 从生产材料生成
 
 ```
-qtcloud-course course blueprint --from <input.md> --to <output.json>
+qtcloud-course course blueprint --from <资料.md> --to <蓝图.json>
 ```
 
-主题从文件名推断。输出不含 Scene 层级，Scene 级设计由 `lesson blueprint` 负责。
+主题从文件名推断。输出 Program → Course → Phase → Lesson 四级结构，不含 Scene。
 
-### 课时蓝图（Lesson → Scene）
+### 课程设计 — 基于已有蓝图迭代修改
 
 ```
-qtcloud-course lesson blueprint --from <input.md> --to <output.json>
+qtcloud-course course design --file <蓝图.json> --instruction "把第一阶段改成3节课" --to <输出.json>
 ```
 
-为单个课时设计完整的场景编排（lecture/demo/exercise/discussion/quiz/review）。
+读取已有课程蓝图 JSON，结合人类设计指示输出修改后的版本。
+
+### 课时蓝图 — 从生产材料生成
+
+```
+qtcloud-course lesson blueprint --from <资料.md> --to <课时.json>
+```
+
+输出 Lesson → Scene 二级结构，含 lecture/demo/exercise/discussion/quiz/review 场景编排。
+
+### 课时设计 — 基于已有课时迭代修改
+
+```
+qtcloud-course lesson design --file <课时.json> --instruction "第一个scene改成demo" --to <输出.json>
+```
 
 ## 配置
 

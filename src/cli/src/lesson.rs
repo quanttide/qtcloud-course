@@ -3,11 +3,11 @@ use std::path::Path;
 
 use quanttide_agent::{LLM, Message};
 
-/// 从 Markdown 源文件生成课时蓝图 JSON（单个 Lesson 的 Scene 级设计）。
+/// 从 Markdown 源文件生成课时蓝图 JSON（Lesson → Scene）。
 ///
 /// 主题从文件名推断，原始资料全文作为上下文。
 /// 输出包含完整的 Lecture/Demo/Exercise/Discussion/Quiz/Review 场景编排。
-pub fn run(from: &Path, to: &Path, llm: Option<&LLM>) {
+pub fn run_blueprint(from: &Path, to: &Path, llm: Option<&LLM>) {
     let material = fs::read_to_string(from).unwrap_or_else(|e| {
         eprintln!("错误：读取 {} 失败 - {}", from.display(), e);
         std::process::exit(1);
@@ -45,6 +45,54 @@ pub fn run(from: &Path, to: &Path, llm: Option<&LLM>) {
 
     let full_prompt = format!("{}\n\n## 原始资料\n\n{}", prompt, material);
 
+    send_and_write(&full_prompt, to, llm);
+}
+
+/// 基于已有课时蓝图 + 人类指示迭代修改。
+///
+/// 读取已有的课时蓝图 JSON，结合人类设计指示，输出修改后的版本。
+pub fn run_design(file: &Path, instruction: &str, to: &Path, llm: Option<&LLM>) {
+    let existing = fs::read_to_string(file).unwrap_or_else(|e| {
+        eprintln!("错误：读取 {} 失败 - {}", file.display(), e);
+        std::process::exit(1);
+    });
+
+    let _existing_json: serde_json::Value = serde_json::from_str(&existing).unwrap_or_else(|e| {
+        eprintln!("错误：{} 不是合法的 JSON - {}", file.display(), e);
+        std::process::exit(1);
+    });
+
+    let prompt = format!(
+        "你是一位课程设计专家。请根据用户的设计指示，修改已有的课时蓝图。\n\n\
+         设计要求：{}\n\n\
+         注意事项：\n\
+         1. 保持课时蓝图的结构完整性（Lesson → Scene）\n\
+         2. 只修改用户要求的部分，其他部分保持不变\n\
+         3. 每个场景需注明类型（lecture/demo/exercise/discussion/quiz/review）和时长\n\
+         4. 输出完整的课时蓝图 JSON，不要省略任何字段\n\n\
+         请严格按照以下 JSON 格式输出，不要包含其他内容：\n\
+         {{\n\
+             \"title\": \"课时标题\",\n\
+             \"description\": \"教学目标\",\n\
+             \"duration_minutes\": 45,\n\
+             \"scenes\": [\n\
+                 {{\n\
+                     \"title\": \"场景标题\",\n\
+                     \"type\": \"lecture\",\n\
+                     \"description\": \"场景描述\",\n\
+                     \"duration_minutes\": 15\n\
+                 }}\n\
+             ]\n\
+         }}",
+        instruction
+    );
+
+    let full_prompt = format!("{}\n\n## 当前课时蓝图\n\n{}", prompt, existing);
+
+    send_and_write(&full_prompt, to, llm);
+}
+
+fn send_and_write(full_prompt: &str, to: &Path, llm: Option<&LLM>) {
     let default_llm;
     let llm_ref: &LLM = match llm {
         Some(l) => l,
@@ -54,7 +102,7 @@ pub fn run(from: &Path, to: &Path, llm: Option<&LLM>) {
         }
     };
 
-    let messages = vec![Message::new("user", &full_prompt)];
+    let messages = vec![Message::new("user", full_prompt)];
     let options = Default::default();
 
     let resp = llm_ref.complete(&messages, options).unwrap_or_else(|e| {
@@ -93,7 +141,6 @@ mod tests {
     use std::io::Write;
     use tempfile::NamedTempFile;
 
-    /// Mock HTTP 客户端
     struct MockHttpClient {
         response: Value,
         last_request: Arc<Mutex<Option<Value>>>,
@@ -108,7 +155,7 @@ mod tests {
     }
 
     #[test]
-    fn test_prompt_derives_topic_from_filename() {
+    fn test_blueprint_prompt_derives_topic() {
         let response = serde_json::json!({
             "choices": [{
                 "message": {
@@ -133,7 +180,7 @@ mod tests {
         let output = NamedTempFile::new().unwrap();
 
         let _result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            run(input.path(), output.path(), Some(&llm));
+            run_blueprint(input.path(), output.path(), Some(&llm));
         }));
 
         let request = last_request.lock().unwrap().clone();
@@ -141,13 +188,11 @@ mod tests {
     }
 
     #[test]
-    fn test_output_has_scenes() {
+    fn test_design_receives_existing_json() {
         let response = serde_json::json!({
             "choices": [{
                 "message": {
-                    "content": r#"```json
-{"title": "CI/CD 入门", "description": "学会基础CI流程", "duration_minutes": 45, "scenes": [{"title": "引入", "type": "lecture", "description": "引入CI概念", "duration_minutes": 10}]}
-```"#
+                    "content": r#"{"title": "Modified", "description": "Modified desc", "duration_minutes": 45, "scenes": []}"#
                 },
                 "finish_reason": "stop"
             }],
@@ -164,13 +209,29 @@ mod tests {
         let llm = LLM::with_client("mock", "http://mock", "key", Box::new(client));
 
         let mut input = NamedTempFile::new().unwrap();
-        writeln!(input, "# CI/CD 入门").unwrap();
+        writeln!(
+            input,
+            r#"{{"title": "Original", "description": "Original desc", "duration_minutes": 45, "scenes": []}}"#
+        )
+        .unwrap();
         let output = NamedTempFile::new().unwrap();
 
         let _result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            run(input.path(), output.path(), Some(&llm));
+            run_design(
+                input.path(),
+                "把标题改成Modified",
+                output.path(),
+                Some(&llm),
+            );
         }));
 
-        assert!(last_request.lock().unwrap().is_some(), "LLM 应该被调用");
+        let request = last_request.lock().unwrap().clone();
+        assert!(request.is_some(), "LLM 应该被调用");
+        if let Some(body) = request {
+            let messages = body["messages"].as_array().unwrap();
+            let content = messages[0]["content"].as_str().unwrap();
+            assert!(content.contains("Original"), "提示词应包含已有蓝图内容");
+            assert!(content.contains("把标题改成Modified"), "提示词应包含人类指示");
+        }
     }
 }

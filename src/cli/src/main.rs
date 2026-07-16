@@ -30,7 +30,18 @@ enum CourseAction {
         /// 原始资料 Markdown 文件路径
         #[arg(long)]
         from: PathBuf,
-
+        /// 输出课程蓝图 JSON 文件路径
+        #[arg(long)]
+        to: PathBuf,
+    },
+    /// 基于已有课程蓝图 + 人类指示迭代设计
+    Design {
+        /// 已有的课程蓝图 JSON 文件路径
+        #[arg(long)]
+        file: PathBuf,
+        /// 人类设计指示
+        #[arg(long)]
+        instruction: String,
         /// 输出课程蓝图 JSON 文件路径
         #[arg(long)]
         to: PathBuf,
@@ -44,7 +55,18 @@ enum LessonAction {
         /// 原始资料 Markdown 文件路径
         #[arg(long)]
         from: PathBuf,
-
+        /// 输出课时蓝图 JSON 文件路径
+        #[arg(long)]
+        to: PathBuf,
+    },
+    /// 基于已有课时蓝图 + 人类指示迭代设计
+    Design {
+        /// 已有的课时蓝图 JSON 文件路径
+        #[arg(long)]
+        file: PathBuf,
+        /// 人类设计指示
+        #[arg(long)]
+        instruction: String,
         /// 输出课时蓝图 JSON 文件路径
         #[arg(long)]
         to: PathBuf,
@@ -56,12 +78,18 @@ fn main() {
     match cli.command {
         Commands::Course { action } => match action {
             CourseAction::Blueprint { from, to } => {
-                qtcloud_course_cli::course::run(&from, &to, None);
+                qtcloud_course_cli::course::run_blueprint(&from, &to, None);
+            }
+            CourseAction::Design { file, instruction, to } => {
+                qtcloud_course_cli::course::run_design(&file, &instruction, &to, None);
             }
         },
         Commands::Lesson { action } => match action {
             LessonAction::Blueprint { from, to } => {
-                qtcloud_course_cli::lesson::run(&from, &to, None);
+                qtcloud_course_cli::lesson::run_blueprint(&from, &to, None);
+            }
+            LessonAction::Design { file, instruction, to } => {
+                qtcloud_course_cli::lesson::run_design(&file, &instruction, &to, None);
             }
         },
     }
