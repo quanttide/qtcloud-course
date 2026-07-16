@@ -1,32 +1,20 @@
 # ROADMAP — Studio
 
-## [v0.1-alpha] — 核心可用（进行中）
+## [v0.1] — 课程制作（进行中）
 
-> Scene 编辑器 MVP + 数据管线通路 + API 模式切换。内部验证可用。
+> 补齐 Scene 编辑器，不再依赖手写 JSON，打通从蓝图到互动课时的端到端链路。
 
 ### Added
-- [ ] Scene 编辑器 MVP：创建/编辑场景、步骤，与 Provider API 打通
+- [x] Scene 编辑器：创建/编辑场景、步骤，与 Provider API 打通
 - [ ] 数据管线：一键导入 CLI blueprint 结构化 JSON 为课程结构
-- [ ] API 模式默认：不再依赖本地 JSON 启动（本地 JSON 降级为离线回退）
+- [x] API 模式默认：不再依赖本地 JSON 启动（本地 JSON 降级为离线回退）
 - [ ] 环境配置统一（`api_base_url`、`data_dir`）
-
-## [v0.1-beta] — 功能完整
-
-> 分支编辑、导入预览、多平台构建。功能完备，可用性打磨。
-
-### Added
 - [ ] 分支选项 UI：步骤内分支选择、跳转逻辑配置
 - [ ] 导入预览：确认/回滚导入结果
 - [ ] JSON schema 校验 + 错误提示
 - [ ] iOS 构建验证（`flutter build ios`）
 - [ ] Android 构建验证（`flutter build apk`）
 - [ ] CI：push 自动跑 `flutter test` + `dart analyze`
-
-## [v0.1-rc] — 发布候选
-
-> 技术债清扫、CI 门禁、全链路测试。发布就绪。
-
-### Added
 - [ ] CI：覆盖率门禁
 - [ ] 三 Service `_apiPost/Put/Delete` 提取为 mixin
 - [ ] `analysis_options.yaml` 开启 `prefer_const_constructors` 等 lint

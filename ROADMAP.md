@@ -2,9 +2,9 @@
 
 > 产品级版本规划。各 scope 版本详见 `src/*/ROADMAP.md`。
 
-## [v0.1-alpha] — 核心可用（进行中）
+## [v0.1] — 课程制作（进行中）
 
-> Scene 编辑器 MVP + 数据管线通路 + Provider 嵌套路由。内部验证可用。
+> 从蓝图到互动课时的端到端链路打通。补齐 Scene 编辑器，不再依赖手写 JSON，数据管线连通 CLI → Studio → Provider。
 
 ### Added
 - [x] CLI blueprint 子命令：AI 生成课程蓝图
@@ -15,31 +15,20 @@
 - [x] JSON 导入/导出：离线备份与迁移
 - [x] 集成测试套件：pytest 端到端测试 + JSON schema 校验
 - [x] DevOps 契约：contract.yaml + ROADMAP 可追踪
-- [ ] Scene 编辑器 MVP：Studio 创建/编辑场景、步骤，与 Provider API 打通
-- [ ] 数据管线（基本）：CLI `blueprint --format json` 输出 → Studio 一键导入
+- [x] Scene 编辑器：创建/编辑场景、步骤，与 Provider API 打通
+- [x] API 模式默认：Studio 默认走 Provider API，本地 JSON 降级为回退
+- [ ] 数据管线：CLI `blueprint --format json` 输出 → Studio 一键导入
 - [ ] 路由重组：Provider 嵌套路由 + name/title 统一
 - [ ] CLI 结构化输出：`blueprint --format json` + validate/import/export 子命令
-- [ ] API 模式默认：Studio 默认走 Provider API，本地 JSON 降级为回退
-
-## [v0.1-beta] — 功能完整
-
-> 分支编辑、导入预览、多平台构建、SQLite 持久化。功能完备可打磨。
-
-### Added
-- [ ] Scene 编辑器完善：分支选项 UI、跳转逻辑配置
-- [ ] 数据管线完善：导入预览、schema 校验、错误提示
+- [ ] 分支选项 UI：步骤内分支选择、跳转逻辑配置
+- [ ] 导入预览：确认/回滚导入结果
+- [ ] JSON schema 校验 + 错误提示
 - [ ] 持久化存储：Provider SQLite 替代内存存储，关闭不丢数据
 - [ ] 场景内容导入：支持 JSON 文件批量导入课时内容
 - [ ] CI 工作流：三 scope 自动构建+测试
+- [ ] CI：覆盖率门禁
 - [ ] iOS 构建验证
 - [ ] Android 构建验证
-
-## [v0.1-rc] — 发布候选
-
-> 技术债清扫、CI 门禁、全链路测试。发布就绪。
-
-### Added
-- [ ] CI：覆盖率门禁
 - [ ] 版本号对齐：三种语言统一发布节奏
 - [ ] CLI 零测试补充：`blueprint.rs` + `main.rs` 对应 `*_test.rs`
 - [ ] Provider 泛型化 CRUD：6 Store + 6 Handler 消除 ~70% 重复
