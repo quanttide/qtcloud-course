@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [0.1.0-alpha.6] - 2026-07-16
+
+### Added
+- `course design` 子命令：基于已有课程蓝图 + 人类指示迭代修改
+- `lesson blueprint` 子命令：从 Markdown 生成课时 Scene 级设计
+- `lesson design` 子命令：基于已有课时蓝图 + 人类指示迭代修改
+- `LessonBlueprint` 类型：含 scenes 的完整课时结构
+- `validate_lesson_json`：课时蓝图 JSON 校验
+
+### Changed
+- `course blueprint` 输出改为 Program → Course → Phase → Lesson 四级结构（不含 Scene）
+- `types.rs`：分离 `CourseBlueprint`（无 scenes）和 `LessonBlueprint`（含 scenes）
+- `course::run` 拆分为 `run_blueprint` 和 `run_design`
+- `lesson` 模块：新增 `run_blueprint` 和 `run_design`
+
 ## [0.1.0-alpha.5] - 2026-07-16
 
 ### Changed
@@ -9,10 +24,7 @@
 - 移除 `--output-path`，改为 `--to` 必选参数
 - 移除 `--input-path`，改为 `--from` 必选参数
 - 移除 validate/import/export 子命令
-- 提示词优化：区分
-
-### Changed
-- `blueprint` 子命令重命名为 `course`，对应模块和文件同步改名
+- 提示词优化：区分教学目标和工具演示
 
 ### Added
 - `course --format`：输出结构化 JSON，兼容 Studio 导入格式
