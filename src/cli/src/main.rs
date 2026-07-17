@@ -36,6 +36,9 @@ enum CourseAction {
         from: PathBuf,
         #[arg(long)]
         to: PathBuf,
+        /// 指定课程主题（默认从文件名推断）
+        #[arg(long)]
+        topic: Option<String>,
     },
     /// 基于已有课程蓝图迭代设计
     Design {
@@ -66,6 +69,9 @@ enum LessonAction {
         from: PathBuf,
         #[arg(long)]
         to: PathBuf,
+        /// 指定课时主题（默认从文件名推断）
+        #[arg(long)]
+        topic: Option<String>,
     },
     /// 基于已有课时蓝图迭代设计
     Design {
@@ -96,6 +102,9 @@ enum SceneAction {
         from: PathBuf,
         #[arg(long)]
         to: PathBuf,
+        /// 指定场景主题（默认从文件名推断）
+        #[arg(long)]
+        topic: Option<String>,
     },
     /// 基于已有场景蓝图迭代设计
     Design {
@@ -122,8 +131,8 @@ fn main() {
     let cli = Cli::parse();
     match cli.command {
         Commands::Course { action } => match action {
-            CourseAction::Blueprint { from, to } => {
-                qtcloud_course_cli::course::run_blueprint(&from, &to, None);
+            CourseAction::Blueprint { from, to, topic } => {
+                qtcloud_course_cli::course::run_blueprint(&from, &to, topic.as_deref(), None);
             }
             CourseAction::Design { file, instruction, to } => {
                 qtcloud_course_cli::course::run_design(&file, &instruction, &to, None);
@@ -133,8 +142,8 @@ fn main() {
             }
         },
         Commands::Lesson { action } => match action {
-            LessonAction::Blueprint { from, to } => {
-                qtcloud_course_cli::lesson::run_blueprint(&from, &to, None);
+            LessonAction::Blueprint { from, to, topic } => {
+                qtcloud_course_cli::lesson::run_blueprint(&from, &to, topic.as_deref(), None);
             }
             LessonAction::Design { file, instruction, to } => {
                 qtcloud_course_cli::lesson::run_design(&file, &instruction, &to, None);
@@ -144,8 +153,8 @@ fn main() {
             }
         },
         Commands::Scene { action } => match action {
-            SceneAction::Blueprint { from, to } => {
-                qtcloud_course_cli::scene::run_blueprint(&from, &to, None);
+            SceneAction::Blueprint { from, to, topic } => {
+                qtcloud_course_cli::scene::run_blueprint(&from, &to, topic.as_deref(), None);
             }
             SceneAction::Design { file, instruction, to } => {
                 qtcloud_course_cli::scene::run_design(&file, &instruction, &to, None);

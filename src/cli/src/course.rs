@@ -5,18 +5,23 @@ use quanttide_agent::{LLM, Message};
 
 /// 从 Markdown 源文件生成课程蓝图 JSON（Program → Course → Phase → Lesson）。
 ///
-/// 主题从文件名推断，原始资料全文作为上下文。
+/// 主题优先使用 `topic` 参数，未指定时从文件名推断。
+/// 原始资料全文作为上下文。
 /// 输出不含 Scene 层级，Scene 级设计由 lesson blueprint 负责。
-pub fn run_blueprint(from: &Path, to: &Path, llm: Option<&LLM>) {
+pub fn run_blueprint(from: &Path, to: &Path, topic: Option<&str>, llm: Option<&LLM>) {
     let material = fs::read_to_string(from).unwrap_or_else(|e| {
         eprintln!("错误：读取 {} 失败 - {}", from.display(), e);
         std::process::exit(1);
     });
 
-    let topic = from
-        .file_stem()
-        .and_then(|s| s.to_str())
-        .unwrap_or("untitled");
+    let topic = topic
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| {
+            from.file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("untitled")
+                .to_string()
+        });
 
     let prompt = format!(
         "你是一位课程设计专家。请以「{}」为主题设计完整的课程蓝图（Program → Course → Phase → Lesson 四级结构）。\n\n\
@@ -232,7 +237,7 @@ mod tests {
         let output = NamedTempFile::new().unwrap();
 
         let _result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            run_blueprint(input.path(), output.path(), Some(&llm));
+            run_blueprint(input.path(), output.path(), None, Some(&llm));
         }));
 
         let request = last_request.lock().unwrap().clone();
@@ -341,7 +346,7 @@ mod tests {
         let output = tempfile::NamedTempFile::new().unwrap();
 
         let _result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            run_blueprint(input.path(), output.path(), Some(&llm));
+            run_blueprint(input.path(), output.path(), None, Some(&llm));
         }));
 
         let req = last.lock().unwrap();

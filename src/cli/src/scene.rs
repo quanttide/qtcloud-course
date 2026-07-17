@@ -6,16 +6,21 @@ use quanttide_agent::{LLM, Message};
 /// 从 Markdown 源文件生成场景蓝图 JSON（Scene → Steps）。
 ///
 /// 场景内的步骤按顺序执行，不分支。
-pub fn run_blueprint(from: &Path, to: &Path, llm: Option<&LLM>) {
+/// 主题优先使用 `topic` 参数，未指定时从文件名推断。
+pub fn run_blueprint(from: &Path, to: &Path, topic: Option<&str>, llm: Option<&LLM>) {
     let material = fs::read_to_string(from).unwrap_or_else(|e| {
         eprintln!("错误：读取 {} 失败 - {}", from.display(), e);
         std::process::exit(1);
     });
 
-    let topic = from
-        .file_stem()
-        .and_then(|s| s.to_str())
-        .unwrap_or("untitled");
+    let topic = topic
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| {
+            from.file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("untitled")
+                .to_string()
+        });
 
     let prompt = format!(
         "你是一位课程设计专家。请为场景「{}」设计详细的步骤蓝图。\n\n\
