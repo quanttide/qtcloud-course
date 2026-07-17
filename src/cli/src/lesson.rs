@@ -9,7 +9,7 @@ use quanttide_agent::{LLM, Message};
 /// 1. 切场景 — 从素材提取原始操作步骤（无序，无异常）
 /// 2. 编排 — 排序、挂异常分支
 ///
-/// 主题优先使用 `topic` 参数，未指定时从文件名推断。
+/// 主题优先使用 `topic` 参数，未指定时从内容第一个 H1 标题推断。
 pub fn run_blueprint(from: &Path, to: &Path, topic: Option<&str>, llm: Option<&LLM>) {
     let material = fs::read_to_string(from).unwrap_or_else(|e| {
         eprintln!("错误：读取 {} 失败 - {}", from.display(), e);
@@ -19,10 +19,11 @@ pub fn run_blueprint(from: &Path, to: &Path, topic: Option<&str>, llm: Option<&L
     let topic = topic
         .map(|s| s.to_string())
         .unwrap_or_else(|| {
-            from.file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("untitled")
-                .to_string()
+            material
+                .lines()
+                .find(|line| line.starts_with("# "))
+                .map(|line| line.trim_start_matches("# ").trim().to_string())
+                .unwrap_or_else(|| "untitled".to_string())
         });
 
     let llm_ref = resolve_llm(llm);
