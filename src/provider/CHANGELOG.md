@@ -1,6 +1,11 @@
 # CHANGELOG
 
 
+## [0.1.0] - 2026-08-01
+
+### Removed
+- 移除 LMS 班级能力（迁移至 `qtcloud-learn`，见其 ROADMAP v0.5）：`class.go`（domain / store / handler）、`/classes` 路由与相关测试
+
 ## [0.0.2] - 2026-07-13
 
 ### Added

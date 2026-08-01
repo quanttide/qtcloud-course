@@ -3,14 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:qtcloud_course_studio/models/enums.dart';
 import 'package:qtcloud_course_studio/services/program_service.dart';
-import 'package:qtcloud_course_studio/services/data_service.dart';
 import 'package:qtcloud_course_studio/screens/program_screen.dart';
 
 Widget createProgramTest(ProgramService service) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider.value(value: service),
-      ChangeNotifierProvider.value(value: CourseDataService()..markLoaded()),
     ],
     child: const MaterialApp(home: ProgramScreen()),
   );

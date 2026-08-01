@@ -25,14 +25,12 @@ func newRouter(cfg *config.Config) *http.ServeMux {
 	lessonStore := store.NewLessonStore()
 	sceneStore := store.NewSceneStore()
 	phaseStore := store.NewPhaseStore()
-	classStore := store.NewClassStore()
 
 	ph := handler.NewProgramHandler(programStore)
 	ch := handler.NewCourseHandler(courseStore)
 	psh := handler.NewPhaseHandler(phaseStore, courseStore)
 	lh := handler.NewLessonHandler(lessonStore)
 	sh := handler.NewSceneHandler(sceneStore, lessonStore)
-	clh := handler.NewClassHandler(classStore)
 
 	mux := http.NewServeMux()
 
@@ -72,13 +70,6 @@ func newRouter(cfg *config.Config) *http.ServeMux {
 	mux.HandleFunc("DELETE /scenes/{id}", sh.Delete)
 	mux.HandleFunc("GET /lessons/{lessonId}/scenes", sh.ListByLesson)
 	mux.HandleFunc("POST /lessons/{lessonId}/scenes", sh.CreateByLesson)
-
-	// Class
-	mux.HandleFunc("GET /classes", clh.List)
-	mux.HandleFunc("POST /classes", clh.Create)
-	mux.HandleFunc("GET /classes/{id}", clh.Get)
-	mux.HandleFunc("PUT /classes/{id}", clh.Update)
-	mux.HandleFunc("DELETE /classes/{id}", clh.Delete)
 
 	// Health
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {

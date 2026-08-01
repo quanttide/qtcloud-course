@@ -31,22 +31,12 @@ class StatusChip extends StatelessWidget {
         ContentStatus.published => Colors.green,
       };
     }
-    if (status is ClassStatus) {
-      return switch (status as ClassStatus) {
-        ClassStatus.preparing => Colors.orange,
-        ClassStatus.active => Colors.green,
-        ClassStatus.ended => Colors.grey,
-      };
-    }
     return Colors.grey;
   }
 
   String _resolveLabel() {
     if (status is ContentStatus) {
       return (status as ContentStatus).label;
-    }
-    if (status is ClassStatus) {
-      return (status as ClassStatus).label;
     }
     return status.toString();
   }

@@ -69,15 +69,6 @@ func TestScene_EmptyChoices(t *testing.T) {
 	}
 }
 
-func TestClass_JSON(t *testing.T) {
-	c := Class{ID: "class-1", Name: "浙理班级", Slug: "slug-class-1", RefName: "大数据微专业", RefType: "program", RefID: "prog-1", StartDate: "2026-09-01", EndDate: "2027-01-15", StudentCount: 30, Progress: 0.5}
-	b, _ := json.Marshal(c)
-	var got Class
-	json.Unmarshal(b, &got)
-	if got.Name != "浙理班级" || got.Slug != "slug-class-1" || got.StudentCount != 30 || got.Progress != 0.5 {
-		t.Fatalf("roundtrip = %+v", got)
-	}
-}
 
 func TestMakeSlug_ASCII(t *testing.T) {
 	tests := []struct {

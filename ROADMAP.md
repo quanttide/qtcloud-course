@@ -2,9 +2,9 @@
 
 > 产品级版本规划，侧重测试与文档。各 scope 详细路线图见 `src/*/ROADMAP.md`。
 
-> ⚠️ **LMS 能力冻结与移交**：自 2026-08 起，考核、班级 / 学员、认证、学生端播放器等学员侧（LMS）能力
-> 不再在本仓库实现，统一收拢到 [qtcloud-learn](../qtcloud-learn/ROADMAP.md)（量潮学习云）。
-> 本仓库聚焦课程制作职责。下方 v0.2 / v0.3 的冻结注记说明了移交范围，相关条目不再实施。
+> ✅ **LMS 能力已移除**：考核、班级 / 学员、认证、学生端播放器等学员侧（LMS）能力已全部迁移至
+> [qtcloud-learn](../qtcloud-learn/ROADMAP.md)（量潮学习云，迁移完成见其 ROADMAP v0.5），
+> 本仓库回归课程制作单一职责。下方 v0.2 / v0.3 为历史规划，相关条目不再实施。
 
 ## [v0.1] — 课程制作（进行中）
 
@@ -12,7 +12,7 @@
 
 ### 测试
 - [x] Studio：`dart analyze` 零报错
-- [ ] Studio：`flutter test` 全部通过
+- [x] Studio：`flutter test` 全部通过
 - [ ] CI：push 自动跑 `flutter test` + `dart analyze`
 
 ### 文档
@@ -35,7 +35,7 @@
 ## [v0.2] — 考核（规划中）
 
 > **目标**：考核全流程可操作，三 scope 测试覆盖 + 文档完备。
-> ❄️ **冻结移交**：考核 / 提交 / 评分全流程移交 `qtcloud-learn`（provider v0.2、studio v0.3、cli v0.4），本版本不实施。
+> ❄️ **已移除**：考核 / 提交 / 评分全流程已迁移至 `qtcloud-learn`（v0.5 移除，provider v0.2、studio v0.3、cli v0.4），本版本不再实施。
 
 ### 测试
 - [ ] Studio：考核模块 `flutter test` 全覆盖
@@ -61,7 +61,7 @@
 ## [v0.3] — 班级和学员（规划中）
 
 > **目标**：班级管理和学员体系完善，多角色认证就绪。
-> ❄️ **冻结移交**：班级 / 学员 / 认证（飞书）/ 学生端播放器 / CLI class / student / Postgres 支持移交 `qtcloud-learn`；
+> ❄️ **已移除**：班级 / 学员 / 认证（飞书）/ 学生端播放器 / CLI class / student / Postgres 已迁移至 `qtcloud-learn`（v0.5 移除）；
 > 保留课程上架（草稿 → 审核 → 发布）、互动视频、CLI sync / publish 等制作侧条目。
 
 ### 测试

@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [0.1.0] - 2026-08-01
+
+**Removed**
+- 移除全部 LMS 能力（迁移至 `qtcloud-learn`，见其 ROADMAP v0.5）：
+  - provider：`class.go`（domain / store / handler）与相关测试、`/classes` 路由
+  - studio：assessment / class / student / teacher / submission 模型与测试、
+    class / dashboard / assessment 页面与服务（data_service / assessment_service）、
+    LMS assets JSON（classes / students / teachers / assessments / submissions）
+
+**Changed**
+- studio 主壳回归课程制作单一职责（仅课程研发）
+- 侧边栏 ListTile 改用 Material 包裹，修复新版 Flutter 断言（flutter test 全绿）
+
 ## [0.0.6] - 2026-07-14
 
 **Added**

@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/program_service.dart';
-import 'services/data_service.dart';
-import 'services/assessment_service.dart';
-import 'screens/dashboard_screen.dart';
 import 'screens/program_screen.dart';
-import 'screens/class_screen.dart';
 import 'widgets/sidebar.dart';
 
 /// 默认本地模式。设 `API_BASE_URL` 环境变量可切回 Provider API 模式。
@@ -20,12 +16,6 @@ void main() {
       providers: [
         ChangeNotifierProvider(
           create: (_) => ProgramService(baseUrl: baseUrl)..load(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => CourseDataService(baseUrl: baseUrl)..load(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => AssessmentService(baseUrl: baseUrl)..load(),
         ),
       ],
       child: const QtCloudCourseApp(),
@@ -58,33 +48,24 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
-  int _currentIndex = 0;
+  static const _titles = ['课程研发'];
 
-  static const _titles = ['仪表盘', '课程研发', '教学管理'];
-
-  static const _screens = [DashboardScreen(), ProgramScreen(), ClassScreen()];
+  static const _screens = [ProgramScreen()];
 
   @override
   Widget build(BuildContext context) {
     final programService = context.watch<ProgramService>();
-    final classService = context.watch<CourseDataService>();
-    final assessmentService = context.watch<AssessmentService>();
-    if (!programService.loaded ||
-        !classService.loaded ||
-        !assessmentService.loaded) {
+    if (!programService.loaded) {
       return const MaterialApp(
         home: Scaffold(body: Center(child: CircularProgressIndicator())),
       );
     }
-    final fallback = programService.offlineFallback ||
-        classService.offlineFallback ||
-        assessmentService.offlineFallback;
     return Scaffold(
       appBar: AppBar(
         title: Row(
           children: [
-            Text(_titles[_currentIndex]),
-            if (fallback) ...[
+            Text(_titles[0]),
+            if (programService.offlineFallback) ...[
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -104,11 +85,11 @@ class _MainShellState extends State<MainShell> {
       body: Row(
         children: [
           Sidebar(
-            currentIndex: _currentIndex,
-            onDestinationSelected: (i) => setState(() => _currentIndex = i),
+            currentIndex: 0,
+            onDestinationSelected: (_) {},
           ),
           Expanded(
-            child: IndexedStack(index: _currentIndex, children: _screens),
+            child: IndexedStack(index: 0, children: _screens),
           ),
         ],
       ),

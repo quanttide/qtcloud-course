@@ -6,9 +6,7 @@ class Sidebar extends StatelessWidget {
   final ValueChanged<int> onDestinationSelected;
 
   static const _items = [
-    _SidebarItem(icon: Icons.dashboard, label: '仪表盘'),
     _SidebarItem(icon: Icons.school, label: '课程研发'),
-    _SidebarItem(icon: Icons.group, label: '教学管理'),
   ];
 
   const Sidebar({
@@ -35,13 +33,12 @@ class Sidebar extends StatelessWidget {
             final isSelected = i == currentIndex;
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
+              child: Material(
                 color: isSelected
                     ? Theme.of(context).colorScheme.primaryContainer
                     : null,
                 borderRadius: BorderRadius.circular(8),
-              ),
-              child: ListTile(
+                child: ListTile(
                 leading: Icon(
                   item.icon,
                   color: isSelected
@@ -63,6 +60,7 @@ class Sidebar extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
+            ),
             );
           }),
           const Spacer(),

@@ -12,20 +12,18 @@ import (
 )
 
 // setupMux creates a fresh mux with all routes for testing.
-func setupMux() (*http.ServeMux, *store.ProgramStore, *store.CourseStore, *store.LessonStore, *store.SceneStore, *store.PhaseStore, *store.ClassStore) {
+func setupMux() (*http.ServeMux, *store.ProgramStore, *store.CourseStore, *store.LessonStore, *store.SceneStore, *store.PhaseStore) {
 	ps := store.NewProgramStore()
 	cs := store.NewCourseStore()
 	ls := store.NewLessonStore()
 	ss := store.NewSceneStore()
 	phs := store.NewPhaseStore()
-	cls := store.NewClassStore()
 
 	ph := NewProgramHandler(ps)
 	ch := NewCourseHandler(cs)
 	lh := NewLessonHandler(ls)
 	sh := NewSceneHandler(ss, ls)
 	psh := NewPhaseHandler(phs, cs)
-	clh := NewClassHandler(cls)
 
 	mux := http.NewServeMux()
 	// Program
@@ -59,13 +57,7 @@ func setupMux() (*http.ServeMux, *store.ProgramStore, *store.CourseStore, *store
 	mux.HandleFunc("DELETE /scenes/{id}", sh.Delete)
 	mux.HandleFunc("GET /lessons/{lessonId}/scenes", sh.ListByLesson)
 	mux.HandleFunc("POST /lessons/{lessonId}/scenes", sh.CreateByLesson)
-	// Class
-	mux.HandleFunc("GET /classes", clh.List)
-	mux.HandleFunc("POST /classes", clh.Create)
-	mux.HandleFunc("GET /classes/{id}", clh.Get)
-	mux.HandleFunc("PUT /classes/{id}", clh.Update)
-	mux.HandleFunc("DELETE /classes/{id}", clh.Delete)
-	return mux, ps, cs, ls, ss, phs, cls
+	return mux, ps, cs, ls, ss, phs
 }
 
 func request(t *testing.T, mux *http.ServeMux, method, path, body string) *httptest.ResponseRecorder {
@@ -107,7 +99,7 @@ func assertJSONArray(t *testing.T, w *httptest.ResponseRecorder) []any {
 // --- Program ---
 
 func TestProgramHandler_CRUD(t *testing.T) {
-	mux, _, _, _, _, _, _ := setupMux()
+	mux, _, _, _, _, _ := setupMux()
 
 	// List empty
 	w := request(t, mux, "GET", "/programs", "")
@@ -187,7 +179,7 @@ func TestProgramHandler_CRUD(t *testing.T) {
 // --- Course ---
 
 func TestCourseHandler_CRUD(t *testing.T) {
-	mux, _, _, _, _, _, _ := setupMux()
+	mux, _, _, _, _, _ := setupMux()
 
 	w := request(t, mux, "GET", "/courses", "")
 	assertStatus(t, w, 200)
@@ -241,7 +233,7 @@ func TestCourseHandler_CRUD(t *testing.T) {
 // --- Phase ---
 
 func TestPhaseHandler_CRUD(t *testing.T) {
-	mux, _, _, _, _, _, _ := setupMux()
+	mux, _, _, _, _, _ := setupMux()
 
 	// List empty
 	w := request(t, mux, "GET", "/phases", "")
@@ -326,7 +318,7 @@ func TestPhaseHandler_CRUD(t *testing.T) {
 // --- Lesson ---
 
 func TestLessonHandler_CRUD(t *testing.T) {
-	mux, _, _, _, _, _, _ := setupMux()
+	mux, _, _, _, _, _ := setupMux()
 
 	w := request(t, mux, "GET", "/lessons", "")
 	assertStatus(t, w, 200)
@@ -380,7 +372,7 @@ func TestLessonHandler_CRUD(t *testing.T) {
 // --- Scene ---
 
 func TestSceneHandler_CRUD(t *testing.T) {
-	mux, _, _, _, _, _, _ := setupMux()
+	mux, _, _, _, _, _ := setupMux()
 
 	// List scenes under nonexistent lesson
 	w := request(t, mux, "GET", "/lessons/nonexistent/scenes", "")
@@ -470,59 +462,3 @@ func TestSceneHandler_CRUD(t *testing.T) {
 	assertStatus(t, w, 404)
 }
 
-// --- Class ---
-
-func TestClassHandler_CRUD(t *testing.T) {
-	mux, _, _, _, _, _, _ := setupMux()
-
-	w := request(t, mux, "GET", "/classes", "")
-	assertStatus(t, w, 200)
-	assertJSONArray(t, w)
-
-	w = request(t, mux, "POST", "/classes", `{"name":"浙理班级","refName":"大数据微专业","refType":"program","refId":"prog-1","startDate":"2026-09-01","endDate":"2027-01-15","studentCount":30}`)
-	assertStatus(t, w, 201)
-	c := assertJSON(t, w)
-	cid := c["id"].(string)
-	if c["slug"] == "" {
-		t.Fatal("slug is empty")
-	}
-
-	w = request(t, mux, "POST", "/classes", `{invalid`)
-	assertStatus(t, w, 400)
-
-	w = request(t, mux, "POST", "/classes", `{"name":"x"}`)
-	assertStatus(t, w, 400)
-
-	w = request(t, mux, "POST", "/classes", `{"refId":"prog-1"}`)
-	assertStatus(t, w, 400)
-
-	// Create duplicate name
-	w = request(t, mux, "POST", "/classes", `{"name":"浙理班级","refId":"prog-2"}`)
-	assertStatus(t, w, 409)
-
-	w = request(t, mux, "GET", fmt.Sprintf("/classes/%s", cid), "")
-	assertStatus(t, w, 200)
-
-	w = request(t, mux, "GET", "/classes/nonexistent", "")
-	assertStatus(t, w, 404)
-
-	w = request(t, mux, "PUT", fmt.Sprintf("/classes/%s", cid), `{"name":"v2","refName":"v2","refType":"course","refId":"cour-1","status":"active","startDate":"2026-09-15","endDate":"2027-02-01","studentCount":35,"progress":0.5}`)
-	assertStatus(t, w, 200)
-	c = assertJSON(t, w)
-	if c["name"] != "v2" || c["studentCount"] != float64(35) || c["progress"] != 0.5 {
-		t.Fatalf("Update = %v", c)
-	}
-
-	w = request(t, mux, "PUT", fmt.Sprintf("/classes/%s", cid), `{`)
-	assertStatus(t, w, 400)
-
-	w = request(t, mux, "PUT", "/classes/nonexistent", `{"name":"x","refId":"prog-1"}`)
-	assertStatus(t, w, 404)
-
-	w = request(t, mux, "DELETE", fmt.Sprintf("/classes/%s", cid), "")
-	assertStatus(t, w, 204)
-	w = request(t, mux, "DELETE", fmt.Sprintf("/classes/%s", cid), "")
-	assertStatus(t, w, 404)
-	w = request(t, mux, "DELETE", "/classes/nonexistent", "")
-	assertStatus(t, w, 404)
-}
