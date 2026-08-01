@@ -1,26 +1,24 @@
 # ROADMAP — Provider
 
-> Provider 版本与 Studio 一一对应，每个里程碑提供 API 层面等价能力。
+> Provider 定位：课程内容服务端。LMS 能力（考核、班级 / 学员、认证）已迁移至 `qtcloud-learn`，本 scope 聚焦课程内容 API。
 
 | Provider 版 | Studio 版 | 目标 |
 |-------------|-----------|------|
-| v0.0 (已发布) | v0.0.5/v0.0.6 | 六类资源 CRUD |
+| v0.0 (已发布) | v0.0.5/v0.0.6 | 课程结构资源 CRUD |
 | v0.1 (进行中) | v0.1 | 课程制作：嵌套路由 + SQLite + 数据加载 |
-| v0.2 | v0.2 | 考核：考核/提交/评分/统计 API |
-| v0.3 | v0.3 | 班级和学员：认证 + 权限 + 进度追踪 |
 
 ## Architecture
 
 ```
-v0.0             v0.1                v0.3
-内存存储  ──→    SQLite         ──→  Postgres（可选）
-无认证    ──→    无认证/DevToken ──→  飞书 OAuth
-纯 CRUD   ──→    业务逻辑层      ──→  工作流引擎
+v0.0             v0.1                v0.2
+内存存储  ──→    SQLite         ──→  视频存储 + 发布
+无认证    ──→    无认证/DevToken ──→  DevToken
+纯 CRUD   ──→    业务逻辑层      ──→  上架流程
 ```
 
 ## [v0.0] — 已发布
 
-REST API 覆盖 Program / Course / Phase / Lesson / Scene / Class 六类资源的 CRUD。
+REST API 覆盖 Program / Course / Phase / Lesson / Scene 课程结构资源的 CRUD。
 纯 Go 标准库，无外部依赖。内存存储。
 
 ## [v0.1] — 课程制作（进行中）
@@ -36,7 +34,7 @@ REST API 覆盖 Program / Course / Phase / Lesson / Scene / Class 六类资源�
 
 ### Phase 2：泛型化 CRUD ✅
 - [x] **泛型 BaseStore**：`BaseStore[T]` 消除 List/Get/Delete 共 192 行重复代码
-- [x] **泛型 CRUDHandler**：`CRUDHandler[T]` 消除 Program/Course/Lesson/Class 四个 Handler 的 CRUD 模板代码
+- [x] **泛型 CRUDHandler**：`CRUDHandler[T]` 消除 Program/Course/Lesson 三个 Handler 的 CRUD 模板代码
 - [x] **name 重复校验**：`NameExists` 方法 + `WithNameCheck` 链式配置，Create 重复返回 409
 - [x] 嵌套路由 handler 测试 + name 重复校验测试
 
@@ -54,29 +52,10 @@ REST API 覆盖 Program / Course / Phase / Lesson / Scene / Class 六类资源�
 - [ ] `go test ./... -count=1` 保持 90%+ 覆盖率
 - [ ] 所有 Phase 完成后发布 v0.1.0 tag
 
----
+## [v0.2] — 课程生产（规划中）
 
-## [v0.2] — 考核（规划中）
-
-> 考核 API。对齐 Studio **v0.2 考核**。
+> 课程上架与素材管理，对齐根 ROADMAP v0.2。
 
 ### Added
-- [ ] 考核 CRUD API
-- [ ] 提交 API：学生提交作答
-- [ ] 评分 API：批量评分 + 评语
-- [ ] 成绩统计 API：平均分 / 及格率 / 分布
-- [ ] 考试模式 API：题型（选择/填空/简答）+ 自动评分 + 计时
-
-## [v0.3] — 班级和学员（规划中）
-
-> 认证 + 权限 + 班级管理。对齐 Studio **v0.3 班级和学员**。
-
-### Added
-- [ ] 班级管理 API：创建/编辑/删除/列表
-- [ ] 学员管理 API：邀请/加入/退班/名单
-- [ ] 学习进度追踪 API
-- [ ] 班级仪表盘 API：统计卡片 / 进度分布
-- [ ] 用户认证（飞书登录）
-- [ ] 角色权限（管理员 / 讲师 / 学生）
-- [ ] 课程发布流程（草稿 → 审核 → 发布）
-- [ ] Postgres 支持（可选）
+- [ ] 课程上架 API（草稿 → 审核 → 发布状态流转）
+- [ ] 课程数据供给 `qtcloud-learn`（学习云内容源）

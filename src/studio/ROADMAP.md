@@ -1,5 +1,7 @@
 # ROADMAP — Studio
 
+> Studio 定位：课程制作工具。LMS 能力（考核、班级 / 学员）已迁移至 `qtcloud-learn`，本 scope 聚焦课程制作。
+
 ## [v0.1] — 课程制作（进行中）
 
 > Scene 编辑器 + 分支选项 + 本地持久化。Studio 作为独立本地软件，不依赖 Provider/CLI。
@@ -15,41 +17,25 @@
 - [ ] 导入预览 + JSON schema 校验
 - [ ] 环境配置统一（`api_base_url`、`data_dir`）
 - [ ] iOS/Android 构建验证
-- [ ] CI：自动构建+测试+覆盖率门禁
+- [ ] CI：自动构建 + 测试 + 覆盖率门禁
 - [ ] Service mixin 重构
 - [ ] GUI 测试并行化
 
-## [v0.2] — 考核（已迁移至 qtcloud-learn）
+## [v0.2] — 课程生产（规划中）
 
-> ❄️ 考核全流程已迁移至 `qtcloud-learn`（v0.5 移除），本仓库不再实施。
-
-### Added
-- [x] 考核导航独立：侧边栏新增「考核管理」tab（已随 LMS 移除）
-- [x] 学生提交工作流：筛选/标记/提交内容（已随 LMS 移除）
-- [x] 批量评分面板：全班集中评分 + 连续评分模式（已随 LMS 移除）
-- [x] 成绩概览：统计卡片 / 分布图 / 导出（已随 LMS 移除）
-- [x] 考试模式：题型（选择/填空/简答）+ 自动评分 + 计时（已随 LMS 移除）
-- [ ] CI：push 自动跑 `flutter test` + `dart analyze`
-- [ ] 三 Service `_apiPost/Put/Delete` 提取为 mixin
-- [ ] `analysis_options.yaml` 开启 `prefer_const_constructors` 等 lint
-- [ ] GUI 测试并行化：16 个 pytest 错误因无 Flutter 进程，加 CI 跳过标记
-
-## [v0.3] — 班级和学员（已迁移至 qtcloud-learn）
-
-> ❄️ 班级 / 学员 / 认证 / 学习进度已迁移至 `qtcloud-learn`（v0.5 移除），本仓库不再实施。
+> 制作侧生产链路：上架、素材管理，对齐根 ROADMAP v0.2。
 
 ### Added
-- [x] 班级 CRUD 完善：创建/编辑/删除/列表（已随 LMS 移除）
-- [x] 学员管理：邀请加入/审核/退班/学员名单（已随 LMS 移除）
-- [x] 班级仪表盘：统计卡片 / 进度分布 / 导出（已随 LMS 移除）
-- [x] 学员学习进度追踪：个人学习记录 / 完成率 / 趋势（已随 LMS 移除）
+- [ ] 课程上架流程（草稿 → 审核 → 发布）
+- [ ] 互动视频上传与管理（对接 Provider 视频上传 API）
+- [ ] 课程数据供给 `qtcloud-learn`（学习云内容源）
 
 ## [v0.0.6] — 已发布
 
-> 班级/考核/评分基础 CRUD + 拖拽排序 + API 写回 + 仪表盘整合。
+> 课程结构 CRUD + 拖拽排序 + API 写回 + 仪表盘整合。
 
 ### Added
-- [x] 班级/考核/评分 CRUD
+- [x] 课程结构 CRUD
 - [x] 拖拽排序
 - [x] API 写回
 - [x] 仪表盘整合
