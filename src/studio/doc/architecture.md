@@ -11,6 +11,6 @@ lib/
 
 ## 数据流
 
-1. 应用启动 → `CourseDataService.load()` 加载 `assets/programs.json` 和 `assets/classes.json`
+1. 应用启动 → `CourseDataService.load()` 加载 `assets/programs.json`
 2. Screens 通过 `Provider` 订阅 `CourseDataService`
 3. 试听预览调用 `CourseDataService.loadLesson(lessonId)` 按需加载课时详情
