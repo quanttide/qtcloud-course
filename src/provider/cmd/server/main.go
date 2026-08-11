@@ -8,6 +8,8 @@ import (
 
 	"github.com/quanttide/qtcloud-course-provider/internal/domain"
 
+	_ "modernc.org/sqlite"
+
 	"github.com/quanttide/qtcloud-course-provider/internal/config"
 	"github.com/quanttide/qtcloud-course-provider/internal/handler"
 	"github.com/quanttide/qtcloud-course-provider/internal/store"
