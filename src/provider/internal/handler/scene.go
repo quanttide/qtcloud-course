@@ -5,15 +5,14 @@ import (
 	"net/http"
 
 	"github.com/quanttide/qtcloud-course-provider/internal/domain"
-	"github.com/quanttide/qtcloud-course-provider/internal/store"
-)
+	)
 
 type SceneHandler struct {
-	store       *store.SceneStore
-	lessonStore *store.LessonStore
+	store       SceneStorer
+	lessonStore LessonStorer
 }
 
-func NewSceneHandler(s *store.SceneStore, ls *store.LessonStore) *SceneHandler {
+func NewSceneHandler(s SceneStorer, ls LessonStorer) *SceneHandler {
 	return &SceneHandler{store: s, lessonStore: ls}
 }
 
@@ -25,7 +24,7 @@ func (h *SceneHandler) ListByLesson(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"lesson not found"}`, http.StatusNotFound)
 		return
 	}
-	writeJSON(w, http.StatusOK, h.store.List(lessonID))
+	writeJSON(w, http.StatusOK, h.store.ListWhere("lessonId", lessonID))
 }
 
 // CreateByLesson 在指定课时下创建场景。

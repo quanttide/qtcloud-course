@@ -10,3 +10,4 @@ bin/
 
 # Studio bundle (Flutter build output)
 examples/default/bin/
+src/provider/server

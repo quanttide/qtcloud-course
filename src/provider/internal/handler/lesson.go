@@ -2,14 +2,13 @@ package handler
 
 import (
 	"github.com/quanttide/qtcloud-course-provider/internal/domain"
-	"github.com/quanttide/qtcloud-course-provider/internal/store"
-)
+	)
 
 // LessonHandler 提供 Lesson 的标准 CRUD。
 type LessonHandler = CRUDHandler[domain.Lesson]
 
 // NewLessonHandler 创建 Lesson handler。
-func NewLessonHandler(s *store.LessonStore) *LessonHandler {
+func NewLessonHandler(s LessonStorer) *LessonHandler {
 	return NewCRUDHandler(
 		s,
 		func(l *domain.Lesson) string {

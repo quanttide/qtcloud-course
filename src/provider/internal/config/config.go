@@ -8,6 +8,7 @@ type Config struct {
 	ListenAddr string // 监听地址，默认 ":8080"
 	DataDir    string // 数据目录，默认 "./data"
 	VideoDir   string // 视频文件目录，默认 "./data/video"
+	DBPath     string // SQLite 数据库路径（空=内存存储，默认）
 }
 
 // Load 从环境变量加载配置，缺失时使用默认值。
@@ -16,6 +17,7 @@ func Load() *Config {
 		ListenAddr: getEnv("LISTEN_ADDR", ":8080"),
 		DataDir:    getEnv("DATA_DIR", "./data"),
 		VideoDir:   getEnv("VIDEO_DIR", "./data/video"),
+		DBPath:     os.Getenv("DB_PATH"),
 	}
 }
 

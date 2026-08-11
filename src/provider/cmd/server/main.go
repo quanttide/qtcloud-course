@@ -1,8 +1,12 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/quanttide/qtcloud-course-provider/internal/domain"
 
 	"github.com/quanttide/qtcloud-course-provider/internal/config"
 	"github.com/quanttide/qtcloud-course-provider/internal/handler"
@@ -11,27 +15,72 @@ import (
 
 func main() {
 	cfg := config.Load()
-	mux := newRouter(cfg)
-	log.Printf("qtcloud-course-provider starting on %s", cfg.ListenAddr)
+	mux, err := newRouter(cfg)
+	if err != nil {
+		log.Fatalf("router init: %v", err)
+	}
+	log.Printf("qtcloud-course-provider starting on %s (db=%s)", cfg.ListenAddr, cfg.DBPath)
 	if err := http.ListenAndServe(cfg.ListenAddr, mux); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
 }
 
 // newRouter 创建并配置所有路由，可单独测试。
-func newRouter(cfg *config.Config) *http.ServeMux {
-	programStore := store.NewProgramStore()
-	courseStore := store.NewCourseStore()
-	lessonStore := store.NewLessonStore()
-	sceneStore := store.NewSceneStore()
-	phaseStore := store.NewPhaseStore()
+// 持久化：DB_PATH 非空时启用 SQLite（生产），否则内存（默认/测试）。
+func newRouter(cfg *config.Config) (*http.ServeMux, error) {
+	var (
+		programStore *store.SQLiteStore[domain.Program]
+		courseStore  *store.SQLiteStore[domain.Course]
+		phaseStore   *store.SQLiteStore[domain.Phase]
+		lessonStore  *store.SQLiteStore[domain.Lesson]
+		sceneStore   *store.SQLiteStore[domain.Scene]
+		db           *sql.DB
+		err          error
+	)
+	if cfg.DBPath != "" {
+		db, err = sql.Open("sqlite", cfg.DBPath)
+		if err != nil {
+			return nil, fmt.Errorf("open sqlite %s: %w", cfg.DBPath, err)
+		}
+		if programStore, err = store.NewSQLiteProgramStore(db); err != nil {
+			return nil, err
+		}
+		if courseStore, err = store.NewSQLiteCourseStore(db); err != nil {
+			return nil, err
+		}
+		if phaseStore, err = store.NewSQLitePhaseStore(db); err != nil {
+			return nil, err
+		}
+		if lessonStore, err = store.NewSQLiteLessonStore(db); err != nil {
+			return nil, err
+		}
+		if sceneStore, err = store.NewSQLiteSceneStore(db); err != nil {
+			return nil, err
+		}
+	} else {
+		ps := store.NewProgramStore()
+		cs := store.NewCourseStore()
+		psh := store.NewPhaseStore()
+		ls := store.NewLessonStore()
+		ss := store.NewSceneStore()
+		ph := handler.NewProgramHandler(ps)
+		ch := handler.NewCourseHandler(cs)
+		pshH := handler.NewPhaseHandler(psh, cs)
+		lh := handler.NewLessonHandler(ls)
+		sh := handler.NewSceneHandler(ss, ls)
+		return buildMux(cfg, ph, ch, pshH, lh, sh), nil
+	}
 
 	ph := handler.NewProgramHandler(programStore)
 	ch := handler.NewCourseHandler(courseStore)
-	psh := handler.NewPhaseHandler(phaseStore, courseStore)
+	pshH := handler.NewPhaseHandler(phaseStore, courseStore)
 	lh := handler.NewLessonHandler(lessonStore)
 	sh := handler.NewSceneHandler(sceneStore, lessonStore)
+	return buildMux(cfg, ph, ch, pshH, lh, sh), nil
+}
 
+// buildMux 组装路由（内存/SQLite 共用）。
+func buildMux(cfg *config.Config, ph *handler.ProgramHandler, ch *handler.CourseHandler, pshH *handler.PhaseHandler, lh *handler.LessonHandler, sh *handler.SceneHandler) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Program
@@ -49,13 +98,13 @@ func newRouter(cfg *config.Config) *http.ServeMux {
 	mux.HandleFunc("DELETE /courses/{id}", ch.Delete)
 
 	// Phase（嵌套路由 + 全局列表）
-	mux.HandleFunc("GET /phases", psh.List)
-	mux.HandleFunc("GET /phases/{id}", psh.Get)
-	mux.HandleFunc("PUT /phases/{id}", psh.Update)
-	mux.HandleFunc("DELETE /phases/{id}", psh.Delete)
-	mux.HandleFunc("GET /courses/{courseId}/phases", psh.ListByCourse)
-	mux.HandleFunc("POST /courses/{courseId}/phases", psh.CreateByCourse)
-	mux.HandleFunc("DELETE /courses/{courseId}/phases/{id}", psh.Delete)
+	mux.HandleFunc("GET /phases", pshH.List)
+	mux.HandleFunc("GET /phases/{id}", pshH.Get)
+	mux.HandleFunc("PUT /phases/{id}", pshH.Update)
+	mux.HandleFunc("DELETE /phases/{id}", pshH.Delete)
+	mux.HandleFunc("GET /courses/{courseId}/phases", pshH.ListByCourse)
+	mux.HandleFunc("POST /courses/{courseId}/phases", pshH.CreateByCourse)
+	mux.HandleFunc("DELETE /courses/{courseId}/phases/{id}", pshH.Delete)
 
 	// Lesson
 	mux.HandleFunc("GET /lessons", lh.List)

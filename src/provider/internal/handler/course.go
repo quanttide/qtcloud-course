@@ -2,14 +2,13 @@ package handler
 
 import (
 	"github.com/quanttide/qtcloud-course-provider/internal/domain"
-	"github.com/quanttide/qtcloud-course-provider/internal/store"
-)
+	)
 
 // CourseHandler 提供 Course 的标准 CRUD。
 type CourseHandler = CRUDHandler[domain.Course]
 
 // NewCourseHandler 创建 Course handler。
-func NewCourseHandler(s *store.CourseStore) *CourseHandler {
+func NewCourseHandler(s CourseStorer) *CourseHandler {
 	return NewCRUDHandler(
 		s,
 		func(c *domain.Course) string {

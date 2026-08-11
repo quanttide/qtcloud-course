@@ -5,15 +5,14 @@ import (
 	"net/http"
 
 	"github.com/quanttide/qtcloud-course-provider/internal/domain"
-	"github.com/quanttide/qtcloud-course-provider/internal/store"
-)
+	)
 
 type PhaseHandler struct {
-	store       *store.PhaseStore
-	courseStore *store.CourseStore
+	store       PhaseStorer
+	courseStore CourseStorer
 }
 
-func NewPhaseHandler(s *store.PhaseStore, cs *store.CourseStore) *PhaseHandler {
+func NewPhaseHandler(s PhaseStorer, cs CourseStorer) *PhaseHandler {
 	return &PhaseHandler{store: s, courseStore: cs}
 }
 
@@ -30,7 +29,7 @@ func (h *PhaseHandler) ListByCourse(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"course not found"}`, http.StatusNotFound)
 		return
 	}
-	writeJSON(w, http.StatusOK, h.store.ListByCourse(courseID))
+	writeJSON(w, http.StatusOK, h.store.ListWhere("courseId", courseID))
 }
 
 // CreateByCourse 在指定课程下创建阶段。

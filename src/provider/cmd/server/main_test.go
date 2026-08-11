@@ -13,7 +13,10 @@ import (
 
 func TestNewRouter_Healthz(t *testing.T) {
 	cfg := config.Load()
-	mux := newRouter(cfg)
+	mux, err := newRouter(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/healthz", nil)
 	mux.ServeHTTP(w, r)
@@ -28,7 +31,10 @@ func TestNewRouter_Healthz(t *testing.T) {
 
 func TestNewRouter_ProgramCRUD(t *testing.T) {
 	cfg := config.Load()
-	mux := newRouter(cfg)
+	mux, err := newRouter(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Create
 	w := httptest.NewRecorder()
@@ -56,7 +62,10 @@ func TestNewRouter_ProgramCRUD(t *testing.T) {
 
 func TestNewRouter_404(t *testing.T) {
 	cfg := config.Load()
-	mux := newRouter(cfg)
+	mux, err := newRouter(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	cases := []string{
 		"GET /programs/nonexistent",
@@ -98,7 +107,10 @@ func TestGetEnv(t *testing.T) {
 
 func TestNewRouter_BadRequest(t *testing.T) {
 	cfg := config.Load()
-	mux := newRouter(cfg)
+	mux, err := newRouter(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("POST", "/programs", strings.NewReader(`{invalid`))
@@ -127,7 +139,10 @@ func getEnv(key, fallback string) string {
 
 func TestNewRouter_SceneNestedRoutes(t *testing.T) {
 	cfg := config.Load()
-	mux := newRouter(cfg)
+	mux, err := newRouter(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Create a lesson first
 	w := httptest.NewRecorder()
@@ -195,7 +210,10 @@ func TestNewRouter_SceneNestedRoutes(t *testing.T) {
 
 func TestNewRouter_PhaseNestedRoutes(t *testing.T) {
 	cfg := config.Load()
-	mux := newRouter(cfg)
+	mux, err := newRouter(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Create a course first
 	w := httptest.NewRecorder()

@@ -11,7 +11,7 @@ func NewSceneStore() *SceneStore {
 	return &SceneStore{BaseStore: NewBaseStore[domain.Scene]("scene")}
 }
 
-func (s *SceneStore) List(lessonID string) []*domain.Scene {
+func (s *SceneStore) ListByLesson(lessonID string) []*domain.Scene {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	var result []*domain.Scene

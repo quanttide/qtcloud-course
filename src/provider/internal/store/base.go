@@ -1,6 +1,7 @@
 package store
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 )
@@ -70,4 +71,82 @@ func (s *BaseStore[T]) NameExists(name string, getName func(*T) string) bool {
 		}
 	}
 	return false
+}
+
+// ── 通用写入（持久化版 SQLiteStore 使用；内存 store 保留各自定制的 Create/Update） ──
+// 泛型无法直接访问字段，统一走 JSON map 操作 ID。
+
+// create 通用创建：ID 生成 + 存入。
+func (s *BaseStore[T]) create(v *T) *T {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	raw, _ := json.Marshal(v)
+	var m map[string]any
+	_ = json.Unmarshal(raw, &m)
+	id := s.nextID()
+	m["id"] = id
+	merged, _ := json.Marshal(m)
+	var clone T
+	_ = json.Unmarshal(merged, &clone)
+	s.data[id] = &clone
+	return &clone
+}
+
+// update 通用更新：整体替换（保留原 ID）。
+func (s *BaseStore[T]) update(v *T) (*T, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	oldID := idOf(v)
+	if _, ok := s.data[oldID]; !ok {
+		return nil, false
+	}
+	raw, _ := json.Marshal(v)
+	var m map[string]any
+	_ = json.Unmarshal(raw, &m)
+	m["id"] = oldID
+	merged, _ := json.Marshal(m)
+	var clone T
+	_ = json.Unmarshal(merged, &clone)
+	s.data[oldID] = &clone
+	return &clone, true
+}
+
+// delete 通用删除。
+func (s *BaseStore[T]) delete(id string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, ok := s.data[id]; !ok {
+		return false
+	}
+	delete(s.data, id)
+	return true
+}
+
+// idOf 通过 JSON 提取 ID（domain 类型均含 id 字段）。
+func idOf[T any](v *T) string {
+	raw, _ := json.Marshal(v)
+	var m map[string]any
+	if json.Unmarshal(raw, &m) == nil {
+		if id, ok := m["id"].(string); ok {
+			return id
+		}
+	}
+	return ""
+}
+
+// ListWhere 按 JSON 字段过滤（如 ListWhere("courseId", "cour-1")）。
+func (s *BaseStore[T]) ListWhere(field, value string) []*T {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	var out []*T
+	for _, v := range s.data {
+		raw, _ := json.Marshal(v)
+		var m map[string]any
+		if json.Unmarshal(raw, &m) == nil {
+			if got, ok := m[field].(string); ok && got == value {
+				out = append(out, v)
+			}
+		}
+	}
+	return out
 }

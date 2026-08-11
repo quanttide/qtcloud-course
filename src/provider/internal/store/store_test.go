@@ -223,7 +223,7 @@ func TestPhaseStore_CRUD(t *testing.T) {
 func TestSceneStore_CRUD(t *testing.T) {
 	s := NewSceneStore()
 
-	if got := s.List("lesson-1"); len(got) != 0 {
+	if got := s.ListByLesson("lesson-1"); len(got) != 0 {
 		t.Fatalf("List() = %d, want 0", len(got))
 	}
 	if _, ok := s.Get("x"); ok {
@@ -244,13 +244,13 @@ func TestSceneStore_CRUD(t *testing.T) {
 	// Scene for different lesson
 	s.Create(&domain.Scene{LessonID: "lesson-2", VideoURL: "other.mp4"})
 
-	if got := s.List("lesson-1"); len(got) != 2 {
+	if got := s.ListByLesson("lesson-1"); len(got) != 2 {
 		t.Fatalf("List(lesson-1) = %d, want 2", len(got))
 	}
-	if got := s.List("lesson-2"); len(got) != 1 {
+	if got := s.ListByLesson("lesson-2"); len(got) != 1 {
 		t.Fatalf("List(lesson-2) = %d, want 1", len(got))
 	}
-	if got := s.List("lesson-3"); len(got) != 0 {
+	if got := s.ListByLesson("lesson-3"); len(got) != 0 {
 		t.Fatalf("List(lesson-3) = %d, want 0", len(got))
 	}
 
