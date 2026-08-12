@@ -70,7 +70,10 @@ func newRouter(cfg *config.Config) (*http.ServeMux, error) {
 		pshH := handler.NewPhaseHandler(psh, cs)
 		lh := handler.NewLessonHandler(ls)
 		sh := handler.NewSceneHandler(ss, ls)
-		return buildMux(cfg, ph, ch, pshH, lh, sh), nil
+		mux := buildMux(cfg, ph, ch, pshH, lh, sh)
+		player := handler.NewPlayerHandler(ps, cs, psh, ls, ss)
+		mux.HandleFunc("GET /player-data", player.Get)
+		return mux, nil
 	}
 
 	ph := handler.NewProgramHandler(programStore)
@@ -78,7 +81,10 @@ func newRouter(cfg *config.Config) (*http.ServeMux, error) {
 	pshH := handler.NewPhaseHandler(phaseStore, courseStore)
 	lh := handler.NewLessonHandler(lessonStore)
 	sh := handler.NewSceneHandler(sceneStore, lessonStore)
-	return buildMux(cfg, ph, ch, pshH, lh, sh), nil
+	mux := buildMux(cfg, ph, ch, pshH, lh, sh)
+	player := handler.NewPlayerHandler(programStore, courseStore, phaseStore, lessonStore, sceneStore)
+	mux.HandleFunc("GET /player-data", player.Get)
+	return mux, nil
 }
 
 // buildMux 组装路由（内存/SQLite 共用）。
