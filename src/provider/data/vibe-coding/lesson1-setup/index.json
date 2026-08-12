@@ -1,0 +1,70 @@
+{
+  "description": "完成Zed编辑器的下载安装、基础配置（主题、快捷键、插件），注册DeepSeek账号并获取API密钥，最后在Zed的Assistant面板中填入密钥并验证连接，为后续编程做好准备。",
+  "scenes": [
+    {
+      "description": "从Zed官方网站（https://zed.dev）下载对应操作系统的安装包（如Windows的.exe或macOS的.dmg），双击运行安装程序，按照提示完成安装。例如，Windows用户需允许管理员权限安装，macOS用户需将Zed拖入Applications文件夹。",
+      "exception": {
+        "description": "若下载中断或安装包损坏，请检查网络连接后重新下载；若提示系统不兼容，请确认操作系统版本（Zed支持Windows 10+、macOS 10.15+、Linux）。如果安装时权限不足，尝试以管理员身份运行安装程序。",
+        "title": "下载或安装失败"
+      },
+      "title": "下载安装Zed"
+    },
+    {
+      "description": "打开Zed编辑器，点击顶部菜单栏的「Zed」→「Preferences」→「Theme」，浏览内置主题列表（如「One Dark」「Solarized Light」等），选择喜欢的颜色方案并点击应用。例如，选择「Ayu Mirage」即可立即看到界面色调变化。",
+      "exception": {
+        "description": "如果主题列表为空或应用后界面显示异常，尝试重启Zed或重置用户设置（通过「Zed」→「Preferences」→「Reset User Settings」）。",
+        "title": "主题加载异常"
+      },
+      "title": "完成主题设置"
+    },
+    {
+      "description": "在Zed中通过「Preferences」→「Key Bindings」打开快捷键配置文件（keymap.json），可参考官方文档修改或添加自定义快捷键。例如，将「Ctrl+S」映射为「Save All」以覆盖默认行为，保存后立即生效。",
+      "exception": {
+        "description": "若设置后快捷键无响应，检查是否与系统或其他应用快捷键冲突。可在keymap.json中搜索冲突键位，或恢复默认配置（删除自定义内容后保存）。",
+        "title": "快捷键冲突"
+      },
+      "title": "快捷键设置"
+    },
+    {
+      "description": "打开Zed的扩展面板（侧边栏图标或快捷键Ctrl+Shift+X），搜索并安装必要的插件，如「GitLens」「Markdown Preview」等。以安装「GitLens」为例：在搜索框输入GitLens，点击第一个结果旁边的「Install」按钮，等待安装完成。",
+      "exception": {
+        "description": "若安装卡住或提示网络错误，请检查代理设置（Zed支持HTTP代理，可在终端执行`zed --proxy=http://127.0.0.1:7890`）。如果插件列表为空，尝试切换安装源（在扩展面板设置中改为国内镜像）。",
+        "title": "插件安装失败"
+      },
+      "title": "插件设置"
+    },
+    {
+      "description": "访问DeepSeek官网（https://deepseek.com），点击右上角「注册」按钮，输入邮箱地址（如example@gmail.com）、设置密码（至少8位含大小写字母和数字），并完成人机验证。例如，收到验证邮件后点击链接激活账号。",
+      "exception": {
+        "description": "若提示邮箱已被注册，请尝试找回密码或使用其他邮箱；若验证码未收到，检查垃圾邮件箱或等待1分钟后重新发送；若密码不符合规则，请参考页面提示调整。",
+        "title": "注册失败"
+      },
+      "title": "注册DeepSeek账号"
+    },
+    {
+      "description": "登录DeepSeek账户后，进入「API管理」页面，点击「创建新密钥」，输入密钥名称（如“Zed Assistant”），点击「生成」。密钥生成后，点击复制图标将密钥复制到剪贴板。注意：密钥只在创建时可见，需立即保存。",
+      "exception": {
+        "description": "如果提示「已达密钥上限」，请先删除旧密钥再创建；若页面报错，请刷新后重试。复制后建议粘贴到临时文本文件验证完整性（注意：不要泄露密钥）。",
+        "title": "密钥生成异常"
+      },
+      "title": "生成并复制API密钥"
+    },
+    {
+      "description": "打开Zed编辑器，通过快捷键Ctrl+Shift+A或点击底部状态栏的「Assistant」图标打开面板。在面板中找到「API Key」输入框，粘贴之前复制的DeepSeek密钥，然后点击「Apply」保存。例如，密钥格式为sk-xxxxxxxxxxxxxxxx。",
+      "exception": {
+        "description": "如果找不到Assistant面板，请检查Zed版本（需≥0.10.0）或通过「View」→「Assistant」手动打开；若粘贴后按钮无反应，请确认密钥未包含空格或换行，可手动重新输入。",
+        "title": "填入密钥失败"
+      },
+      "title": "在Zed的Assistant面板中填入密钥"
+    },
+    {
+      "description": "在Assistant面板中，点击「Test Connection」按钮，等待返回「Connected Successfully」提示。例如，发送一条测试消息“Hello”，若收到DeepSeek模型回复则说明配置正确。如果连接失败，请检查网络或密钥有效性。",
+      "exception": {
+        "description": "若返回「Invalid API Key」，请返回DeepSeek官网重新生成密钥并更新；若网络超时，检查防火墙或代理设置；若提示「Rate Limit Exceeded」，请稍后再试或升级API套餐。",
+        "title": "连接测试失败"
+      },
+      "title": "验证连接可用"
+    }
+  ],
+  "title": "氛围编程 — 课时1：开发环境搭建"
+}

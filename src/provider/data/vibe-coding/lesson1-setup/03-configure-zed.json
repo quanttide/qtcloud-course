@@ -1,0 +1,26 @@
+{
+  "description": "在 Zed 编辑器中配置 Agent 使用 DeepSeek API 密钥，以便集成 DeepSeek 作为语言模型提供者。",
+  "steps": [
+    {
+      "description": "在 Zed 编辑器中，通过快捷键（macOS: Cmd+Shift+P，Windows/Linux: Ctrl+Shift+P）打开命令面板，输入并选择“Zed: Open Agent Panel”命令，或通过菜单栏“View > Agent Panel”打开 Agent 面板。",
+      "title": "打开 Zed Agent 面板"
+    },
+    {
+      "description": "在 Agent 面板中，点击右上角的齿轮图标或“配置”按钮，进入模型提供商与 API 密钥的设置界面。该页面通常包含“Provider”和“API Key”等字段。",
+      "title": "进入模型选择与配置页面"
+    },
+    {
+      "description": "在“Provider”下拉菜单中，滚动列表并选择“DeepSeek”。如果列表中无此选项，可先确认 Agent 版本支持或手动添加自定义提供商。",
+      "title": "选择 DeepSeek 作为 LLM Provider"
+    },
+    {
+      "description": "在“API Key”文本框中，粘贴从 DeepSeek 官方网站获取的 API 密钥（通常以 sk- 开头）。确保密钥无多余空格，并确认密钥状态为可用。",
+      "title": "填入 DeepSeek API 密钥"
+    },
+    {
+      "description": "在 Agent 面板底部的输入框中，输入一条测试消息，例如“Hello, what is the capital of France?”，按回车发送。观察返回结果是否正常，无错误提示（如“401 Unauthorized”或“Invalid API key”）。",
+      "title": "发送测试消息验证配置"
+    }
+  ],
+  "title": "配置 Zed Agent"
+}
