@@ -24,6 +24,10 @@
 
 ## 相关文档
 
+- [architecture.md](architecture.md) — 分层结构与数据流
+- [data-model.md](data-model.md) — 模型层级与 JSON 字段对照
+- [workflow.md](workflow.md) — 从蓝图到落地：CLI 与 Studio 能力对照
+- [testing.md](testing.md) — 单元测试与集成测试职责划分
 - [specification/index.md](../specification/index.md) — 领域架构与设计规则
 - [specification/course/tree.md](../specification/course/tree.md) — 课程树字段规格
 - [specification/class/teaching.md](../specification/class/teaching.md) — ClassTeaching 字段规格
