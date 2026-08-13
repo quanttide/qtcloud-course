@@ -4,3 +4,8 @@
 - [数据模型](data-model.md) — 模型层级与 JSON 字段对照
 - [工作流](workflow.md) — 从蓝图到落地：CLI 与 Studio 能力对照
 - [测试策略](testing.md) — 单元测试与集成测试职责划分
+
+## 页面规格
+
+- [课程列表管理页](screens/course-list-edit.md) — 课程 CRUD / 排序 / 发布 / 导入导出
+- [课程详情编辑页](screens/course-detail-edit.md) — 阶段 / 课时 / 场景 / 分支编辑
