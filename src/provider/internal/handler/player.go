@@ -10,14 +10,16 @@ import (
 	"github.com/quanttide/qtcloud-course-provider/internal/domain"
 )
 
-// PlayerData 播放器数据（对齐 qtclass studio 的 course.json 结构）。
+// PlayerData 播放器数据（对齐 qtclass studio 的 course.json 结构——
+// segments/interactions 为按 id 索引的 Map，pathSteps/interactionNodes 为数组）。
 type PlayerData struct {
-	Title        string            `json:"title"`
-	Description  string            `json:"description"`
-	Objectives   []string          `json:"objectives"`
-	Segments     []PlayerSegment   `json:"segments"`
-	PathSteps    []PlayerPathStep  `json:"pathSteps"`
-	Interactions []json.RawMessage `json:"interactions"`
+	Title            string                   `json:"title"`
+	Description      string                   `json:"description"`
+	Objectives       []string                 `json:"objectives"`
+	Segments         map[string]PlayerSegment `json:"segments"`
+	PathSteps        []PlayerPathStep         `json:"pathSteps"`
+	Interactions     map[string]json.RawMessage `json:"interactions"`
+	InteractionNodes []json.RawMessage        `json:"interactionNodes"`
 }
 
 // PlayerSegment 播放片段（steps 展开为顺序片段）。
@@ -75,9 +77,12 @@ func (h *PlayerHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := PlayerData{
-		Title:       course.Name,
-		Description: course.Description,
-		Objectives:  []string{},
+		Title:            course.Name,
+		Description:      course.Description,
+		Objectives:       []string{},
+		Segments:         map[string]PlayerSegment{},
+		Interactions:     map[string]json.RawMessage{},
+		InteractionNodes: []json.RawMessage{},
 	}
 
 	// 课时 → pathSteps + segments
@@ -112,7 +117,7 @@ func (h *PlayerHandler) Get(w http.ResponseWriter, r *http.Request) {
 				} else {
 					seg.Action = "finish"
 				}
-				data.Segments = append(data.Segments, seg)
+				data.Segments[sc.ID] = seg
 			}
 		}
 	}
