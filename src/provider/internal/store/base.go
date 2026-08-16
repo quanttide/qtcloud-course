@@ -3,6 +3,7 @@ package store
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"sync"
 )
 
@@ -132,6 +133,21 @@ func idOf[T any](v *T) string {
 		}
 	}
 	return ""
+}
+
+// SetID 改写实体 ID 并迁移存储 key（seed 固定 ID 用，如生产实习课程 id=prod；
+// 常规 Create/Update 不暴露 ID 覆盖，避免管理端误用）。
+func (s *BaseStore[T]) SetID(v *T, newID string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if oldID := idOf(v); oldID != "" && oldID != newID {
+		delete(s.data, oldID)
+	}
+	rv := reflect.ValueOf(v).Elem()
+	if f := rv.FieldByName("ID"); f.CanSet() {
+		f.SetString(newID)
+	}
+	s.data[newID] = v
 }
 
 // ListWhere 按 JSON 字段过滤（如 ListWhere("courseId", "cour-1")）。

@@ -75,7 +75,20 @@ func (h *PlayerHandler) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"course not found"}`, http.StatusNotFound)
 		return
 	}
+	h.writePlayerData(w, course)
+}
 
+// GetByCourse GET /v1/courses/{id}/player：按课程返回播放器数据（学员端）。
+func (h *PlayerHandler) GetByCourse(w http.ResponseWriter, r *http.Request) {
+	course, ok := h.courseStore.Get(r.PathValue("id"))
+	if !ok {
+		http.Error(w, `{"error":"course not found"}`, http.StatusNotFound)
+		return
+	}
+	h.writePlayerData(w, course)
+}
+
+func (h *PlayerHandler) writePlayerData(w http.ResponseWriter, course *domain.Course) {
 	data := PlayerData{
 		Title:            course.Name,
 		Description:      course.Description,

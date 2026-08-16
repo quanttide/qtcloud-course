@@ -73,6 +73,8 @@ func newRouter(cfg *config.Config) (*http.ServeMux, error) {
 		mux := buildMux(cfg, ph, ch, pshH, lh, sh)
 		player := handler.NewPlayerHandler(ps, cs, psh, ls, ss)
 		mux.HandleFunc("GET /player-data", player.Get)
+		catalog := handler.NewCatalogHandler(ps, cs, psh, ls)
+		registerPublicAPI(mux, catalog, player)
 		return mux, nil
 	}
 
@@ -84,7 +86,16 @@ func newRouter(cfg *config.Config) (*http.ServeMux, error) {
 	mux := buildMux(cfg, ph, ch, pshH, lh, sh)
 	player := handler.NewPlayerHandler(programStore, courseStore, phaseStore, lessonStore, sceneStore)
 	mux.HandleFunc("GET /player-data", player.Get)
+	catalog := handler.NewCatalogHandler(programStore, courseStore, phaseStore, lessonStore)
+	registerPublicAPI(mux, catalog, player)
 	return mux, nil
+}
+
+// registerPublicAPI 学员端公开接口（/v1 前缀，与管理 CRUD 分离）。
+func registerPublicAPI(mux *http.ServeMux, catalog *handler.CatalogHandler, player *handler.PlayerHandler) {
+	mux.HandleFunc("GET /v1/courses", catalog.List)
+	mux.HandleFunc("GET /v1/courses/{id}", catalog.Get)
+	mux.HandleFunc("GET /v1/courses/{id}/player", player.GetByCourse)
 }
 
 // buildMux 组装路由（内存/SQLite 共用）。
