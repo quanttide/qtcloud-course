@@ -170,8 +170,13 @@ func (h *CatalogHandler) build(c *domain.Course) CatalogCourse {
 }
 
 func (h *CatalogHandler) buildStages(c *domain.Course) []CatalogStage {
+	phases := h.phaseStore.ListWhere("courseId", c.ID)
+	// 按 SortOrder 排序（存储遍历无序，模块顺序由 SortOrder 保证）
+	sort.SliceStable(phases, func(i, j int) bool {
+		return phases[i].SortOrder < phases[j].SortOrder
+	})
 	var out []CatalogStage
-	for _, phase := range h.phaseStore.ListWhere("courseId", c.ID) {
+	for _, phase := range phases {
 		stage := CatalogStage{ID: phase.ID, Name: phase.Name}
 		for _, lessonID := range phase.LessonIDs {
 			lesson, ok := h.lessonStore.Get(lessonID)

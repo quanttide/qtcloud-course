@@ -161,3 +161,9 @@ func NewSQLiteLessonStore(db *sql.DB) (*SQLiteStore[domain.Lesson], error) {
 func NewSQLiteSceneStore(db *sql.DB) (*SQLiteStore[domain.Scene], error) {
 	return NewSQLiteStore[domain.Scene](db, "scen", "scenes")
 }
+
+// SetID 覆盖 BaseStore：改写 ID 后落盘（seed 固定 ID 用，如生产实习 id=prod）。
+func (s *SQLiteStore[T]) SetID(v *T, newID string) {
+	s.BaseStore.SetID(v, newID)
+	_ = s.snapshot()
+}
