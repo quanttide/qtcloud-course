@@ -36,11 +36,12 @@ type PlayerSegment struct {
 	Action    string  `json:"action,omitempty"`
 }
 
-// PlayerPathStep 侧边栏步骤。
+// PlayerPathStep 侧边栏步骤（对齐 qtclass PathStep 契约：label/meta/segmentId）。
 type PlayerPathStep struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
-	Type  string `json:"type"`
+	ID        string `json:"id"`
+	Label     string `json:"label"`
+	Meta      string `json:"meta"`
+	SegmentID string `json:"segmentId"`
 }
 
 // PlayerHandler 播放器数据 API。
@@ -105,12 +106,17 @@ func (h *PlayerHandler) writePlayerData(w http.ResponseWriter, course *domain.Co
 			if !ok {
 				continue
 			}
-			data.PathSteps = append(data.PathSteps, PlayerPathStep{
-				ID:    lesson.ID,
-				Title: lesson.Title,
-				Type:  "lesson",
-			})
 			scenes := h.sceneStore.ListWhere("lessonId", lesson.ID)
+			firstSceneID := ""
+			if len(scenes) > 0 {
+				firstSceneID = scenes[0].ID
+			}
+			data.PathSteps = append(data.PathSteps, PlayerPathStep{
+				ID:        lesson.ID,
+				Label:     lesson.Title,
+				Meta:      phase.Name,
+				SegmentID: firstSceneID,
+			})
 			for i, sc := range scenes {
 				seg := PlayerSegment{
 					ID:         sc.ID,
