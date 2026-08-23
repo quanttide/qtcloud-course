@@ -69,7 +69,6 @@ func TestScene_EmptyChoices(t *testing.T) {
 	}
 }
 
-
 func TestMakeSlug_ASCII(t *testing.T) {
 	tests := []struct {
 		name   string

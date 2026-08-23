@@ -1,5 +1,6 @@
 {
   "description": "在 Zed 编辑器中配置 Agent 使用 DeepSeek API 密钥，以便集成 DeepSeek 作为语言模型提供者。",
+  "videoUrl": "https://qtclass-video.oss-cn-hangzhou.aliyuncs.com/videos/03-configure-zed.mp4",
   "steps": [
     {
       "description": "在 Zed 编辑器中，通过快捷键（macOS: Cmd+Shift+P，Windows/Linux: Ctrl+Shift+P）打开命令面板，输入并选择“Zed: Open Agent Panel”命令，或通过菜单栏“View > Agent Panel”打开 Agent 面板。",

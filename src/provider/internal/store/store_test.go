@@ -272,4 +272,3 @@ func TestSceneStore_CRUD(t *testing.T) {
 		t.Fatal("Delete() nonexistent ok = true")
 	}
 }
-

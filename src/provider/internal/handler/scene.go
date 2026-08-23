@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/quanttide/qtcloud-course-provider/internal/domain"
-	)
+)
 
 type SceneHandler struct {
 	store       SceneStorer

@@ -1,5 +1,6 @@
 {
   "description": "注册 DeepSeek 账号并获取 API 密钥，用于后续调用 DeepSeek 的 API 服务。",
+  "videoUrl": "https://qtclass-video.oss-cn-hangzhou.aliyuncs.com/videos/02-getting-api-key.mp4",
   "steps": [
     {
       "description": "打开浏览器，访问 DeepSeek 官方网站（如 platform.deepseek.com）。点击页面上的「注册」按钮，输入邮箱地址（例如 user@example.com）或手机号，设置密码并同意用户协议。系统会发送验证码到您的邮箱或手机。",

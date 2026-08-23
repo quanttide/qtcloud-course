@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/quanttide/qtcloud-course-provider/internal/domain"
-	)
+)
 
 // LessonHandler 提供 Lesson 的标准 CRUD。
 type LessonHandler = CRUDHandler[domain.Lesson]

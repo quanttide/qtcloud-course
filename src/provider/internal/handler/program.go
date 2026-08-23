@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/quanttide/qtcloud-course-provider/internal/domain"
-	)
+)
 
 // ProgramHandler 提供 Program 的标准 CRUD。
 type ProgramHandler = CRUDHandler[domain.Program]

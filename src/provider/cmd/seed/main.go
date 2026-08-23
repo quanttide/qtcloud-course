@@ -26,6 +26,7 @@ import (
 type sceneJSON struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	VideoURL    string `json:"videoUrl"`
 	Steps       []struct {
 		Order       int    `json:"order"`
 		Title       string `json:"title"`
@@ -112,11 +113,15 @@ func main() {
 		for _, sf := range sceneFiles {
 			sj := readScene(filepath.Join(phaseDir, sf))
 			video := strings.TrimSuffix(sf, ".json") + ".mp4"
+			videoURL := sj.VideoURL
+			if videoURL == "" {
+				videoURL = "/video/" + video
+			}
 			scene := scenes.Create(&domain.Scene{
 				LessonID:  lesson.ID,
 				Title:     sj.Title,
 				Slug:      strings.TrimSuffix(sf, ".json"),
-				VideoURL:  "/video/" + video,
+				VideoURL:  videoURL,
 				Steps:     toSteps(sj),
 				VerifyTip: sj.Description,
 				Choices:   []domain.Choice{},

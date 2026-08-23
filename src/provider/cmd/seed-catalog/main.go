@@ -8,8 +8,8 @@
 package main
 
 import (
-	_ "embed"
 	"database/sql"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"log"

@@ -461,4 +461,3 @@ func TestSceneHandler_CRUD(t *testing.T) {
 	w = request(t, mux, "DELETE", "/scenes/nonexistent", "")
 	assertStatus(t, w, 404)
 }
-

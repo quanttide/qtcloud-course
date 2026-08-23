@@ -13,27 +13,27 @@ import (
 // PlayerData 播放器数据（对齐 qtclass studio 的 course.json 结构——
 // segments/interactions 为按 id 索引的 Map，pathSteps/interactionNodes 为数组）。
 type PlayerData struct {
-	Title            string                   `json:"title"`
-	Description      string                   `json:"description"`
-	Objectives       []string                 `json:"objectives"`
-	Segments         map[string]PlayerSegment `json:"segments"`
-	PathSteps        []PlayerPathStep         `json:"pathSteps"`
+	Title            string                     `json:"title"`
+	Description      string                     `json:"description"`
+	Objectives       []string                   `json:"objectives"`
+	Segments         map[string]PlayerSegment   `json:"segments"`
+	PathSteps        []PlayerPathStep           `json:"pathSteps"`
 	Interactions     map[string]json.RawMessage `json:"interactions"`
-	InteractionNodes []json.RawMessage        `json:"interactionNodes"`
+	InteractionNodes []json.RawMessage          `json:"interactionNodes"`
 }
 
 // PlayerSegment 播放片段（steps 展开为顺序片段）。
 type PlayerSegment struct {
-	ID        string  `json:"id"`
-	SceneKey  string  `json:"sceneKey"`
-	Duration  float64 `json:"duration"`
-	Title     string  `json:"title"`
-	Caption   string  `json:"caption"`
-	Chapter   string  `json:"chapter"`
+	ID         string  `json:"id"`
+	SceneKey   string  `json:"sceneKey"`
+	Duration   float64 `json:"duration"`
+	Title      string  `json:"title"`
+	Caption    string  `json:"caption"`
+	Chapter    string  `json:"chapter"`
 	PathStepID string  `json:"pathStepId"`
-	Video     *string `json:"video,omitempty"`
-	Next      string  `json:"next,omitempty"`
-	Action    string  `json:"action,omitempty"`
+	Video      *string `json:"video,omitempty"`
+	Next       string  `json:"next,omitempty"`
+	Action     string  `json:"action,omitempty"`
 }
 
 // PlayerPathStep 侧边栏步骤（对齐 qtclass PathStep 契约：label/meta/segmentId）。
