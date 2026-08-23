@@ -69,6 +69,8 @@ func main() {
 
 	prog := programs.Create(&domain.Program{Name: "vibe-coding", Description: "氛围编程（Vibe Coding）系列教程", Status: "published"})
 	course := courses.Create(&domain.Course{Name: "氛围编程教程", Description: "Vibe Coding 系列教程", Status: "published"})
+	// 固定课程 ID：与公开课程目录（seed-catalog）的 vibe-coding 课程一致，player 端点按 ID 查询
+	courses.SetID(course, "vibe-coding")
 
 	entries, err := os.ReadDir(*dir)
 	if err != nil {
@@ -112,16 +114,15 @@ func main() {
 		var startSceneID string
 		for _, sf := range sceneFiles {
 			sj := readScene(filepath.Join(phaseDir, sf))
-			video := strings.TrimSuffix(sf, ".json") + ".mp4"
-			videoURL := sj.VideoURL
-			if videoURL == "" {
-				videoURL = "/video/" + video
+			// 当前上线范围只发布已录制视频课时；E1 排错 JSON 暂不进入播放器。
+			if sj.VideoURL == "" {
+				continue
 			}
 			scene := scenes.Create(&domain.Scene{
 				LessonID:  lesson.ID,
 				Title:     sj.Title,
 				Slug:      strings.TrimSuffix(sf, ".json"),
-				VideoURL:  videoURL,
+				VideoURL:  sj.VideoURL,
 				Steps:     toSteps(sj),
 				VerifyTip: sj.Description,
 				Choices:   []domain.Choice{},

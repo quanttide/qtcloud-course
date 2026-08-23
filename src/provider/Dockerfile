@@ -25,13 +25,13 @@ COPY --from=build /out/course-server /usr/local/bin/course-server
 COPY --from=build /out/course-seed /usr/local/bin/course-seed
 COPY --from=build /out/course-seed-catalog /usr/local/bin/course-seed-catalog
 
-# 旧 vibe-coding 课程数据保留在镜像中，仅供后续管理端/兼容迁移使用。
+# vibe-coding 课程数据（场景 + 视频 URL 源）
 ARG VIBE_CODING_DIR=./data/vibe-coding
 COPY ${VIBE_CODING_DIR} /data/vibe-coding
 
 USER app
 EXPOSE 8080
 
-# 启动：seed 公开课程目录（5 门课 + 生产实习真实正文）再服务；
-# DB 在容器内临时盘（课程数据源固定，发版更新）
-CMD ["sh", "-c", "DB_PATH=/tmp/course.db /usr/local/bin/course-seed-catalog && DB_PATH=/tmp/course.db /usr/local/bin/course-server"]
+# 启动：先 seed 氛围编程场景（vibe-coding，含视频），再 seed 公开课程目录（5 门课 + 生产实习正文），
+# 最后服务；DB 在容器内临时盘（课程数据源固定，发版更新）
+CMD ["sh", "-c", "DB_PATH=/tmp/course.db /usr/local/bin/course-seed --dir /data/vibe-coding && DB_PATH=/tmp/course.db /usr/local/bin/course-seed-catalog && DB_PATH=/tmp/course.db /usr/local/bin/course-server"]

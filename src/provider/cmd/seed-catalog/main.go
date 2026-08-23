@@ -28,10 +28,11 @@ type courseSpec struct {
 	id, name, description, status string
 }
 
-// 5 门课（①-⑤ 阶梯）。生产实习（prod）为唯一 published（可学习），其余 locked（暂未开放）。
+// 5 门课（①-⑤ 阶梯）。生产实习（prod）与氛围编程（vibe-coding，真实场景+视频）published 可学习，
+// 其余 locked（暂未开放）。
 var courseSpecs = []courseSpec{
 	{"knowledge-work", "知识工作", "高效知识工作的方法与工具", "draft"},
-	{"vibe-coding", "氛围编程", "AI 辅助编程实战（Vibe Coding）", "draft"},
+	{"vibe-coding", "氛围编程", "AI 辅助编程实战（Vibe Coding）", "published"},
 	{"big-data-intro", "大数据导论", "大数据基础概念与行业全景", "draft"},
 	{"data-engineering", "数据工程", "数据采集、清洗与建模工程实践", "draft"},
 	{"prod", "生产实习", "走进真实业务：认识量潮、学会做事、发现机会、Sell Your Demo", "published"},
@@ -85,15 +86,6 @@ func main() {
 		}
 	}
 
-	// 旧 vibe-coding Program 置 draft（不进入公开列表；数据保留管理端可见）
-	for _, p := range programs.List() {
-		if p.Name == "vibe-coding" {
-			p.Status = "draft"
-			programs.Update(p)
-			log.Println("vibe-coding program → draft")
-		}
-	}
-
 	// 生产实习数据（赵交付，go:embed 内置）
 	var prod courseJSON
 	if err := json.Unmarshal(prodInternshipJSON, &prod); err != nil {
@@ -119,6 +111,9 @@ func main() {
 
 		if spec.id == "prod" {
 			seedProd(phases, lessons, scenes, course, prod)
+		} else if spec.id == "vibe-coding" {
+			// 氛围编程的真实场景（含视频）由 course-seed 提供（cmd/seed，Dockerfile 启动时先执行），
+			// 此处不建占位课时，避免覆盖
 		} else {
 			seedLocked(phases, lessons, scenes, course, spec)
 		}

@@ -61,6 +61,36 @@ func TestSQLiteProgramStore_Persists(t *testing.T) {
 	}
 }
 
+func TestSQLiteStore_RestoresSequence(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "seq.db")
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	s, err := NewSQLiteProgramStore(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	first := s.Create(&domain.Program{Name: "first"})
+	if first.ID != "prog-1" {
+		t.Fatalf("first ID = %q, want prog-1", first.ID)
+	}
+
+	reopened, err := NewSQLiteProgramStore(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	second := reopened.Create(&domain.Program{Name: "second"})
+	if second.ID != "prog-2" {
+		t.Fatalf("second ID = %q, want prog-2", second.ID)
+	}
+	if got, ok := reopened.Get(first.ID); !ok || got.Name != "first" {
+		t.Fatalf("first record overwritten or missing: %#v ok=%v", got, ok)
+	}
+}
+
 func TestSQLiteSceneStore_ListWhere(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "scene.db")
 	db, _ := sql.Open("sqlite", path)

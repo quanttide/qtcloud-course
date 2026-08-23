@@ -7,6 +7,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/quanttide/qtcloud-course-provider/internal/domain"
 )
@@ -57,13 +59,24 @@ func (s *SQLiteStore[T]) restore() error {
 			return fmt.Errorf("sqlite restore %s/%s: %w", s.table, id, err)
 		}
 		s.data[id] = &v
-		// 恢复自增序列（id 形如 "prog-12"）
-		var n int
-		if _, err := fmt.Sscanf(id, "%*[^-]-%d", &n); err == nil && n >= s.seq {
+		// 恢复自增序列（id 形如 "prog-12"）；fmt.Sscanf 不支持 %* assignment suppression。
+		if n, ok := numericSuffix(id); ok && n >= s.seq {
 			s.seq = n + 1
 		}
 	}
 	return rows.Err()
+}
+
+func numericSuffix(id string) (int, bool) {
+	idx := strings.LastIndex(id, "-")
+	if idx < 0 || idx == len(id)-1 {
+		return 0, false
+	}
+	n, err := strconv.Atoi(id[idx+1:])
+	if err != nil {
+		return 0, false
+	}
+	return n, true
 }
 
 // snapshot 写后全量落盘。
