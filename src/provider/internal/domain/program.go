@@ -53,6 +53,17 @@ type Scene struct {
 	Steps     []Step   `json:"steps,omitempty"`     // 操作步骤列表
 	VerifyTip string   `json:"verifyTip,omitempty"` // 验证方式
 	Choices   []Choice `json:"choices"`             // 分支选项（空数组表示终结）
+	// Acceptance 是本场景完成的显式判定（学员做完这步怎么知道对了）。
+	// 与课时级 acceptance 同构（criteria/method/on_fail）——场景级验收在每步发生，
+	// 课时级验收 = 场景全过 + 跨场景约束。
+	Acceptance *Acceptance `json:"acceptance,omitempty"`
+}
+
+// Acceptance 是验收标准（场景级/课时级同构）。
+type Acceptance struct {
+	Criteria string `json:"criteria"`           // 完成判定（什么算做对）
+	Method   string `json:"method,omitempty"`   // 验证方法（自检/助教检查等）
+	OnFail   string `json:"on_fail,omitempty"`  // 未通过时怎么办（异常分支/求助）
 }
 
 // Step 是场景内的操作步骤。

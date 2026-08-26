@@ -55,6 +55,15 @@
 | steps | List\<Step\> | 步骤列表 |
 | choices | List\<Choice\> | 分支选项 |
 | verifyTip | String | 验证提示 |
+| acceptance | Acceptance | 本场景完成判定（criteria/method/on_fail——与课时级同构；场景级验收在每步发生） |
+
+### Acceptance
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| criteria | String | 完成判定（什么算做对） |
+| method | String | 验证方法（自检/助教检查等） |
+| on_fail | String | 未通过时怎么办（异常分支/求助） |
 
 ### Step
 

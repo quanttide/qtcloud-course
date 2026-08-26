@@ -52,12 +52,15 @@ func TestLesson_JSON(t *testing.T) {
 }
 
 func TestScene_JSON(t *testing.T) {
-	sc := Scene{ID: "scene-1", LessonID: "less-1", Slug: "slug-scene-1", VideoURL: "intro.mp4", Choices: []Choice{{Label: "继续", TargetSceneID: "scene-2"}}}
+	sc := Scene{ID: "scene-1", LessonID: "less-1", Slug: "slug-scene-1", VideoURL: "intro.mp4", Choices: []Choice{{Label: "继续", TargetSceneID: "scene-2"}}, Acceptance: &Acceptance{Criteria: "Zed 启动且主题生效", Method: "自检", OnFail: "回到异常分支排查"}}
 	b, _ := json.Marshal(sc)
 	var got Scene
 	json.Unmarshal(b, &got)
 	if got.VideoURL != "intro.mp4" || got.Slug != "slug-scene-1" || len(got.Choices) != 1 {
 		t.Fatalf("roundtrip = %+v", got)
+	}
+	if got.Acceptance == nil || got.Acceptance.Criteria != "Zed 启动且主题生效" || got.Acceptance.OnFail != "回到异常分支排查" {
+		t.Fatalf("acceptance roundtrip = %+v", got.Acceptance)
 	}
 }
 
