@@ -74,7 +74,7 @@ func (s *BaseStore[T]) NameExists(name string, getName func(*T) string) bool {
 	return false
 }
 
-// ── 通用写入（持久化版 SQLiteStore 使用；内存 store 保留各自定制的 Create/Update） ──
+// ── 通用写入（持久化版 OSSStore 使用；内存 store 保留各自定制的 Create/Update） ──
 // 泛型无法直接访问字段，统一走 JSON map 操作 ID。
 
 // create 通用创建：ID 生成 + 存入。

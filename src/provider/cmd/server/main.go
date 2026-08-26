@@ -1,14 +1,9 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
-
-	"github.com/quanttide/qtcloud-course-provider/internal/domain"
-
-	_ "modernc.org/sqlite"
 
 	"github.com/quanttide/qtcloud-course-provider/internal/config"
 	"github.com/quanttide/qtcloud-course-provider/internal/handler"
@@ -21,61 +16,19 @@ func main() {
 	if err != nil {
 		log.Fatalf("router init: %v", err)
 	}
-	log.Printf("qtcloud-course-provider starting on %s (db=%s)", cfg.ListenAddr, cfg.DBPath)
+	log.Printf("qtcloud-course-provider starting on %s (store=%s)", cfg.ListenAddr, cfg.Store)
 	if err := http.ListenAndServe(cfg.ListenAddr, mux); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
 }
 
 // newRouter 创建并配置所有路由，可单独测试。
-// 持久化：DB_PATH 非空时启用 SQLite（生产），否则内存（默认/测试）。
+// 持久化：QTCLOUD_COURSE_STORE=oss 时启用对象存储（生产 FC 可读写、容器回收数据仍在），
+// 否则内存（默认/测试）。
 func newRouter(cfg *config.Config) (*http.ServeMux, error) {
-	var (
-		programStore *store.SQLiteStore[domain.Program]
-		courseStore  *store.SQLiteStore[domain.Course]
-		phaseStore   *store.SQLiteStore[domain.Phase]
-		lessonStore  *store.SQLiteStore[domain.Lesson]
-		sceneStore   *store.SQLiteStore[domain.Scene]
-		db           *sql.DB
-		err          error
-	)
-	if cfg.DBPath != "" {
-		db, err = sql.Open("sqlite", cfg.DBPath)
-		if err != nil {
-			return nil, fmt.Errorf("open sqlite %s: %w", cfg.DBPath, err)
-		}
-		if programStore, err = store.NewSQLiteProgramStore(db); err != nil {
-			return nil, err
-		}
-		if courseStore, err = store.NewSQLiteCourseStore(db); err != nil {
-			return nil, err
-		}
-		if phaseStore, err = store.NewSQLitePhaseStore(db); err != nil {
-			return nil, err
-		}
-		if lessonStore, err = store.NewSQLiteLessonStore(db); err != nil {
-			return nil, err
-		}
-		if sceneStore, err = store.NewSQLiteSceneStore(db); err != nil {
-			return nil, err
-		}
-	} else {
-		ps := store.NewProgramStore()
-		cs := store.NewCourseStore()
-		psh := store.NewPhaseStore()
-		ls := store.NewLessonStore()
-		ss := store.NewSceneStore()
-		ph := handler.NewProgramHandler(ps)
-		ch := handler.NewCourseHandler(cs)
-		pshH := handler.NewPhaseHandler(psh, cs)
-		lh := handler.NewLessonHandler(ls)
-		sh := handler.NewSceneHandler(ss, ls)
-		mux := buildMux(cfg, ph, ch, pshH, lh, sh)
-		player := handler.NewPlayerHandler(ps, cs, psh, ls, ss)
-		mux.HandleFunc("GET /player-data", player.Get)
-		catalog := handler.NewCatalogHandler(ps, cs, psh, ls)
-		registerPublicAPI(mux, catalog, player)
-		return mux, nil
+	programStore, courseStore, phaseStore, lessonStore, sceneStore, err := newStores(cfg)
+	if err != nil {
+		return nil, err
 	}
 
 	ph := handler.NewProgramHandler(programStore)
@@ -84,11 +37,52 @@ func newRouter(cfg *config.Config) (*http.ServeMux, error) {
 	lh := handler.NewLessonHandler(lessonStore)
 	sh := handler.NewSceneHandler(sceneStore, lessonStore)
 	mux := buildMux(cfg, ph, ch, pshH, lh, sh)
+
 	player := handler.NewPlayerHandler(programStore, courseStore, phaseStore, lessonStore, sceneStore)
 	mux.HandleFunc("GET /player-data", player.Get)
 	catalog := handler.NewCatalogHandler(programStore, courseStore, phaseStore, lessonStore)
 	registerPublicAPI(mux, catalog, player)
 	return mux, nil
+}
+
+// newStores 按配置创建 5 个资源 store（program/course/phase/lesson/scene）。
+// 内存分支各建独立实例；OSS 分支共享同一后端，各表独立对象（{table}.json）。
+func newStores(cfg *config.Config) (handler.ProgramStorer, handler.CourseStorer, handler.PhaseStorer, handler.LessonStorer, handler.SceneStorer, error) {
+	switch cfg.Store {
+	case "oss":
+		backend, err := store.NewOSS(store.OSSConfig{
+			Endpoint:        cfg.OSSEndpoint,
+			Bucket:          cfg.OSSBucket,
+			AccessKeyID:     cfg.OSSAccessKeyID,
+			AccessKeySecret: cfg.OSSAccessKeySecret,
+		})
+		if err != nil {
+			return nil, nil, nil, nil, nil, fmt.Errorf("oss init: %w", err)
+		}
+		ps, err := store.NewOSSProgramStore(backend)
+		if err != nil {
+			return nil, nil, nil, nil, nil, err
+		}
+		cs, err := store.NewOSSCourseStore(backend)
+		if err != nil {
+			return nil, nil, nil, nil, nil, err
+		}
+		psh, err := store.NewOSSPhaseStore(backend)
+		if err != nil {
+			return nil, nil, nil, nil, nil, err
+		}
+		ls, err := store.NewOSSLessonStore(backend)
+		if err != nil {
+			return nil, nil, nil, nil, nil, err
+		}
+		ss, err := store.NewOSSSceneStore(backend)
+		if err != nil {
+			return nil, nil, nil, nil, nil, err
+		}
+		return ps, cs, psh, ls, ss, nil
+	default: // memory（默认/测试）
+		return store.NewProgramStore(), store.NewCourseStore(), store.NewPhaseStore(), store.NewLessonStore(), store.NewSceneStore(), nil
+	}
 }
 
 // registerPublicAPI 学员端公开接口（/v1 前缀，与管理 CRUD 分离）。
@@ -98,7 +92,7 @@ func registerPublicAPI(mux *http.ServeMux, catalog *handler.CatalogHandler, play
 	mux.HandleFunc("GET /v1/courses/{id}/player", player.GetByCourse)
 }
 
-// buildMux 组装路由（内存/SQLite 共用）。
+// buildMux 组装路由（内存/OSS 共用）。
 func buildMux(cfg *config.Config, ph *handler.ProgramHandler, ch *handler.CourseHandler, pshH *handler.PhaseHandler, lh *handler.LessonHandler, sh *handler.SceneHandler) *http.ServeMux {
 	mux := http.NewServeMux()
 

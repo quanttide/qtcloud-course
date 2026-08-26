@@ -5,13 +5,13 @@
 | Provider 版 | Studio 版 | 目标 |
 |-------------|-----------|------|
 | v0.0 (已发布) | v0.0.5/v0.0.6 | 课程结构资源 CRUD |
-| v0.1 (进行中) | v0.1 | 课程制作：嵌套路由 + SQLite + 数据加载 |
+| v0.1 (进行中) | v0.1 | 课程制作：嵌套路由 + OSS 持久化 + 数据加载 |
 
 ## Architecture
 
 ```
 v0.0             v0.1                v0.2
-内存存储  ──→    SQLite         ──→  视频存储 + 发布
+内存存储  ──→    OSS 持久化    ──→  视频存储 + 发布
 无认证    ──→    无认证/DevToken ──→  DevToken
 纯 CRUD   ──→    业务逻辑层      ──→  上架流程
 ```
@@ -23,7 +23,9 @@ REST API 覆盖 Program / Course / Phase / Lesson / Scene 课程结构资源的 
 
 ## [v0.1] — 课程制作（进行中）
 
-> API 重构 + 嵌套路由 + 数据加载 + SQLite 持久化。对齐 Studio **v0.1 课程制作**。
+> API 重构 + 嵌套路由 + 数据加载 + OSS 持久化。对齐 Studio **v0.1 课程制作**。
+> 持久化：对象存储（OSS）替代 SQLite——FC 容器无持久盘，每表一个对象（{table}.json），
+> 懒加载 + 写时全量覆盖原子写（解决 FC 无持久化问题，见 docs/dev-guide/upgrade.md）。
 
 按依赖关系分阶段实施：
 
@@ -42,8 +44,11 @@ REST API 覆盖 Program / Course / Phase / Lesson / Scene 课程结构资源的 
 - [ ] **数据加载**：`DATA_DIR` 环境变量 + `make seed` 一键种子脚本
 - [ ] **接口测试套件**（Python pytest → HTTP）
 
-### Phase 4：SQLite 持久化
-- [ ] **SQLite 持久化**：内置 SQLite（modernc.org/sqlite），替代内存存储，关闭不丢数据
+### Phase 4：OSS 持久化 ✅
+- [x] **OSS 持久化**：每表一个对象（programs.json / courses.json / phases.json / lessons.json / scenes.json），懒加载（首次读时拉取、内存缓存）+ 写时全量覆盖原子写
+- [x] **OSSStore[T]**：与 SQLiteStore 同接口（List/Get/Create/Update/Delete/NameExists/ListWhere/SetID），对齐 qtcloud-crowd 的 OSS store 模式（aliyun SDK + QTCLOUD_OSS_* 配置）
+- [x] **配置**：`QTCLOUD_COURSE_STORE=oss|memory`（默认 memory 测试）；seed/seed-catalog 同步迁移（写入 OSS，Dockerfile 启动时先 seed）
+- [x] **OSS store 单测**：mock OSS server（对齐 qtcloud-crowd oss_test）覆盖 CRUD/持久化/ListWhere/SetID/快照格式
 
 ### Phase 5：视频上传
 - [ ] **视频上传 API**：POST /upload/video，multipart 接收

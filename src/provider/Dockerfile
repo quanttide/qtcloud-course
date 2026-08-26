@@ -1,5 +1,6 @@
 # 课程云 provider：多阶段构建 + 内置 vibe-coding 课程数据。
-# 启动时先 seed（幂等，重建 SQLite）再启动服务——数据源固定在镜像内，发版即更新。
+# 启动时先 seed（幂等，写入 OSS——FC 可读写对象存储、容器回收数据仍在）再启动服务。
+# OSS 配置（QTCLOUD_OSS_*）由 FC 环境变量注入（见 manifests/terraform/fc.tf）。
 
 FROM golang:1.26-alpine AS build
 
@@ -33,5 +34,5 @@ USER app
 EXPOSE 8080
 
 # 启动：先 seed 氛围编程场景（vibe-coding，含视频），再 seed 公开课程目录（5 门课 + 生产实习正文），
-# 最后服务；DB 在容器内临时盘（课程数据源固定，发版更新）
-CMD ["sh", "-c", "DB_PATH=/tmp/course.db /usr/local/bin/course-seed --dir /data/vibe-coding && DB_PATH=/tmp/course.db /usr/local/bin/course-seed-catalog && DB_PATH=/tmp/course.db /usr/local/bin/course-server"]
+# 最后服务；数据写入 OSS 桶（QTCLOUD_COURSE_STORE=oss，配置由 FC 环境变量注入），发版更新
+CMD ["sh", "-c", "QTCLOUD_COURSE_STORE=oss /usr/local/bin/course-seed --dir /data/vibe-coding && QTCLOUD_COURSE_STORE=oss /usr/local/bin/course-seed-catalog && QTCLOUD_COURSE_STORE=oss /usr/local/bin/course-server"]

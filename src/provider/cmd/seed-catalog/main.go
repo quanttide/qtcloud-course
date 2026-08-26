@@ -1,6 +1,7 @@
 // 种子命令：量潮大数据微专业 5 门课目录。
 //
-// 用法：DB_PATH=<sqlite文件> go run ./cmd/seed-catalog --dir <prod-internship目录>
+// 用法（生产/FC）：QTCLOUD_COURSE_STORE=oss QTCLOUD_OSS_*=<配置> go run ./cmd/seed-catalog
+// 用法（本地验证）：go run ./cmd/seed-catalog（默认 local——cwd 下生成 programs.json 等）
 // 幂等：已存在 Program("quanttide-micro") 时跳过；同时把旧 vibe-coding Program 置为 draft
 // （不进入学员端公开列表——公开列表只遍历 published Program，5 门课统一挂在 quanttide-micro 下）。
 // 生产实习内容来自内置 data/prod-internship.json（赵交付的真实数据，go:embed）。
@@ -8,14 +9,11 @@
 package main
 
 import (
-	"database/sql"
 	_ "embed"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
-
-	_ "modernc.org/sqlite"
 
 	"github.com/quanttide/qtcloud-course-provider/internal/domain"
 	"github.com/quanttide/qtcloud-course-provider/internal/store"
@@ -61,22 +59,12 @@ type courseJSON struct {
 }
 
 func main() {
-	dbPath := os.Getenv("DB_PATH")
-	if dbPath == "" {
-		log.Fatal("用法: DB_PATH=<db> go run ./cmd/seed-catalog")
-	}
-
-	db, err := sql.Open("sqlite", dbPath)
-	if err != nil {
-		log.Fatalf("open db: %v", err)
-	}
-	defer db.Close()
-
-	programs, _ := store.NewSQLiteProgramStore(db)
-	courses, _ := store.NewSQLiteCourseStore(db)
-	phases, _ := store.NewSQLitePhaseStore(db)
-	lessons, _ := store.NewSQLiteLessonStore(db)
-	scenes, _ := store.NewSQLiteSceneStore(db)
+	backend := newBackend()
+	programs, _ := store.NewOSSProgramStore(backend)
+	courses, _ := store.NewOSSCourseStore(backend)
+	phases, _ := store.NewOSSPhaseStore(backend)
+	lessons, _ := store.NewOSSLessonStore(backend)
+	scenes, _ := store.NewOSSSceneStore(backend)
 
 	// 幂等：已存在则跳过
 	for _, p := range programs.List() {
@@ -98,6 +86,9 @@ func main() {
 		Description: "量潮大数据微专业（5 门阶梯课程）",
 		Status:      "published",
 	})
+	if prog == nil {
+		log.Fatal("写入失败：对象存储不可达？请检查 QTCLOUD_OSS_* 配置")
+	}
 
 	for _, spec := range courseSpecs {
 		course := courses.Create(&domain.Course{
@@ -122,8 +113,26 @@ func main() {
 	log.Printf("seeded %d courses under quanttide-micro", len(courseSpecs))
 }
 
+// newBackend 选择存储后端：QTCLOUD_COURSE_STORE=oss → 阿里云 OSS（生产 FC）；
+// 否则本地文件（默认，cwd 下 key 即文件路径，本地开发/验证）。
+func newBackend() store.Store {
+	if os.Getenv("QTCLOUD_COURSE_STORE") == "oss" {
+		ossStore, err := store.NewOSS(store.OSSConfig{
+			Endpoint:        os.Getenv("QTCLOUD_OSS_ENDPOINT"),
+			Bucket:          os.Getenv("QTCLOUD_OSS_BUCKET"),
+			AccessKeyID:     os.Getenv("QTCLOUD_OSS_ACCESS_KEY_ID"),
+			AccessKeySecret: os.Getenv("QTCLOUD_OSS_ACCESS_KEY_SECRET"),
+		})
+		if err != nil {
+			log.Fatalf("oss init: %v", err)
+		}
+		return ossStore
+	}
+	return store.NewLocal()
+}
+
 // seedProd 生产实习：5 模块 × 课时（阅读/练习），正文存 Scene.VerifyTip（播放器 Caption 显示）。
-func seedProd(phases *store.SQLiteStore[domain.Phase], lessons *store.SQLiteStore[domain.Lesson], scenes *store.SQLiteStore[domain.Scene], course *domain.Course, prod courseJSON) {
+func seedProd(phases *store.OSSStore[domain.Phase], lessons *store.OSSStore[domain.Lesson], scenes *store.OSSStore[domain.Scene], course *domain.Course, prod courseJSON) {
 	for i, m := range prod.Modules {
 		phase := phases.Create(&domain.Phase{
 			CourseID:  course.ID,
@@ -154,7 +163,7 @@ func seedProd(phases *store.SQLiteStore[domain.Phase], lessons *store.SQLiteStor
 }
 
 // seedLocked 暂未开放课程：1 阶段 × 2 课时占位。
-func seedLocked(phases *store.SQLiteStore[domain.Phase], lessons *store.SQLiteStore[domain.Lesson], scenes *store.SQLiteStore[domain.Scene], course *domain.Course, spec courseSpec) {
+func seedLocked(phases *store.OSSStore[domain.Phase], lessons *store.OSSStore[domain.Lesson], scenes *store.OSSStore[domain.Scene], course *domain.Course, spec courseSpec) {
 	phase := phases.Create(&domain.Phase{CourseID: course.ID, Name: "课程内容", SortOrder: 1})
 	for _, title := range otherLessons[spec.id] {
 		lesson := lessons.Create(&domain.Lesson{Title: title, Duration: 10, Status: "published"})

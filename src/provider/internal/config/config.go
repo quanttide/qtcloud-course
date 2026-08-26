@@ -8,16 +8,25 @@ type Config struct {
 	ListenAddr string // 监听地址，默认 ":8080"
 	DataDir    string // 数据目录，默认 "./data"
 	VideoDir   string // 视频文件目录，默认 "./data/video"
-	DBPath     string // SQLite 数据库路径（空=内存存储，默认）
+	Store      string // 存储后端：oss | memory（默认 memory，测试/开发）
+	// OSS 配置（Store=oss 时必填，QTCLOUD_OSS_* 前缀，对齐 qtcloud-crowd）
+	OSSEndpoint        string // 如 oss-cn-hangzhou.aliyuncs.com
+	OSSBucket          string // 课程数据桶
+	OSSAccessKeyID     string
+	OSSAccessKeySecret string
 }
 
 // Load 从环境变量加载配置，缺失时使用默认值。
 func Load() *Config {
 	return &Config{
-		ListenAddr: getEnv("LISTEN_ADDR", ":8080"),
-		DataDir:    getEnv("DATA_DIR", "./data"),
-		VideoDir:   getEnv("VIDEO_DIR", "./data/video"),
-		DBPath:     os.Getenv("DB_PATH"),
+		ListenAddr:         getEnv("LISTEN_ADDR", ":8080"),
+		DataDir:            getEnv("DATA_DIR", "./data"),
+		VideoDir:           getEnv("VIDEO_DIR", "./data/video"),
+		Store:              getEnv("QTCLOUD_COURSE_STORE", "memory"),
+		OSSEndpoint:        os.Getenv("QTCLOUD_OSS_ENDPOINT"),
+		OSSBucket:          os.Getenv("QTCLOUD_OSS_BUCKET"),
+		OSSAccessKeyID:     os.Getenv("QTCLOUD_OSS_ACCESS_KEY_ID"),
+		OSSAccessKeySecret: os.Getenv("QTCLOUD_OSS_ACCESS_KEY_SECRET"),
 	}
 }
 

@@ -1,12 +1,12 @@
-// 种子命令：加载 vibe-coding 教程数据（quanttide-course/data/profile/vibe-coding）到 SQLite。
+// 种子命令：加载 vibe-coding 教程数据（quanttide-course/data/profile/vibe-coding）到对象存储。
 //
-// 用法：DB_PATH=<sqlite文件> go run ./cmd/seed --dir <vibe-coding目录>
+// 用法（生产/FC）：QTCLOUD_COURSE_STORE=oss QTCLOUD_OSS_*=<配置> go run ./cmd/seed --dir <vibe-coding目录>
+// 用法（本地验证）：go run ./cmd/seed --dir <vibe-coding目录>（默认 local——cwd 下生成 programs.json 等）
 // 幂等：已存在 Program("vibe-coding") 时跳过。
 
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -15,8 +15,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-
-	_ "modernc.org/sqlite"
 
 	"github.com/quanttide/qtcloud-course-provider/internal/domain"
 	"github.com/quanttide/qtcloud-course-provider/internal/store"
@@ -41,23 +39,17 @@ type lessonIndex struct {
 
 func main() {
 	dir := flag.String("dir", "", "vibe-coding 数据目录")
-	dbPath := os.Getenv("DB_PATH")
 	flag.Parse()
-	if *dir == "" || dbPath == "" {
-		log.Fatal("用法: DB_PATH=<db> go run ./cmd/seed --dir <vibe-coding目录>")
+	if *dir == "" {
+		log.Fatal("用法: go run ./cmd/seed --dir <vibe-coding目录>（QTCLOUD_COURSE_STORE=oss 时写入 OSS）")
 	}
 
-	db, err := sql.Open("sqlite", dbPath)
-	if err != nil {
-		log.Fatalf("open db: %v", err)
-	}
-	defer db.Close()
-
-	programs, _ := store.NewSQLiteProgramStore(db)
-	courses, _ := store.NewSQLiteCourseStore(db)
-	phases, _ := store.NewSQLitePhaseStore(db)
-	lessons, _ := store.NewSQLiteLessonStore(db)
-	scenes, _ := store.NewSQLiteSceneStore(db)
+	backend := newBackend()
+	programs, _ := store.NewOSSProgramStore(backend)
+	courses, _ := store.NewOSSCourseStore(backend)
+	phases, _ := store.NewOSSPhaseStore(backend)
+	lessons, _ := store.NewOSSLessonStore(backend)
+	scenes, _ := store.NewOSSSceneStore(backend)
 
 	// 幂等：已 seed 过则跳过
 	for _, p := range programs.List() {
@@ -68,7 +60,13 @@ func main() {
 	}
 
 	prog := programs.Create(&domain.Program{Name: "vibe-coding", Description: "氛围编程（Vibe Coding）系列教程", Status: "published"})
+	if prog == nil {
+		log.Fatal("写入失败：对象存储不可达？请检查 QTCLOUD_OSS_* 配置")
+	}
 	course := courses.Create(&domain.Course{Name: "氛围编程教程", Description: "Vibe Coding 系列教程", Status: "published"})
+	if course == nil {
+		log.Fatal("写入失败：对象存储不可达？请检查 QTCLOUD_OSS_* 配置")
+	}
 	// 固定课程 ID：与公开课程目录（seed-catalog）的 vibe-coding 课程一致，player 端点按 ID 查询
 	courses.SetID(course, "vibe-coding")
 
@@ -140,6 +138,24 @@ func main() {
 	prog.CourseIDs = []string{course.ID}
 	programs.Update(prog)
 	fmt.Printf("seed 完成: program=%s course=%s phases=%d\n", prog.ID, course.ID, len(dirs))
+}
+
+// newBackend 选择存储后端：QTCLOUD_COURSE_STORE=oss → 阿里云 OSS（生产 FC）；
+// 否则本地文件（默认，cwd 下 key 即文件路径，本地开发/验证）。
+func newBackend() store.Store {
+	if os.Getenv("QTCLOUD_COURSE_STORE") == "oss" {
+		ossStore, err := store.NewOSS(store.OSSConfig{
+			Endpoint:        os.Getenv("QTCLOUD_OSS_ENDPOINT"),
+			Bucket:          os.Getenv("QTCLOUD_OSS_BUCKET"),
+			AccessKeyID:     os.Getenv("QTCLOUD_OSS_ACCESS_KEY_ID"),
+			AccessKeySecret: os.Getenv("QTCLOUD_OSS_ACCESS_KEY_SECRET"),
+		})
+		if err != nil {
+			log.Fatalf("oss init: %v", err)
+		}
+		return ossStore
+	}
+	return store.NewLocal()
 }
 
 func readIndex(dir string) lessonIndex {
