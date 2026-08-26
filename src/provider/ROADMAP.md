@@ -84,4 +84,3 @@ REST API 覆盖 Program / Course / Phase / Lesson / Scene 课程结构资源的 
 
 ### Added
 - [ ] 课程上架 API（草稿 → 审核 → 发布状态流转）
-- [ ] 课程数据供给 `qtcloud-learn`（学习云内容源）：Criterion 清单经 seed 管道向学习云注册快照（id/title 同源直连、description 冻结归档），完成记录回写由学员端直连学习云，本领域不感知
