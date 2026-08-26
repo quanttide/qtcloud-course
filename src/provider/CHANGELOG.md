@@ -1,6 +1,12 @@
 # CHANGELOG
 
 
+## [0.1.1-alpha.3] - 2026-08-27
+
+### Changed
+
+- 无代码变更（与 0.1.1-alpha.2 同内容）：alpha.2 部署因 CI 并发排队中断，重发布触发 Deploy Provider 重新部署
+
 ## [0.1.1-alpha.2] - 2026-08-26
 
 ### Added
