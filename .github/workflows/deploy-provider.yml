@@ -12,12 +12,6 @@ on:
   push:
     tags:
       - 'provider/**'
-  workflow_dispatch:
-    inputs:
-      image_tag:
-        description: 'FC 镜像 tag（默认最新已构建镜像）'
-        required: false
-        type: string
 
 concurrency:
   group: deploy-course-provider
@@ -41,11 +35,7 @@ jobs:
       - name: Resolve Image Tag
         id: image
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.image_tag }}" ]; then
-            TAG="${{ inputs.image_tag }}"
-          else
-            TAG="${GITHUB_REF_NAME#provider/}"
-          fi
+          TAG="${GITHUB_REF_NAME#provider/}"
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Buildx
@@ -91,11 +81,7 @@ jobs:
 
       - name: Resolve Image Name
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.image_tag }}" ]; then
-            TAG="${{ inputs.image_tag }}"
-          else
-            TAG="${GITHUB_REF_NAME#provider/}"
-          fi
+          TAG="${GITHUB_REF_NAME#provider/}"
           echo "TF_VAR_image=${{ secrets.ALIYUN_ACR_REGISTRY }}/${ACR_NAMESPACE}/qtcloud-course-provider:${TAG}" >> "$GITHUB_ENV"
 
       - name: Setup Terraform
