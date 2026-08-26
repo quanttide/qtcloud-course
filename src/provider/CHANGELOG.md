@@ -1,6 +1,12 @@
 # CHANGELOG
 
 
+## [0.1.1-alpha.2] - 2026-08-26
+
+### Added
+
+- 验收标准模型：Lesson/Scene 加 Acceptance{criteria, method, on_fail}（课时总验收 + 场景级每步判定——两层同构；Course 不加——课程完成 = 课时全过）
+
 ## [0.1.1-alpha.1] - 2026-08-26
 
 ### Changed
