@@ -44,6 +44,7 @@
 | status | String | draft / published |
 | sortOrder | int | 排序序号 |
 | scenes | List\<Scene\> | 场景列表（按需加载） |
+| acceptance | Acceptance | 课时总验收（场景全过 + 跨场景约束——与场景级同构） |
 
 ### Scene
 

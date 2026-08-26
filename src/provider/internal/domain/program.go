@@ -41,6 +41,9 @@ type Lesson struct {
 	Duration     int    `json:"duration,omitempty"`     // 课时时长（分钟），默认45
 	Status       string `json:"status,omitempty"`       // "draft" / "published"
 	StartSceneID string `json:"startSceneId,omitempty"` // 入口场景 ID
+	// Acceptance 是课时总验收（场景验收全部通过 + 跨场景约束，如安全/合规）。
+	// 与场景级 acceptance 同构（criteria/method/on_fail）。
+	Acceptance *Acceptance `json:"acceptance,omitempty"`
 }
 
 // Scene 是视频片段，互动课时的基本单元。
