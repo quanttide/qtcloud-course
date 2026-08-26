@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## [0.2.0] - 2026-08-26
+
+### Changed
+
+- 持久化从 SQLite 更换为 OSS 对象存储（每表单对象全量原子写 + 懒加载缓存——解决 FC 无持久化）
+- 配置：QTCLOUD_COURSE_STORE=oss|memory（默认 memory）+ QTCLOUD_OSS_*（桶 qtcloud-course-provider）
+- seed/seed-catalog 适配 OSS——Dockerfile 启动链 seed → seed-catalog → server
+
 ## [0.1.0] - 2026-08-01
 
 ### Removed
