@@ -1,8 +1,8 @@
 // 种子命令：加载 vibe-coding 教程数据（quanttide-course/data/profile/vibe-coding）到对象存储。
 //
 // 用法（生产/FC）：QTCLOUD_COURSE_STORE=oss QTCLOUD_OSS_*=<配置> go run ./cmd/seed --dir <vibe-coding目录>
-// 用法（本地验证）：go run ./cmd/seed --dir <vibe-coding目录>（默认 local——cwd 下生成 programs.json 等）
-// 幂等：已存在 Program("vibe-coding") 时跳过。
+// 用法（本地验证）：go run ./cmd/seed --dir <vibe-coding目录>（默认 local——cwd 下生成 courses.json 等）
+// 幂等：已存在 Course("vibe-coding") 时跳过。
 
 package main
 
@@ -45,29 +45,21 @@ func main() {
 	}
 
 	backend := newBackend()
-	programs, _ := store.NewOSSProgramStore(backend)
 	courses, _ := store.NewOSSCourseStore(backend)
-	phases, _ := store.NewOSSPhaseStore(backend)
 	lessons, _ := store.NewOSSLessonStore(backend)
 	scenes, _ := store.NewOSSSceneStore(backend)
 
 	// 幂等：已 seed 过则跳过
-	for _, p := range programs.List() {
-		if p.Name == "vibe-coding" {
-			log.Println("已存在 vibe-coding 数据，跳过")
-			return
-		}
+	if _, ok := courses.Get("vibe-coding"); ok {
+		log.Println("已存在 vibe-coding 数据，跳过")
+		return
 	}
 
-	prog := programs.Create(&domain.Program{Name: "vibe-coding", Description: "氛围编程（Vibe Coding）系列教程", Status: "published"})
-	if prog == nil {
-		log.Fatal("写入失败：对象存储不可达？请检查 QTCLOUD_OSS_* 配置")
-	}
 	course := courses.Create(&domain.Course{Name: "氛围编程教程", Description: "Vibe Coding 系列教程", Status: "published"})
 	if course == nil {
 		log.Fatal("写入失败：对象存储不可达？请检查 QTCLOUD_OSS_* 配置")
 	}
-	// 固定课程 ID：与公开课程目录（seed-catalog）的 vibe-coding 课程一致，player 端点按 ID 查询
+	// 固定课程 ID：与公开课程目录（seed-catalog）的 vibe-coding 课程一致
 	courses.SetID(course, "vibe-coding")
 
 	entries, err := os.ReadDir(*dir)
@@ -83,25 +75,18 @@ func main() {
 	sort.Strings(dirs)
 
 	for i, d := range dirs {
-		phaseDir := filepath.Join(*dir, d)
-		idx := readIndex(phaseDir)
-		phase := phases.Create(&domain.Phase{
-			CourseID:    course.ID,
-			Name:        d,
-			Description: idx.Description,
-			SortOrder:   i,
-		})
-
+		lessonDir := filepath.Join(*dir, d)
+		idx := readIndex(lessonDir)
 		lesson := lessons.Create(&domain.Lesson{
+			CourseID:    course.ID,
 			Title:       d,
 			Description: idx.Description,
+			SortOrder:   i,
 			Status:      "published",
 		})
-		phase.LessonIDs = append(phase.LessonIDs, lesson.ID)
-		phases.Update(phase)
 
 		sceneFiles := []string{}
-		fs, _ := os.ReadDir(phaseDir)
+		fs, _ := os.ReadDir(lessonDir)
 		for _, f := range fs {
 			if !f.IsDir() && strings.HasSuffix(f.Name(), ".json") && f.Name() != "index.json" {
 				sceneFiles = append(sceneFiles, f.Name())
@@ -111,7 +96,7 @@ func main() {
 
 		var startSceneID string
 		for _, sf := range sceneFiles {
-			sj := readScene(filepath.Join(phaseDir, sf))
+			sj := readScene(filepath.Join(lessonDir, sf))
 			// 当前上线范围只发布已录制视频课时；E1 排错 JSON 暂不进入播放器。
 			if sj.VideoURL == "" {
 				continue
@@ -135,9 +120,7 @@ func main() {
 		}
 	}
 
-	prog.CourseIDs = []string{course.ID}
-	programs.Update(prog)
-	fmt.Printf("seed 完成: program=%s course=%s phases=%d\n", prog.ID, course.ID, len(dirs))
+	fmt.Printf("seed 完成: course=%s lessons=%d\n", course.ID, len(dirs))
 }
 
 // newBackend 选择存储后端：QTCLOUD_COURSE_STORE=oss → 阿里云 OSS（生产 FC）；

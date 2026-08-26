@@ -29,34 +29,106 @@ func TestNewRouter_Healthz(t *testing.T) {
 	}
 }
 
-func TestNewRouter_ProgramCRUD(t *testing.T) {
+// getEnv is used in main.go but tested here for coverage.
+func getEnv(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
+}
+
+func TestGetEnv(t *testing.T) {
+	if got := getEnv("NONEXISTENT_KEY_XYZ", "default"); got != "default" {
+		t.Fatalf("getEnv() = %q, want %q", got, "default")
+	}
+	os.Setenv("TEST_GETENV_KEY", "custom")
+	defer os.Unsetenv("TEST_GETENV_KEY")
+	if got := getEnv("TEST_GETENV_KEY", "default"); got != "custom" {
+		t.Fatalf("getEnv() = %q, want %q", got, "custom")
+	}
+}
+
+// 端到端：课程 → 课时（子路由）→ 场景 → 场景级验收标准。
+func TestNewRouter_CourseTree(t *testing.T) {
 	cfg := config.Load()
 	mux, err := newRouter(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create
+	// 创建课程
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/programs", strings.NewReader(`{"name":"大数据微专业"}`))
+	r := httptest.NewRequest("POST", "/courses", strings.NewReader(`{"name":"生产实习","status":"published","sortOrder":1}`))
 	r.Header.Set("Content-Type", "application/json")
 	mux.ServeHTTP(w, r)
 	if w.Code != 201 {
-		t.Fatalf("create status = %d; body=%s", w.Code, w.Body.String())
+		t.Fatalf("create course status = %d; body=%s", w.Code, w.Body.String())
 	}
-	var p map[string]any
-	json.Unmarshal(w.Body.Bytes(), &p)
-	pid := p["id"].(string)
-	if p["slug"] == "" {
-		t.Fatalf("create: slug is empty")
+	var c map[string]any
+	json.Unmarshal(w.Body.Bytes(), &c)
+	courseID := c["id"].(string)
+	if c["slug"] == "" {
+		t.Fatal("course slug empty")
 	}
 
-	// Get
+	// 目录读入口：原始实体形态 + 排序
 	w = httptest.NewRecorder()
-	r = httptest.NewRequest("GET", "/programs/"+pid, nil)
+	r = httptest.NewRequest("GET", "/courses", nil)
 	mux.ServeHTTP(w, r)
-	if w.Code != 200 {
-		t.Fatalf("get status = %d", w.Code)
+	if w.Code != 200 || !strings.Contains(w.Body.String(), courseID) {
+		t.Fatalf("GET /courses: status=%d body=%s", w.Code, w.Body.String())
+	}
+	if strings.Contains(w.Body.String(), `"icon"`) {
+		t.Fatal("目录不应包含展示适配字段（icon/badge）")
+	}
+
+	// 子路由建课时
+	w = httptest.NewRecorder()
+	r = httptest.NewRequest("POST", "/courses/"+courseID+"/lessons", strings.NewReader(`{"title":"创立故事","sortOrder":1,"status":"published"}`))
+	r.Header.Set("Content-Type", "application/json")
+	mux.ServeHTTP(w, r)
+	if w.Code != 201 {
+		t.Fatalf("create lesson status = %d", w.Code)
+	}
+	var l map[string]any
+	json.Unmarshal(w.Body.Bytes(), &l)
+	if l["courseId"] != courseID {
+		t.Fatalf("lesson courseId = %v", l["courseId"])
+	}
+	lessonID := l["id"].(string)
+
+	// 建场景
+	w = httptest.NewRecorder()
+	r = httptest.NewRequest("POST", "/lessons/"+lessonID+"/scenes", strings.NewReader(`{"title":"开场","videoUrl":"intro.mp4","choices":[]}`))
+	r.Header.Set("Content-Type", "application/json")
+	mux.ServeHTTP(w, r)
+	if w.Code != 201 {
+		t.Fatalf("create scene status = %d", w.Code)
+	}
+	var sc map[string]any
+	json.Unmarshal(w.Body.Bytes(), &sc)
+	sceneID := sc["id"].(string)
+
+	// 场景级验收标准
+	w = httptest.NewRecorder()
+	r = httptest.NewRequest("POST", "/scenes/"+sceneID+"/criteria", strings.NewReader(`{"title":"看完开场并完成选择","description":"看完开场并完成选择"}`))
+	r.Header.Set("Content-Type", "application/json")
+	mux.ServeHTTP(w, r)
+	if w.Code != 201 {
+		t.Fatalf("create scene criterion status = %d; body=%s", w.Code, w.Body.String())
+	}
+	var cri map[string]any
+	json.Unmarshal(w.Body.Bytes(), &cri)
+	if cri["sceneId"] != sceneID || cri["lessonId"] != lessonID {
+		t.Fatalf("scene criterion = %v", cri)
+	}
+
+	// 全局清单可拉取（快照管道数据源）
+	w = httptest.NewRecorder()
+	r = httptest.NewRequest("GET", "/criteria", nil)
+	mux.ServeHTTP(w, r)
+	if w.Code != 200 || !strings.Contains(w.Body.String(), "看完开场并完成选择") {
+		t.Fatalf("GET /criteria: status=%d", w.Code)
 	}
 }
 
@@ -68,12 +140,12 @@ func TestNewRouter_404(t *testing.T) {
 	}
 
 	cases := []string{
-		"GET /programs/nonexistent",
-		"PUT /programs/nonexistent",
-		"DELETE /programs/nonexistent",
 		"GET /courses/nonexistent",
 		"GET /lessons/nonexistent",
 		"GET /scenes/nonexistent",
+		"GET /criteria/nonexistent",
+		"PUT /programs/nonexistent",
+		"DELETE /programs/nonexistent",
 		"GET /classes/nonexistent",
 	}
 	for _, tc := range cases {
@@ -94,17 +166,6 @@ func TestNewRouter_404(t *testing.T) {
 	}
 }
 
-func TestGetEnv(t *testing.T) {
-	if got := getEnv("NONEXISTENT_KEY_XYZ", "default"); got != "default" {
-		t.Fatalf("getEnv() = %q, want %q", got, "default")
-	}
-	os.Setenv("TEST_GETENV_KEY", "custom")
-	defer os.Unsetenv("TEST_GETENV_KEY")
-	if got := getEnv("TEST_GETENV_KEY", "default"); got != "custom" {
-		t.Fatalf("getEnv() = %q, want %q", got, "custom")
-	}
-}
-
 func TestNewRouter_BadRequest(t *testing.T) {
 	cfg := config.Load()
 	mux, err := newRouter(cfg)
@@ -113,7 +174,7 @@ func TestNewRouter_BadRequest(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/programs", strings.NewReader(`{invalid`))
+	r := httptest.NewRequest("POST", "/courses", strings.NewReader(`{invalid`))
 	r.Header.Set("Content-Type", "application/json")
 	mux.ServeHTTP(w, r)
 	if w.Code != 400 {
@@ -121,177 +182,10 @@ func TestNewRouter_BadRequest(t *testing.T) {
 	}
 
 	w = httptest.NewRecorder()
-	r = httptest.NewRequest("POST", "/programs", strings.NewReader(`{"name":""}`))
+	r = httptest.NewRequest("POST", "/courses", strings.NewReader(`{"name":""}`))
 	r.Header.Set("Content-Type", "application/json")
 	mux.ServeHTTP(w, r)
 	if w.Code != 400 {
 		t.Fatalf("empty name status = %d", w.Code)
-	}
-}
-
-// getEnv is used in main.go but tested here for coverage.
-func getEnv(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return fallback
-}
-
-func TestNewRouter_SceneNestedRoutes(t *testing.T) {
-	cfg := config.Load()
-	mux, err := newRouter(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Create a lesson first
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/lessons", strings.NewReader(`{"title":"Git 入门"}`))
-	r.Header.Set("Content-Type", "application/json")
-	mux.ServeHTTP(w, r)
-	if w.Code != 201 {
-		t.Fatalf("create lesson status = %d", w.Code)
-	}
-	var lesson map[string]any
-	json.Unmarshal(w.Body.Bytes(), &lesson)
-	lid := lesson["id"].(string)
-
-	// List scenes under lesson (empty)
-	w = httptest.NewRecorder()
-	r = httptest.NewRequest("GET", "/lessons/"+lid+"/scenes", nil)
-	mux.ServeHTTP(w, r)
-	if w.Code != 200 {
-		t.Fatalf("list scenes status = %d", w.Code)
-	}
-
-	// Create scene under lesson (nested route)
-	w = httptest.NewRecorder()
-	r = httptest.NewRequest("POST", "/lessons/"+lid+"/scenes", strings.NewReader(`{"title":"开场","videoUrl":"intro.mp4"}`))
-	r.Header.Set("Content-Type", "application/json")
-	mux.ServeHTTP(w, r)
-	if w.Code != 201 {
-		t.Fatalf("create scene nested status = %d; body=%s", w.Code, w.Body.String())
-	}
-	var scene map[string]any
-	json.Unmarshal(w.Body.Bytes(), &scene)
-	scid := scene["id"].(string)
-	if scene["lessonId"] != lid {
-		t.Fatalf("scene lessonId = %v, want %s", scene["lessonId"], lid)
-	}
-	if scene["slug"] == "" {
-		t.Fatal("scene slug is empty")
-	}
-
-	// Get scene by flat route
-	w = httptest.NewRecorder()
-	r = httptest.NewRequest("GET", "/scenes/"+scid, nil)
-	mux.ServeHTTP(w, r)
-	if w.Code != 200 {
-		t.Fatalf("get scene status = %d", w.Code)
-	}
-
-	// Create scene under nonexistent lesson
-	w = httptest.NewRecorder()
-	r = httptest.NewRequest("POST", "/lessons/nonexistent/scenes", strings.NewReader(`{"title":"x","videoUrl":"x.mp4"}`))
-	r.Header.Set("Content-Type", "application/json")
-	mux.ServeHTTP(w, r)
-	if w.Code != 404 {
-		t.Fatalf("create scene under nonexistent lesson status = %d, want 404", w.Code)
-	}
-
-	// List scenes under nonexistent lesson
-	w = httptest.NewRecorder()
-	r = httptest.NewRequest("GET", "/lessons/nonexistent/scenes", nil)
-	mux.ServeHTTP(w, r)
-	if w.Code != 404 {
-		t.Fatalf("list scenes under nonexistent lesson status = %d, want 404", w.Code)
-	}
-}
-
-func TestNewRouter_PhaseNestedRoutes(t *testing.T) {
-	cfg := config.Load()
-	mux, err := newRouter(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Create a course first
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/courses", strings.NewReader(`{"name":"数据工程"}`))
-	r.Header.Set("Content-Type", "application/json")
-	mux.ServeHTTP(w, r)
-	if w.Code != 201 {
-		t.Fatalf("create course status = %d", w.Code)
-	}
-	var course map[string]any
-	json.Unmarshal(w.Body.Bytes(), &course)
-	cid := course["id"].(string)
-
-	// List phases under course (empty)
-	w = httptest.NewRecorder()
-	r = httptest.NewRequest("GET", "/courses/"+cid+"/phases", nil)
-	mux.ServeHTTP(w, r)
-	if w.Code != 200 {
-		t.Fatalf("list phases status = %d", w.Code)
-	}
-
-	// Create phase under course (nested route)
-	w = httptest.NewRecorder()
-	r = httptest.NewRequest("POST", "/courses/"+cid+"/phases", strings.NewReader(`{"name":"数据采集阶段","sortOrder":1}`))
-	r.Header.Set("Content-Type", "application/json")
-	mux.ServeHTTP(w, r)
-	if w.Code != 201 {
-		t.Fatalf("create phase nested status = %d; body=%s", w.Code, w.Body.String())
-	}
-	var phase map[string]any
-	json.Unmarshal(w.Body.Bytes(), &phase)
-	pid := phase["id"].(string)
-	if phase["courseId"] != cid {
-		t.Fatalf("phase courseId = %v, want %s", phase["courseId"], cid)
-	}
-	if phase["slug"] == "" {
-		t.Fatal("phase slug is empty")
-	}
-
-	// Create phase with empty name
-	w = httptest.NewRecorder()
-	r = httptest.NewRequest("POST", "/courses/"+cid+"/phases", strings.NewReader(`{"name":""}`))
-	r.Header.Set("Content-Type", "application/json")
-	mux.ServeHTTP(w, r)
-	if w.Code != 400 {
-		t.Fatalf("create phase empty name status = %d, want 400", w.Code)
-	}
-
-	// Create phase under nonexistent course
-	w = httptest.NewRecorder()
-	r = httptest.NewRequest("POST", "/courses/nonexistent/phases", strings.NewReader(`{"name":"阶段"}`))
-	r.Header.Set("Content-Type", "application/json")
-	mux.ServeHTTP(w, r)
-	if w.Code != 404 {
-		t.Fatalf("create phase under nonexistent course status = %d, want 404", w.Code)
-	}
-
-	// List phases under nonexistent course
-	w = httptest.NewRecorder()
-	r = httptest.NewRequest("GET", "/courses/nonexistent/phases", nil)
-	mux.ServeHTTP(w, r)
-	if w.Code != 404 {
-		t.Fatalf("list phases under nonexistent course status = %d, want 404", w.Code)
-	}
-
-	// Get phase by flat route
-	w = httptest.NewRecorder()
-	r = httptest.NewRequest("GET", "/phases/"+pid, nil)
-	mux.ServeHTTP(w, r)
-	if w.Code != 200 {
-		t.Fatalf("get phase status = %d", w.Code)
-	}
-
-	// List all phases
-	w = httptest.NewRecorder()
-	r = httptest.NewRequest("GET", "/phases", nil)
-	mux.ServeHTTP(w, r)
-	if w.Code != 200 {
-		t.Fatalf("list all phases status = %d", w.Code)
 	}
 }

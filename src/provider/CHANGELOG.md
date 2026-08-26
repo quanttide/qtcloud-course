@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.1.1-alpha.4] - 2026-08-28
+
+### Added
+
+- 验收标准升格为一等实体：新增 Criterion{id, lessonId, title, description}（id/title 学习云同源直连，description 为课程侧事实源），`/lessons/{lessonId}/criteria` CRUD + `GET /criteria` 全局清单；OSS 持久化同步（criteria 表）
+
+### Changed
+
+- Acceptance 由文字字段改为标准 ID 引用列表（criteria []string）——对齐 qtclass `docs/dev-guide/provider.md` 快照协议
+- **破坏性**：公开 API 取消 `/v1` 前缀，路径统一为资源根路径（`GET /courses` 等）；文档清单见 `docs/api-references/provider.md`
+- **破坏性**：删除 Program 与 Phase 模型（课程树简化为三级 Course → Lesson → Scene，Lesson 归属课程并携带 sortOrder）、删除播放器适配 API（/player-data 与 icon/badge 等展示字段——组装职责移交 qtclass provider）、删除 `/video` 静态服务与 VIDEO_DIR；seed/seed-catalog 同步重写
+- 验收标准支持场景级挂载：Criterion 新增可选 sceneId，`/scenes/{sceneId}/criteria` 子路由
+- Acceptance 结构裁剪：删除嵌套验收对象与 method/on_fail 字段，Lesson/Scene 直接持 `criteria []string` 标准 ID 引用列表
+
 
 ## [0.1.1-alpha.3] - 2026-08-27
 

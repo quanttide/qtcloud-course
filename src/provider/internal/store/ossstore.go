@@ -219,19 +219,9 @@ func (s *OSSStore[T]) SetID(v *T, newID string) {
 
 // ── 具体类型（对象存储持久化版） ──
 
-// NewOSSProgramStore 对象存储持久化 Program 存储。
-func NewOSSProgramStore(backend Store) (*OSSStore[domain.Program], error) {
-	return NewOSSStore[domain.Program](backend, "prog", "programs")
-}
-
 // NewOSSCourseStore 对象存储持久化 Course 存储。
 func NewOSSCourseStore(backend Store) (*OSSStore[domain.Course], error) {
 	return NewOSSStore[domain.Course](backend, "cour", "courses")
-}
-
-// NewOSSPhaseStore 对象存储持久化 Phase 存储。
-func NewOSSPhaseStore(backend Store) (*OSSStore[domain.Phase], error) {
-	return NewOSSStore[domain.Phase](backend, "phas", "phases")
 }
 
 // NewOSSLessonStore 对象存储持久化 Lesson 存储。
@@ -242,6 +232,11 @@ func NewOSSLessonStore(backend Store) (*OSSStore[domain.Lesson], error) {
 // NewOSSSceneStore 对象存储持久化 Scene 存储。
 func NewOSSSceneStore(backend Store) (*OSSStore[domain.Scene], error) {
 	return NewOSSStore[domain.Scene](backend, "scen", "scenes")
+}
+
+// NewOSSCriterionStore 对象存储持久化 Criterion 存储。
+func NewOSSCriterionStore(backend Store) (*OSSStore[domain.Criterion], error) {
+	return NewOSSStore[domain.Criterion](backend, "cri", "criteria")
 }
 
 // numericSuffix 提取 ID 的数字后缀（如 "prog-12" → 12）。

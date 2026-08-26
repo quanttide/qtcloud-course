@@ -26,28 +26,23 @@ func main() {
 // 持久化：QTCLOUD_COURSE_STORE=oss 时启用对象存储（生产 FC 可读写、容器回收数据仍在），
 // 否则内存（默认/测试）。
 func newRouter(cfg *config.Config) (*http.ServeMux, error) {
-	programStore, courseStore, phaseStore, lessonStore, sceneStore, err := newStores(cfg)
+	courseStore, lessonStore, sceneStore, criterionStore, err := newStores(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	ph := handler.NewProgramHandler(programStore)
-	ch := handler.NewCourseHandler(courseStore)
-	pshH := handler.NewPhaseHandler(phaseStore, courseStore)
-	lh := handler.NewLessonHandler(lessonStore)
+	ch := handler.NewCourseHandler(courseStore)      // 写操作
+	crh := handler.NewCourseReadHandler(courseStore) // 读入口（内容实体）
+	lh := handler.NewLessonHandler(lessonStore, courseStore)
 	sh := handler.NewSceneHandler(sceneStore, lessonStore)
-	mux := buildMux(cfg, ph, ch, pshH, lh, sh)
-
-	player := handler.NewPlayerHandler(programStore, courseStore, phaseStore, lessonStore, sceneStore)
-	mux.HandleFunc("GET /player-data", player.Get)
-	catalog := handler.NewCatalogHandler(programStore, courseStore, phaseStore, lessonStore)
-	registerPublicAPI(mux, catalog, player)
+	crith := handler.NewCriterionHandler(criterionStore, lessonStore, sceneStore)
+	mux := buildMux(ch, crh, lh, sh, crith)
 	return mux, nil
 }
 
-// newStores 按配置创建 5 个资源 store（program/course/phase/lesson/scene）。
+// newStores 按配置创建 4 个资源 store（course/lesson/scene/criterion）。
 // 内存分支各建独立实例；OSS 分支共享同一后端，各表独立对象（{table}.json）。
-func newStores(cfg *config.Config) (handler.ProgramStorer, handler.CourseStorer, handler.PhaseStorer, handler.LessonStorer, handler.SceneStorer, error) {
+func newStores(cfg *config.Config) (handler.CourseStorer, handler.LessonStorer, handler.SceneStorer, handler.CriterionStorer, error) {
 	switch cfg.Store {
 	case "oss":
 		backend, err := store.NewOSS(store.OSSConfig{
@@ -57,74 +52,52 @@ func newStores(cfg *config.Config) (handler.ProgramStorer, handler.CourseStorer,
 			AccessKeySecret: cfg.OSSAccessKeySecret,
 		})
 		if err != nil {
-			return nil, nil, nil, nil, nil, fmt.Errorf("oss init: %w", err)
-		}
-		ps, err := store.NewOSSProgramStore(backend)
-		if err != nil {
-			return nil, nil, nil, nil, nil, err
+			return nil, nil, nil, nil, fmt.Errorf("oss init: %w", err)
 		}
 		cs, err := store.NewOSSCourseStore(backend)
 		if err != nil {
-			return nil, nil, nil, nil, nil, err
-		}
-		psh, err := store.NewOSSPhaseStore(backend)
-		if err != nil {
-			return nil, nil, nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
 		ls, err := store.NewOSSLessonStore(backend)
 		if err != nil {
-			return nil, nil, nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
 		ss, err := store.NewOSSSceneStore(backend)
 		if err != nil {
-			return nil, nil, nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
-		return ps, cs, psh, ls, ss, nil
+		cris, err := store.NewOSSCriterionStore(backend)
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+		return cs, ls, ss, cris, nil
 	default: // memory（默认/测试）
-		return store.NewProgramStore(), store.NewCourseStore(), store.NewPhaseStore(), store.NewLessonStore(), store.NewSceneStore(), nil
+		return store.NewCourseStore(), store.NewLessonStore(), store.NewSceneStore(), store.NewCriterionStore(), nil
 	}
 }
 
-// registerPublicAPI 学员端公开接口（/v1 前缀，与管理 CRUD 分离）。
-func registerPublicAPI(mux *http.ServeMux, catalog *handler.CatalogHandler, player *handler.PlayerHandler) {
-	mux.HandleFunc("GET /v1/courses", catalog.List)
-	mux.HandleFunc("GET /v1/courses/{id}", catalog.Get)
-	mux.HandleFunc("GET /v1/courses/{id}/player", player.GetByCourse)
-}
-
 // buildMux 组装路由（内存/OSS 共用）。
-func buildMux(cfg *config.Config, ph *handler.ProgramHandler, ch *handler.CourseHandler, pshH *handler.PhaseHandler, lh *handler.LessonHandler, sh *handler.SceneHandler) *http.ServeMux {
+// 单一路由面：一套资源接口承担内容编辑与学员交付；服务端只出内容实体，
+// 展示层组装（目录卡片、播放器 segments 等）属应用侧职责（见 qtclass src/provider）。
+// 课程树三级结构：Course → Lesson → Scene，Criterion 作为课时/场景的子资源管理。
+func buildMux(ch *handler.CourseHandler, crh *handler.CourseReadHandler, lh *handler.LessonHandler, sh *handler.SceneHandler, crith *handler.CriterionHandler) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	// Program
-	mux.HandleFunc("GET /programs", ph.List)
-	mux.HandleFunc("POST /programs", ph.Create)
-	mux.HandleFunc("GET /programs/{id}", ph.Get)
-	mux.HandleFunc("PUT /programs/{id}", ph.Update)
-	mux.HandleFunc("DELETE /programs/{id}", ph.Delete)
-
 	// Course
-	mux.HandleFunc("GET /courses", ch.List)
+	mux.HandleFunc("GET /courses", crh.List)
+	mux.HandleFunc("GET /courses/{id}", crh.Get)
 	mux.HandleFunc("POST /courses", ch.Create)
-	mux.HandleFunc("GET /courses/{id}", ch.Get)
 	mux.HandleFunc("PUT /courses/{id}", ch.Update)
 	mux.HandleFunc("DELETE /courses/{id}", ch.Delete)
 
-	// Phase（嵌套路由 + 全局列表）
-	mux.HandleFunc("GET /phases", pshH.List)
-	mux.HandleFunc("GET /phases/{id}", pshH.Get)
-	mux.HandleFunc("PUT /phases/{id}", pshH.Update)
-	mux.HandleFunc("DELETE /phases/{id}", pshH.Delete)
-	mux.HandleFunc("GET /courses/{courseId}/phases", pshH.ListByCourse)
-	mux.HandleFunc("POST /courses/{courseId}/phases", pshH.CreateByCourse)
-	mux.HandleFunc("DELETE /courses/{courseId}/phases/{id}", pshH.Delete)
-
-	// Lesson
+	// Lesson（全局 + 课程子路由；SortOrder 保证课时顺序）
 	mux.HandleFunc("GET /lessons", lh.List)
 	mux.HandleFunc("POST /lessons", lh.Create)
 	mux.HandleFunc("GET /lessons/{id}", lh.Get)
 	mux.HandleFunc("PUT /lessons/{id}", lh.Update)
 	mux.HandleFunc("DELETE /lessons/{id}", lh.Delete)
+	mux.HandleFunc("GET /courses/{courseId}/lessons", lh.ListByCourse)
+	mux.HandleFunc("POST /courses/{courseId}/lessons", lh.CreateByCourse)
 
 	// Scene（嵌套路由：场景作为课时的子资源）
 	mux.HandleFunc("GET /scenes/{id}", sh.Get)
@@ -133,14 +106,21 @@ func buildMux(cfg *config.Config, ph *handler.ProgramHandler, ch *handler.Course
 	mux.HandleFunc("GET /lessons/{lessonId}/scenes", sh.ListByLesson)
 	mux.HandleFunc("POST /lessons/{lessonId}/scenes", sh.CreateByLesson)
 
+	// Criterion（验收标准：课时级与场景级子路由 + 全局清单）
+	mux.HandleFunc("GET /criteria", crith.ListAll)
+	mux.HandleFunc("GET /criteria/{id}", crith.Get)
+	mux.HandleFunc("PUT /criteria/{id}", crith.Update)
+	mux.HandleFunc("DELETE /criteria/{id}", crith.Delete)
+	mux.HandleFunc("GET /lessons/{lessonId}/criteria", crith.ListByLesson)
+	mux.HandleFunc("POST /lessons/{lessonId}/criteria", crith.CreateByLesson)
+	mux.HandleFunc("GET /scenes/{sceneId}/criteria", crith.ListByScene)
+	mux.HandleFunc("POST /scenes/{sceneId}/criteria", crith.CreateByScene)
+
 	// Health
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status":"ok"}`))
 	})
-
-	// 视频静态文件服务（本地磁盘路径）
-	mux.Handle("GET /video/", http.StripPrefix("/video/", http.FileServer(http.Dir(cfg.VideoDir))))
 
 	return mux
 }

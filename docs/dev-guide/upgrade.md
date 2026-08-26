@@ -44,7 +44,7 @@ CLI import / seed → provider（OSS——QTCLOUD_COURSE_STORE=oss）
 要点：
 
 - **① 同步**：profile 是创作源头（md + json 双格式），provider 种子数据从 profile 同步（
-  lesson 结构：scenes + acceptance）。改内容先改 profile，再同步 provider 数据。
+  lesson 结构：scenes + criteria）。改内容先改 profile，再同步 provider 数据。
 - **② 验证**：本地 seed/player 全绿后再上线（`src/provider` 本地运行 + 导入验证）。
 - **③ 持久化**：provider 生产环境用 **对象存储（OSS）**——容器启动时先 seed（幂等）写入
   OSS 再起服务（`src/provider/Dockerfile`），数据落 OSS 桶、与容器生命周期解耦。

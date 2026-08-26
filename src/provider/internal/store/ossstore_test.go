@@ -29,7 +29,7 @@ func newMockBackend(t *testing.T) (Store, *sync.Map) {
 
 func TestOSSStore_CRUD(t *testing.T) {
 	backend, _ := newMockBackend(t)
-	s, err := NewOSSProgramStore(backend)
+	s, err := NewOSSCourseStore(backend)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,17 +43,17 @@ func TestOSSStore_CRUD(t *testing.T) {
 	}
 
 	// Create
-	p := s.Create(&domain.Program{Name: "大数据微专业"})
+	p := s.Create(&domain.Course{Name: "大数据微专业"})
 	if p.ID == "" || p.Name != "大数据微专业" {
 		t.Fatalf("Create() = %+v", p)
 	}
-	if p.ID != "prog-1" {
-		t.Fatalf("Create().ID = %q, want prog-1", p.ID)
+	if p.ID != "cour-1" {
+		t.Fatalf("Create().ID = %q, want cour-1", p.ID)
 	}
 
-	p2 := s.Create(&domain.Program{Name: "AI微专业"})
-	if p2.ID != "prog-2" {
-		t.Fatalf("second Create().ID = %q, want prog-2", p2.ID)
+	p2 := s.Create(&domain.Course{Name: "AI微专业"})
+	if p2.ID != "cour-2" {
+		t.Fatalf("second Create().ID = %q, want cour-2", p2.ID)
 	}
 
 	// 写后对象已同步到后端
@@ -66,19 +66,19 @@ func TestOSSStore_CRUD(t *testing.T) {
 	}
 
 	// Update
-	updated, ok := s.Update(&domain.Program{ID: p.ID, Name: "大数据微专业 v2", Description: "updated", Status: "published", CourseIDs: []string{"cour-1"}})
-	if !ok || updated.Name != "大数据微专业 v2" || updated.Description != "updated" || len(updated.CourseIDs) != 1 {
+	updated, ok := s.Update(&domain.Course{ID: p.ID, Name: "大数据微专业 v2", Description: "updated", Status: "published"})
+	if !ok || updated.Name != "大数据微专业 v2" || updated.Description != "updated" {
 		t.Fatalf("Update() = %+v ok=%v", updated, ok)
 	}
-	if _, ok := s.Update(&domain.Program{ID: "nonexistent"}); ok {
+	if _, ok := s.Update(&domain.Course{ID: "nonexistent"}); ok {
 		t.Fatal("Update() nonexistent ok = true, want false")
 	}
 
 	// NameExists
-	if !s.NameExists("大数据微专业 v2", func(p *domain.Program) string { return p.Name }) {
+	if !s.NameExists("大数据微专业 v2", func(p *domain.Course) string { return p.Name }) {
 		t.Fatal("NameExists() = false, want true")
 	}
-	if s.NameExists("no-such-name", func(p *domain.Program) string { return p.Name }) {
+	if s.NameExists("no-such-name", func(p *domain.Course) string { return p.Name }) {
 		t.Fatal("NameExists() = true, want false")
 	}
 
@@ -101,19 +101,19 @@ func TestOSSStore_Persists(t *testing.T) {
 	backend, objects := newMockBackend(t)
 
 	// 第一次"运行"：写入
-	s1, _ := NewOSSProgramStore(backend)
-	created := s1.Create(&domain.Program{Name: "vibe-coding"})
-	if created.ID != "prog-1" {
-		t.Fatalf("ID = %q, want prog-1", created.ID)
+	s1, _ := NewOSSCourseStore(backend)
+	created := s1.Create(&domain.Course{Name: "vibe-coding"})
+	if created.ID != "cour-1" {
+		t.Fatalf("ID = %q, want cour-1", created.ID)
 	}
 
 	// 对象 {table}.json 已落到后端（全量实体列表）
-	if _, ok := objects.Load("programs.json"); !ok {
+	if _, ok := objects.Load("courses.json"); !ok {
 		t.Fatal("programs.json 未写入 mock OSS")
 	}
 
 	// 模拟重启：新 store 实例懒加载恢复
-	s2, _ := NewOSSProgramStore(backend)
+	s2, _ := NewOSSCourseStore(backend)
 	got, ok := s2.Get(created.ID)
 	if !ok {
 		t.Fatal("重启后数据丢失")
@@ -123,19 +123,19 @@ func TestOSSStore_Persists(t *testing.T) {
 	}
 
 	// seq 恢复：重启后 Create 续号
-	next := s2.Create(&domain.Program{Name: "second"})
-	if next.ID != "prog-2" {
-		t.Fatalf("重启后 Create().ID = %q, want prog-2", next.ID)
+	next := s2.Create(&domain.Course{Name: "second"})
+	if next.ID != "cour-2" {
+		t.Fatalf("重启后 Create().ID = %q, want cour-2", next.ID)
 	}
 	if got2, ok := s2.Get(created.ID); !ok || got2.Name != "vibe-coding" {
 		t.Fatalf("first record overwritten or missing: %#v ok=%v", got2, ok)
 	}
 
 	// Update 持久化
-	if _, ok := s2.Update(&domain.Program{ID: created.ID, Name: "vibe-coding-v2"}); !ok {
+	if _, ok := s2.Update(&domain.Course{ID: created.ID, Name: "vibe-coding-v2"}); !ok {
 		t.Fatal("update failed")
 	}
-	s3, _ := NewOSSProgramStore(backend)
+	s3, _ := NewOSSCourseStore(backend)
 	got3, _ := s3.Get(created.ID)
 	if got3.Name != "vibe-coding-v2" {
 		t.Fatalf("update 未持久化: %q", got3.Name)
@@ -145,7 +145,7 @@ func TestOSSStore_Persists(t *testing.T) {
 	if !s3.Delete(created.ID) {
 		t.Fatal("delete failed")
 	}
-	s4, _ := NewOSSProgramStore(backend)
+	s4, _ := NewOSSCourseStore(backend)
 	if _, ok := s4.Get(created.ID); ok {
 		t.Fatal("delete 未持久化")
 	}
@@ -189,11 +189,11 @@ func TestOSSStore_ListWhereAndSetID(t *testing.T) {
 func TestOSSStore_SnapshotFormat(t *testing.T) {
 	// 快照为全量实体列表（JSON 数组，按 ID 排序保证确定性）。
 	backend, objects := newMockBackend(t)
-	s, _ := NewOSSProgramStore(backend)
-	s.Create(&domain.Program{Name: "second"})
-	s.Create(&domain.Program{Name: "first"})
+	s, _ := NewOSSCourseStore(backend)
+	s.Create(&domain.Course{Name: "second"})
+	s.Create(&domain.Course{Name: "first"})
 
-	raw, ok := objects.Load("programs.json")
+	raw, ok := objects.Load("courses.json")
 	if !ok {
 		t.Fatal("programs.json 未写入")
 	}
@@ -204,8 +204,8 @@ func TestOSSStore_SnapshotFormat(t *testing.T) {
 	if len(items) != 2 {
 		t.Fatalf("snapshot len = %d, want 2", len(items))
 	}
-	// 按 ID 排序（prog-1 在 prog-2 前）
-	if items[0]["id"] != "prog-1" || items[1]["id"] != "prog-2" {
+	// 按 ID 排序（cour-1 在 cour-2 前）
+	if items[0]["id"] != "cour-1" || items[1]["id"] != "cour-2" {
 		t.Fatalf("snapshot order = %v, %v", items[0]["id"], items[1]["id"])
 	}
 }

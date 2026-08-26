@@ -6,37 +6,12 @@ import (
 	"testing"
 )
 
-func TestProgram_JSON(t *testing.T) {
-	p := Program{ID: "prog-1", Name: "大数据微专业", Slug: "slug-prog-1", Status: "draft", CourseIDs: []string{"cour-1", "cour-2"}}
-	b, err := json.Marshal(p)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var got Program
-	if err := json.Unmarshal(b, &got); err != nil {
-		t.Fatal(err)
-	}
-	if got.ID != p.ID || got.Name != p.Name || got.Slug != "slug-prog-1" || len(got.CourseIDs) != 2 {
-		t.Fatalf("roundtrip = %+v", got)
-	}
-}
-
 func TestCourse_JSON(t *testing.T) {
 	c := Course{ID: "cour-1", Name: "数据工程", Slug: "slug-cour-1", Status: "published"}
 	b, _ := json.Marshal(c)
 	var got Course
 	json.Unmarshal(b, &got)
 	if got.Name != "数据工程" || got.Slug != "slug-cour-1" {
-		t.Fatalf("roundtrip = %+v", got)
-	}
-}
-
-func TestPhase_JSON(t *testing.T) {
-	p := Phase{ID: "phase-1", CourseID: "cour-1", Name: "数据采集阶段", Slug: "slug-phase-1", SortOrder: 1, LessonIDs: []string{"less-1", "less-2"}}
-	b, _ := json.Marshal(p)
-	var got Phase
-	json.Unmarshal(b, &got)
-	if got.Name != "数据采集阶段" || got.CourseID != "cour-1" || got.Slug != "slug-phase-1" || got.SortOrder != 1 || len(got.LessonIDs) != 2 {
 		t.Fatalf("roundtrip = %+v", got)
 	}
 }
@@ -52,15 +27,35 @@ func TestLesson_JSON(t *testing.T) {
 }
 
 func TestScene_JSON(t *testing.T) {
-	sc := Scene{ID: "scene-1", LessonID: "less-1", Slug: "slug-scene-1", VideoURL: "intro.mp4", Choices: []Choice{{Label: "继续", TargetSceneID: "scene-2"}}, Acceptance: &Acceptance{Criteria: "Zed 启动且主题生效", Method: "自检", OnFail: "回到异常分支排查"}}
+	sc := Scene{ID: "scene-1", LessonID: "less-1", Slug: "slug-scene-1", VideoURL: "intro.mp4", Choices: []Choice{{Label: "继续", TargetSceneID: "scene-2"}}, Criteria: []string{"cri-1"}}
 	b, _ := json.Marshal(sc)
 	var got Scene
 	json.Unmarshal(b, &got)
 	if got.VideoURL != "intro.mp4" || got.Slug != "slug-scene-1" || len(got.Choices) != 1 {
 		t.Fatalf("roundtrip = %+v", got)
 	}
-	if got.Acceptance == nil || got.Acceptance.Criteria != "Zed 启动且主题生效" || got.Acceptance.OnFail != "回到异常分支排查" {
-		t.Fatalf("acceptance roundtrip = %+v", got.Acceptance)
+	if len(got.Criteria) != 1 || got.Criteria[0] != "cri-1" {
+		t.Fatalf("criteria roundtrip = %+v", got.Criteria)
+	}
+}
+
+func TestLesson_Criteria(t *testing.T) {
+	l := Lesson{ID: "less-1", Title: "课时1", CourseID: "cour-1", Criteria: []string{"cri-1", "cri-2"}}
+	b, _ := json.Marshal(l)
+	var got Lesson
+	json.Unmarshal(b, &got)
+	if got.CourseID != "cour-1" || len(got.Criteria) != 2 || got.Criteria[1] != "cri-2" {
+		t.Fatalf("roundtrip = %+v", got)
+	}
+}
+
+func TestCriterion_JSON(t *testing.T) {
+	c := Criterion{ID: "cri-1", LessonID: "less-1", Title: "会连接 Zed", Description: "Zed 已启动且主题配置生效"}
+	b, _ := json.Marshal(c)
+	var got Criterion
+	json.Unmarshal(b, &got)
+	if got.ID != "cri-1" || got.LessonID != "less-1" || got.Title != "会连接 Zed" || got.Description != "Zed 已启动且主题配置生效" {
+		t.Fatalf("roundtrip = %+v", got)
 	}
 }
 

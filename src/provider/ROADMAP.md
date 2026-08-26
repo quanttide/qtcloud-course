@@ -5,7 +5,7 @@
 | Provider 版 | Studio 版 | 目标 |
 |-------------|-----------|------|
 | v0.0 (已发布) | v0.0.5/v0.0.6 | 课程结构资源 CRUD |
-| v0.1 (进行中) | v0.1 | 课程制作：嵌套路由 + OSS 持久化 + 数据加载 |
+| v0.1 (进行中) | v0.1 | 课程制作：嵌套路由 + OSS 持久化 + 数据加载 + 验收标准模型 |
 
 ## Architecture
 
@@ -53,6 +53,27 @@ REST API 覆盖 Program / Course / Phase / Lesson / Scene 课程结构资源的 
 ### Phase 5：视频上传
 - [ ] **视频上传 API**：POST /upload/video，multipart 接收
 
+### Phase 6：验收标准模型 ✅
+- [x] **内嵌验收**：Lesson/Scene 加 `Acceptance{criteria, method, on_fail}`——课时总验收 + 场景级每步判定两层同构（v0.1.1-alpha.2）
+- [x] **Criterion 一等实体**：验收标准升格为独立资源（id/title/description，单一事实源在本领域），`/lessons/{lessonId}/criteria` CRUD 与列表路由（含 `GET /criteria` 全局清单）
+- [x] **Acceptance 引用式**：criteria 由文字字段改为标准 ID 引用列表（method/on_fail 执行配置保留在挂载处）
+
+> 模型对齐目标：qtclass `docs/dev-guide/provider.md`（同源直连 + 注册时快照协议）。
+
+### Phase 7：API 路径统一 ✅
+- [x] **取消公开 API 的 `/v1` 前缀**：接口路径统一为资源根路径（原 `GET /v1/courses` → `GET /courses`）；同步调整 Studio 客户端基址与两侧文档（qtclass `docs/dev-guide/provider.md`、qtclass `src/provider/ROADMAP.md`）
+
+### 模型裁剪（2026-08-28 决策）✅
+
+服务端只出内容实体，前端视图适配职责移交应用侧（qtclass provider）：
+
+- [x] **删除 Program 与 Phase**：课程树简化为三级 Course → Lesson → Scene，Lesson 归属课程（新增 courseId/sortOrder），目录阶梯顺序由 Course.sortOrder 承担；seed 脚本同步重写
+- [x] **删除播放器适配 API**：移除 `/player-data`、`/courses/{id}/player` 及 icon/badge 等展示字段——播放器数据组装归 qtclass provider
+- [x] **取消 `/video` 静态文件服务与 VIDEO_DIR 配置**：视频地址由 Scene.videoUrl 直接指向对象存储
+- [x] **Acceptance 结构裁剪**：Lesson/Scene 直接持有 `criteria []string` 标准 ID 引用列表，method/on_fail 执行配置字段移除
+- [x] **验收标准增加场景级挂载**：Criterion 新增可选 sceneId，`GET|POST /scenes/{sceneId}/criteria` 子路由（创建自动回填所属课时）
+- 接口清单见 `docs/api-references/provider.md`
+
 ### 质量门禁
 - [ ] `go test ./... -count=1` 保持 90%+ 覆盖率
 - [ ] 所有 Phase 完成后发布 v0.1.0 tag
@@ -63,4 +84,4 @@ REST API 覆盖 Program / Course / Phase / Lesson / Scene 课程结构资源的 
 
 ### Added
 - [ ] 课程上架 API（草稿 → 审核 → 发布状态流转）
-- [ ] 课程数据供给 `qtcloud-learn`（学习云内容源）
+- [ ] 课程数据供给 `qtcloud-learn`（学习云内容源）：Criterion 清单经 seed 管道向学习云注册快照（id/title 同源直连、description 冻结归档），完成记录回写由学员端直连学习云，本领域不感知
