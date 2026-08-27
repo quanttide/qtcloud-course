@@ -2,7 +2,10 @@ module github.com/quanttide/qtcloud-course-provider
 
 go 1.26.4
 
-require github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
+require (
+	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
+	github.com/quanttide/quanttide-course-toolkit/packages/go v0.1.0-alpha.2
+)
 
 require (
 	golang.org/x/time v0.15.0 // indirect
