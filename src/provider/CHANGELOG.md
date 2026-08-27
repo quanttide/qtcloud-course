@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.1.1-alpha.5] - 2026-08-27
+
+### Changed
+
+- 领域模型改为复用 course-toolkit（packages/go v0.1.1-α3 alpha.3）：type alias 替代本地重复定义，单一事实源归位
+- 路由注册改引 toolkit Route* 常量，消除手写路由字符串
+
 ## [0.1.1-alpha.4] - 2026-08-28
 
 ### Added
