@@ -4,7 +4,7 @@ go 1.26.4
 
 require (
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
-	github.com/quanttide/quanttide-course-toolkit/packages/go v0.1.0-alpha.2
+	github.com/quanttide/quanttide-course-toolkit/packages/go v0.1.0-alpha.3
 )
 
 require (

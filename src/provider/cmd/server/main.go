@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	course "github.com/quanttide/quanttide-course-toolkit/packages/go/pkg"
 	"log"
 	"net/http"
 
@@ -84,37 +85,37 @@ func buildMux(ch *handler.CourseHandler, crh *handler.CourseReadHandler, lh *han
 	mux := http.NewServeMux()
 
 	// Course
-	mux.HandleFunc("GET /courses", crh.List)
-	mux.HandleFunc("GET /courses/{id}", crh.Get)
-	mux.HandleFunc("POST /courses", ch.Create)
-	mux.HandleFunc("PUT /courses/{id}", ch.Update)
-	mux.HandleFunc("DELETE /courses/{id}", ch.Delete)
+	mux.HandleFunc(http.MethodGet+" "+course.RouteCourses, crh.List)
+	mux.HandleFunc(http.MethodGet+" "+course.RouteCourse, crh.Get)
+	mux.HandleFunc(http.MethodPost+" "+course.RouteCourses, ch.Create)
+	mux.HandleFunc(http.MethodPut+" "+course.RouteCourse, ch.Update)
+	mux.HandleFunc(http.MethodDelete+" "+course.RouteCourse, ch.Delete)
 
 	// Lesson（全局 + 课程子路由；SortOrder 保证课时顺序）
-	mux.HandleFunc("GET /lessons", lh.List)
-	mux.HandleFunc("POST /lessons", lh.Create)
-	mux.HandleFunc("GET /lessons/{id}", lh.Get)
-	mux.HandleFunc("PUT /lessons/{id}", lh.Update)
-	mux.HandleFunc("DELETE /lessons/{id}", lh.Delete)
-	mux.HandleFunc("GET /courses/{courseId}/lessons", lh.ListByCourse)
-	mux.HandleFunc("POST /courses/{courseId}/lessons", lh.CreateByCourse)
+	mux.HandleFunc(http.MethodGet+" "+course.RouteLessons, lh.List)
+	mux.HandleFunc(http.MethodPost+" "+course.RouteLessons, lh.Create)
+	mux.HandleFunc(http.MethodGet+" "+course.RouteLesson, lh.Get)
+	mux.HandleFunc(http.MethodPut+" "+course.RouteLesson, lh.Update)
+	mux.HandleFunc(http.MethodDelete+" "+course.RouteLesson, lh.Delete)
+	mux.HandleFunc(http.MethodGet+" "+course.RouteCourseLessons, lh.ListByCourse)
+	mux.HandleFunc(http.MethodPost+" "+course.RouteCourseLessons, lh.CreateByCourse)
 
 	// Scene（嵌套路由：场景作为课时的子资源）
-	mux.HandleFunc("GET /scenes/{id}", sh.Get)
-	mux.HandleFunc("PUT /scenes/{id}", sh.Update)
-	mux.HandleFunc("DELETE /scenes/{id}", sh.Delete)
-	mux.HandleFunc("GET /lessons/{lessonId}/scenes", sh.ListByLesson)
-	mux.HandleFunc("POST /lessons/{lessonId}/scenes", sh.CreateByLesson)
+	mux.HandleFunc(http.MethodGet+" "+course.RouteScene, sh.Get)
+	mux.HandleFunc(http.MethodPut+" "+course.RouteScene, sh.Update)
+	mux.HandleFunc(http.MethodDelete+" "+course.RouteScene, sh.Delete)
+	mux.HandleFunc(http.MethodGet+" "+course.RouteLessonScenes, sh.ListByLesson)
+	mux.HandleFunc(http.MethodPost+" "+course.RouteLessonScenes, sh.CreateByLesson)
 
 	// Criterion（验收标准：课时级与场景级子路由 + 全局清单）
-	mux.HandleFunc("GET /criteria", crith.ListAll)
-	mux.HandleFunc("GET /criteria/{id}", crith.Get)
-	mux.HandleFunc("PUT /criteria/{id}", crith.Update)
-	mux.HandleFunc("DELETE /criteria/{id}", crith.Delete)
-	mux.HandleFunc("GET /lessons/{lessonId}/criteria", crith.ListByLesson)
-	mux.HandleFunc("POST /lessons/{lessonId}/criteria", crith.CreateByLesson)
-	mux.HandleFunc("GET /scenes/{sceneId}/criteria", crith.ListByScene)
-	mux.HandleFunc("POST /scenes/{sceneId}/criteria", crith.CreateByScene)
+	mux.HandleFunc(http.MethodGet+" "+course.RouteCriteria, crith.ListAll)
+	mux.HandleFunc(http.MethodGet+" "+course.RouteCriterion, crith.Get)
+	mux.HandleFunc(http.MethodPut+" "+course.RouteCriterion, crith.Update)
+	mux.HandleFunc(http.MethodDelete+" "+course.RouteCriterion, crith.Delete)
+	mux.HandleFunc(http.MethodGet+" "+course.RouteLessonCriteria, crith.ListByLesson)
+	mux.HandleFunc(http.MethodPost+" "+course.RouteLessonCriteria, crith.CreateByLesson)
+	mux.HandleFunc(http.MethodGet+" "+course.RouteSceneCriteria, crith.ListByScene)
+	mux.HandleFunc(http.MethodPost+" "+course.RouteSceneCriteria, crith.CreateByScene)
 
 	// Health
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
