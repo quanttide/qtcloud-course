@@ -55,6 +55,7 @@ jobs:
         -target=alicloud_cdn_domain_new.studio
         -target=alicloud_cdn_domain_config.studio_private_back
         -target=alicloud_cdn_domain_config.studio_root_rewrite
+        -target=alicloud_cdn_domain_config.studio_https_force
         -target=alicloud_alidns_record.studio
 
     steps:

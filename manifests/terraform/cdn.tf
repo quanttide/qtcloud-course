@@ -10,9 +10,11 @@
 #     ② 域名级开关：本文件的 l2_oss_key（private_oss_auth=on，STS 同账号回源）。
 #   - 根路径改写：私有回源（签名请求）与 OSS 静态网站托管默认首页重写存在已知冲突
 #     （/ 回源 403），改为 CDN 侧直接回源 /index.html。
-#   - HTTPS：studio.course.cloud.quanttide.com 是三层子域，*.quanttide.com 泛域名
-#     证书不匹配，须用 acme.sh 单域名证书（90 天自动续期）。证书就位前不强制 HTTPS
-#     （https_force 会把没证书的域名打成死链），备好证书后再加该配置。
+#   - 证书：studio.course.cloud.quanttide.com 是三层子域，*.quanttide.com 泛域名
+#     证书不匹配，用 acme.sh DNS-01 单域名证书（ZeroSSL ECC，2026-11-21 签发，
+#     2027-02-19 到期）；续期 reloadcmd 为 ~/.acme.sh/deploy-cdn-cert-course-studio.sh
+#     （与 deploy-cdn-cert-media-studio.sh 同款，续期后自动重绑 CDN）。terraform 不管理
+#     证书内容（避免私钥入库）。证书已绑定，故下方 https_force 开启强制 HTTPS。
 #   - 前置：quanttide.com 已完成 ICP 备案。
 # ============================================================
 
@@ -54,6 +56,15 @@ resource "alicloud_cdn_domain_config" "studio_root_rewrite" {
   function_args {
     arg_name  = "flag"
     arg_value = "break"
+  }
+}
+
+resource "alicloud_cdn_domain_config" "studio_https_force" {
+  domain_name   = alicloud_cdn_domain_new.studio.domain_name
+  function_name = "https_force"
+  function_args {
+    arg_name  = "enable"
+    arg_value = "on"
   }
 }
 
