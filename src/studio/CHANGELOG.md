@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.8] - 2026-11-21
+
+### Fixed
+
+- 部署工作流的 Terraform 段改为只 `-target` studio 站点资源：本 root 与 provider 共用一份远端状态，0.0.7 发版时全量 apply 触发 FC 函数更新、因 ACR 镜像仓库不可达失败（站点桶 / CDN / DNS 已建成，缺的只是站点内容）
+
 ## [0.0.7] - 2026-11-21
 
 ### Added
