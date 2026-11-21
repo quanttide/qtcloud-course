@@ -1,0 +1,136 @@
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px 72px;
+}
+
+.hero {
+  margin-bottom: 36px;
+}
+
+.hero h1 {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.hero p {
+  margin-top: 10px;
+  color: #5b6472;
+  line-height: 1.7;
+}
+
+section + section {
+  margin-top: 44px;
+}
+
+.trackHead {
+  margin-bottom: 16px;
+}
+
+.trackHead h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #10356b;
+}
+
+.trackHead p {
+  margin-top: 6px;
+  color: #5b6472;
+  font-size: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e4e7ee;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardTop h3 {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.badge.online {
+  color: #1c6b3f;
+  background: #e3f5ea;
+}
+
+.badge.wip {
+  color: #8a5a12;
+  background: #fbf0dc;
+}
+
+.level {
+  align-self: flex-start;
+  font-size: 12px;
+  color: #5b6472;
+  background: #f1f3f8;
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+.audience {
+  font-size: 13px;
+  color: #5b6472;
+  line-height: 1.6;
+}
+
+.summary {
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.modules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.module {
+  font-size: 12px;
+  color: #2c3a52;
+  background: #eef2f9;
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+
+.go {
+  margin-top: 4px;
+  align-self: flex-start;
+  color: #fff;
+  background: #10356b;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.go:hover {
+  background: #1a4a92;
+}

@@ -15,3 +15,7 @@ src/provider/server
 # Terraform 本地缓存（state 在 OSS 远程）
 manifests/terraform/.terraform/
 manifests/terraform/.terraform.lock.hcl
+
+# Node（src/lite）
+node_modules/
+dist/
