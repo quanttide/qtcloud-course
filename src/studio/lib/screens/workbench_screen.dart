@@ -13,10 +13,12 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/lesson.dart';
 import '../services/lesson_md.dart';
 import '../services/lesson_store.dart';
+import '../services/lesson_store_web.dart';
 import '../widgets/lesson_preview.dart';
 
 /// 桌面端打开目录的入口，测试注入假实现即可（file_picker 是平台插件）
@@ -34,6 +36,7 @@ class WorkbenchScreen extends StatefulWidget {
 
 class _WorkbenchScreenState extends State<WorkbenchScreen> {
   LessonStore? _store;
+  String? _sourceLabel;
   late TextEditingController _editor;
   PickDirectory get _pick =>
       widget.pickDirectory ?? () => FilePicker.platform.getDirectoryPath();
@@ -53,8 +56,24 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
     final store = widget.initialStore;
     if (store != null) {
       _store = store;
+      _sourceLabel = store.path;
       _files = store.listMarkdown();
       if (_files.isNotEmpty) _openFile(_files.first);
+    } else {
+      _loadSample();
+    }
+  }
+
+  /// 打开即放示例课时：页面没数据，看不出来这是干什么的
+  Future<void> _loadSample() async {
+    try {
+      final md = await rootBundle.loadString('assets/sample-lesson.md');
+      if (!mounted) return;
+      final store = WebLessonStore()
+        ..loadFiles({'hello-world.md': md});
+      _adopt(store, '示例数据');
+    } catch (_) {
+      // 示例加载失败不影响使用：用户仍可自己打开目录 / 文件
     }
   }
 
@@ -98,9 +117,10 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
     _parse();
   }
 
-  void _adopt(LessonStore store) {
+  void _adopt(LessonStore store, String label) {
     setState(() {
       _store = store;
+      _sourceLabel = label;
       _files = store.listMarkdown();
       _currentFile = null;
       _editor.clear();
@@ -132,15 +152,14 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
         files[file.name] = utf8.decode(bytes, allowMalformed: true);
       }
       if (files.isEmpty) return;
-      final store = openLessonStore('');
-      store.loadFiles(files);
-      _adopt(store);
+      final store = WebLessonStore()..loadFiles(files);
+      _adopt(store, '浏览器内存');
       return;
     }
 
     final path = await _pick();
     if (path == null) return;
-    _adopt(openLessonStore(path));
+    _adopt(openLessonStore(path), path);
   }
 
   void _flash(String message) {
@@ -160,8 +179,13 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
     if (store == null || name == null) return;
     store.write(name, _editor.text);
 
-    if (!kIsWeb) {
+    if (store.isFileBacked) {
       _flash('已写回正本');
+      return;
+    }
+    if (!kIsWeb) {
+      // 示例或内存暂存：不假装写回正本
+      _flash('已存到内存（不是正本）');
       return;
     }
 
@@ -215,7 +239,7 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          store?.path ?? '未打开',
+                          _sourceLabel ?? '未打开',
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodySmall,
                         ),

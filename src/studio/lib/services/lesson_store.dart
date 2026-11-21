@@ -22,6 +22,9 @@ abstract class LessonStore {
 
   /// 浏览器端装入选中的 .md；桌面端是空操作
   void loadFiles(Map<String, String> files) {}
+
+  /// 是否真的落文件（桌面端打开目录 = 正本；内存存储 = 示例或浏览器暂存）
+  bool get isFileBacked => false;
 }
 
 /// 按平台打开一个存储：桌面端给目录路径，浏览器端参数只作占位

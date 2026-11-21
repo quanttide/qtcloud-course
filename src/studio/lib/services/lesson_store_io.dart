@@ -13,6 +13,9 @@ class IoLessonStore extends LessonStore {
 
   IoLessonStore(this.path);
 
+  @override
+  bool get isFileBacked => true;
+
   Directory get _dir => Directory(path);
 
   void _checkName(String name) {
