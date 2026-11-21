@@ -12,3 +12,13 @@ output "fc_http_url" {
   description = "FC HTTP 触发器公网地址（系统级 API 网关接入前的直连入口）"
   value       = try(alicloud_fcv3_trigger.http.http_trigger[0].url_internet, "尚未创建")
 }
+
+output "studio_bucket" {
+  description = "Studio 静态站点 OSS 桶（deploy-studio.yml 上传目标）"
+  value       = alicloud_oss_bucket.studio.bucket
+}
+
+output "studio_cdn_domain" {
+  description = "Studio 站点域名"
+  value       = alicloud_cdn_domain_new.studio.domain_name
+}

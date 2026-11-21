@@ -56,3 +56,9 @@ variable "fc_timeout" {
   type        = number
   default     = 60
 }
+
+variable "oss_studio_bucket" {
+  description = "Studio 静态站点桶名（OSS 全局唯一；可覆盖，默认 qtcloud-course-studio）"
+  type        = string
+  default     = "qtcloud-course-studio"
+}

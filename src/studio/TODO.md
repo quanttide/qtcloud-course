@@ -15,7 +15,7 @@
 - [ ] AI创意 / AI工作 / AI教学 在 `data/profile` 补成课时目录（现在只有 html 课件，学员端内容仍是手抄）
 - [ ] 目录选择改原生对话框（现在是路径按钮）
 - [ ] 远程模式：连 provider 推送（照 qtcloud-media 的 `remote_io`）
-- [ ] `studio/*` tag → OSS + CDN 的部署 workflow（本仓还没有）
+- [x] `studio/*` tag → OSS + CDN 的部署 workflow（`.github/workflows/deploy-studio.yml`，域名 studio.course.cloud.quanttide.com）
 
 ## 验证
 

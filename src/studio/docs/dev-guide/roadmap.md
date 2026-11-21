@@ -19,7 +19,8 @@
 ### 下一步
 - [ ] `index.json` 同步与 steps ↔ scenes 对应
 - [ ] 三门新课在 profile 补课时目录
-- [ ] 远程推送 + `studio/*` 部署 workflow
+- [x] `studio/*` 部署 workflow + 站点 IaC（桶 qtcloud-course-studio、域名 studio.course.cloud.quanttide.com）
+- [ ] 远程推送 provider
 
 ## [v0.1] — 课程制作（进行中）
 
