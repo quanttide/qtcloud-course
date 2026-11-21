@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-alpha.3] - 2026-11-21
+
+### Changed
+
+- 课时围栏改成 MyST directive 形状：`​```copy 标签` → `​```{copy} 标签`——与仓内 `​```{tab-set}`、`​:::{tab-item}` 同形，在 MyST 语义下是自定义 directive 而非平行方言；语义仍是课时契约的七种块，不迁就 MyST 的 admonition
+- 解析器对不写花括号的围栏当场报「要写成 MyST directive 形状」，未知 directive 报 `{kind}` 名
+
 ## [0.1.0-alpha.2] - 2026-11-21
 
 ### Added

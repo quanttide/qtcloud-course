@@ -9,15 +9,18 @@
 /// ## 步骤标题           → 新步骤，num 按顺序从 1 起
 /// 动作段落               → 该步骤的 do（多段以空格相连）
 ///
-/// ```copy 标签          → 一键复制块，正文原样作 text（保留换行）
-/// ```note 标签          → 预期结果块，正文逐行作 lines
-/// ```code 标签          → 回显块，正文逐行，以 ✓ 开头的行记为完成态
-/// ```link 标签          → 链接块，正文第一行是 url、其余是 tip
-/// ```image 标签         → 对照图块，正文第一行 src、第二行 alt、其余是 tip
-/// ```tip                → 课末提示（lesson.tip）
-/// ```foot               → 页脚一句话（lesson.foot）
+/// ```{copy} 标签        → 一键复制块，正文原样作 text（保留换行）
+/// ```{note} 标签        → 预期结果块，正文逐行作 lines
+/// ```{code} 标签        → 回显块，正文逐行，以 ✓ 开头的行记为完成态
+/// ```{link} 标签        → 链接块，正文第一行是 url、其余是 tip
+/// ```{image} 标签       → 对照图块，正文第一行 src、第二行 alt、其余是 tip
+/// ```{tip}              → 课末提示（lesson.tip）
+/// ```{foot}             → 页脚一句话（lesson.foot）
 /// ```
 ///
+/// 围栏写成 MyST directive 形状（花括号是标志，与仓内 `:::{tab-item}`、
+/// `​```{tab-set}` 同形）——这样它就是 MyST 语义下的自定义 directive，
+/// 不是一套平行方言；但语义归课时契约（上面七种），不迁就 MyST 的 admonition。
 /// 围栏外只按段落处理；步骤块必须出现在某个 `##` 之后，否则报错——
 /// 解析失败要在编辑器里当场看见，不许静默吞掉。
 library;
@@ -56,12 +59,16 @@ Lesson parseLessonMd(String source, {String name = '', String course = ''}) {
   }
 
   void flushFence() {
-    final info = fenceInfo.split(RegExp(r'\s+')).where((s) => s.isNotEmpty).toList();
-    if (info.isEmpty) {
-      throw const FormatException('围栏代码块缺少类型（copy/note/code/link/image/tip/foot）');
+    // MyST directive 形状：```{kind} 可选标签
+    final match = RegExp(r'^\{([a-zA-Z]+)\}\s*(.*)$').firstMatch(fenceInfo.trim());
+    if (match == null) {
+      throw const FormatException(
+        '围栏要写成 MyST directive 形状，如 ```{copy} 点按钮一键复制',
+      );
     }
-    final kind = info.first;
-    final label = info.length > 1 ? info.sublist(1).join(' ') : null;
+    final kind = match.group(1)!.toLowerCase();
+    final labelText = match.group(2)!.trim();
+    final label = labelText.isEmpty ? null : labelText;
     final body = fenceBody.toList();
     fenceBody.clear();
 
@@ -105,7 +112,7 @@ Lesson parseLessonMd(String source, {String name = '', String course = ''}) {
           tip: nonEmpty.length > 2 ? nonEmpty.sublist(2).join(' ') : null,
         ));
       default:
-        throw FormatException('未知的围栏类型：$kind');
+        throw FormatException('未知的 directive：{$kind}');
     }
   }
 
