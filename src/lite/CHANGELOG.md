@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [0.1.0-alpha.3] - 2026-11-21
+
+### Added
+
+- 强制 HTTPS：证书已绑定 CDN（acme.sh 单域名，reloadcmd `~/.acme.sh/deploy-cdn-cert-course-lite.sh`），`https_force` 随本次 apply 打开，HTTP 301 到 HTTPS
+
 ## [0.1.0-alpha.2] - 2026-11-21
 
 ### Added

@@ -69,8 +69,15 @@ resource "alicloud_cdn_domain_config" "lite_root_rewrite" {
   }
 }
 
-# 强制 HTTPS（https_force）：证书绑定到 CDN 之后再加——域名没证书就开强制跳转会把站点打成死链。
-# 首版先建桶与域名（见 CHANGELOG 0.1.0-alpha.2），证书绑定后补回本块。
+# 强制 HTTPS：证书已绑定到 CDN（2026-11-21），HTTP 301 到 HTTPS
+resource "alicloud_cdn_domain_config" "lite_https_force" {
+  domain_name   = alicloud_cdn_domain_new.lite.domain_name
+  function_name = "https_force"
+  function_args {
+    arg_name  = "enable"
+    arg_value = "on"
+  }
+}
 
 # ── DNS：CNAME 接入 ─────────────────────────────────────────
 

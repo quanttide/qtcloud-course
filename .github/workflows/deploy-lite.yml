@@ -53,6 +53,7 @@ jobs:
         -target=alicloud_cdn_domain_new.lite
         -target=alicloud_cdn_domain_config.lite_private_back
         -target=alicloud_cdn_domain_config.lite_root_rewrite
+        -target=alicloud_cdn_domain_config.lite_https_force
         -target=alicloud_alidns_record.lite
 
     steps:
