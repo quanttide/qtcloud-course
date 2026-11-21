@@ -1,0 +1,148 @@
+# 发布课程清单 lite：推送 lite/* tag 时构建静态站，上传 OSS 站点桶
+# （qtcloud-course-lite，IaC 见 manifests/terraform/lite.tf），并刷新 CDN。
+#
+# 链路（对齐 deploy-studio.yml / qtclass 的 deploy-lite.yml 模式）：
+#   lite/* tag → Actions（npm ci + vite build + ossutil cp）→ OSS 桶（静态网站托管）
+#   → CDN（lite.course.cloud.quanttide.com，IaC 见 manifests/terraform/lite.tf）
+#   → 用户浏览器
+#
+# 触发说明：用 tag 精确匹配 lite/ 前缀，避免其他 tag 误触发。
+#
+# 所需 GitHub secrets（org / repo 级）：
+#   - ALIYUN_ACCESS_KEY_ID / ALIYUN_ACCESS_KEY_SECRET：RAM 用户 AccessKey
+#     （OSS 上传 + CDN 刷新；该 RAM 用户需对站点桶有写权限）
+
+name: Deploy Lite
+
+on:
+  push:
+    tags:
+      - 'lite/**'
+
+concurrency:
+  group: deploy-lite
+  cancel-in-progress: true
+
+env:
+  OSS_BUCKET: qtcloud-course-lite
+  OSS_ENDPOINT: oss-cn-hangzhou.aliyuncs.com
+  CDN_DOMAIN: lite.course.cloud.quanttide.com
+
+jobs:
+  # 基础设施照 deploy-studio.yml：远端状态 + plan + apply，只 -target 本清单的站点资源——
+  # 本 root 与 provider 共用一份状态，全量 apply 会被无关资源的失败牵连。
+  terraform:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TF_VAR_region: cn-hangzhou
+      TF_VAR_environment: prod
+      TF_STATE_BUCKET: quanttide-terraform-state
+      TF_STATE_KEY: qtcloud-course/terraform.tfstate
+      ALICLOUD_ACCESS_KEY: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+      ALICLOUD_SECRET_KEY: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+      ALICLOUD_REGION_ID: cn-hangzhou
+      # image / oss AccessKey 是 provider 的模块级必填变量，本清单不用，占位满足校验
+      TF_VAR_image: unused-by-lite
+      TF_VAR_oss_access_key_id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+      TF_VAR_oss_access_key_secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+      TF_VAR_oss_endpoint: oss-cn-hangzhou.aliyuncs.com
+      TF_LITE_TARGETS: >-
+        -target=alicloud_oss_bucket.lite
+        -target=alicloud_cdn_domain_new.lite
+        -target=alicloud_cdn_domain_config.lite_private_back
+        -target=alicloud_cdn_domain_config.lite_root_rewrite
+        -target=alicloud_alidns_record.lite
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.15.8'
+
+      - name: Terraform Init
+        working-directory: manifests/terraform
+        run: |
+          terraform init -input=false \
+            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
+            -backend-config="key=${{ env.TF_STATE_KEY }}" \
+            -backend-config="region=${{ env.TF_VAR_region }}"
+
+      - name: Terraform Validate
+        working-directory: manifests/terraform
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        working-directory: manifests/terraform
+        run: terraform plan -input=false -no-color ${{ env.TF_LITE_TARGETS }} -out=tfplan
+
+      - name: Terraform Apply
+        working-directory: manifests/terraform
+        run: terraform apply -input=false -no-color tfplan
+
+  build-and-deploy:
+    name: Build Web & Deploy to OSS
+    needs: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: src/lite/package-lock.json
+
+      - name: Install
+        working-directory: src/lite
+        run: npm ci
+
+      - name: Build
+        working-directory: src/lite
+        run: npm run build
+
+      - name: Setup ossutil
+        uses: manyuanrong/setup-ossutil@v3.0
+        with:
+          endpoint: ${{ env.OSS_ENDPOINT }}
+          access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+
+      # 缓存策略：哈希资源（assets/ 等）长缓存；固定名入口文件必须 no-cache，
+      # 否则发版后浏览器/CDN 拿旧 JS（文件名不随内容变化）
+      - name: Upload Web to OSS（长缓存）
+        working-directory: src/lite
+        run: |
+          ossutil cp dist/ oss://${{ env.OSS_BUCKET }}/ -r -f \
+            --exclude "index.html" \
+            --meta "Cache-Control:public,max-age=31536000"
+
+      - name: Upload entry files（no-cache）
+        working-directory: src/lite
+        run: |
+          for f in index.html; do
+            ossutil cp dist/$f oss://${{ env.OSS_BUCKET }}/$f -f --meta "Cache-Control:no-cache"
+          done
+
+      - name: Refresh CDN
+        run: |
+          pip install aliyun-python-sdk-cdn
+          python -c "
+          from aliyunsdkcore.client import AcsClient
+          from aliyunsdkcdn.request.v20180510.RefreshObjectCachesRequest import RefreshObjectCachesRequest
+          import os
+          cli = AcsClient(os.environ['ALIYUN_ACCESS_KEY_ID'], os.environ['ALIYUN_ACCESS_KEY_SECRET'], 'cn-hangzhou')
+          req = RefreshObjectCachesRequest()
+          req.set_ObjectPath('https://${{ env.CDN_DOMAIN }}/')
+          req.set_ObjectType('Directory')
+          cli.do_action_with_exception(req)
+          "
+        env:
+          ALIYUN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}

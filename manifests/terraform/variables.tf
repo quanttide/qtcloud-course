@@ -62,3 +62,10 @@ variable "oss_studio_bucket" {
   type        = string
   default     = "qtcloud-course-studio"
 }
+
+
+variable "oss_lite_bucket" {
+  description = "课程清单 lite 站点桶名（OSS 全局唯一；可覆盖，默认 qtcloud-course-lite）"
+  type        = string
+  default     = "qtcloud-course-lite"
+}

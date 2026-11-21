@@ -22,3 +22,14 @@ output "studio_cdn_domain" {
   description = "Studio 站点域名"
   value       = alicloud_cdn_domain_new.studio.domain_name
 }
+
+
+output "lite_bucket" {
+  description = "课程清单 lite 站点 OSS 桶（deploy-lite.yml 上传目标）"
+  value       = alicloud_oss_bucket.lite.bucket
+}
+
+output "lite_cdn_domain" {
+  description = "课程清单 lite 站点域名"
+  value       = alicloud_cdn_domain_new.lite.domain_name
+}

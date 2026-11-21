@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [0.1.0-alpha.2] - 2026-11-21
+
+### Added
+
+- 部署链路：`lite/*` tag → `.github/workflows/deploy-lite.yml`（Terraform 建站点桶 / CDN / DNS → npm ci + vite build → 分段上传 OSS → 刷 CDN），域名 `lite.course.cloud.quanttide.com`；证书为 acme.sh 单域名，reloadcmd `~/.acme.sh/deploy-cdn-cert-course-lite.sh`
+
 ## [0.1.0-alpha.1] - 2026-11-21
 
 ### Added
