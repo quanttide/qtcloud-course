@@ -29,8 +29,58 @@ env:
   CDN_DOMAIN: studio.course.cloud.quanttide.com
 
 jobs:
+  # 基础设施与 deploy-provider.yml 同模式：远端状态桶 + plan + apply。
+  # 站点桶 / CDN / DNS 首次由本步创建，之后每次发版增量更新。
+  terraform:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TF_VAR_region: cn-hangzhou
+      TF_VAR_environment: prod
+      TF_STATE_BUCKET: quanttide-terraform-state
+      TF_STATE_KEY: qtcloud-course/terraform.tfstate
+      ALICLOUD_ACCESS_KEY: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+      ALICLOUD_SECRET_KEY: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+      ALICLOUD_REGION_ID: cn-hangzhou
+      # image / oss AccessKey 是 provider 的模块级必填变量，studio 部署不用，占位满足校验
+      TF_VAR_image: unused-by-studio
+      TF_VAR_oss_access_key_id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+      TF_VAR_oss_access_key_secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+      TF_VAR_oss_endpoint: oss-cn-hangzhou.aliyuncs.com
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.15.8'
+
+      - name: Terraform Init
+        working-directory: manifests/terraform
+        run: |
+          terraform init -input=false \
+            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
+            -backend-config="key=${{ env.TF_STATE_KEY }}" \
+            -backend-config="region=${{ env.TF_VAR_region }}"
+
+      - name: Terraform Validate
+        working-directory: manifests/terraform
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        working-directory: manifests/terraform
+        run: terraform plan -input=false -no-color -out=tfplan
+
+      - name: Terraform Apply
+        working-directory: manifests/terraform
+        run: terraform apply -input=false -no-color tfplan
+
   build-and-deploy:
     name: Build Flutter Web & Deploy to OSS
+    needs: terraform
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

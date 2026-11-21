@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.0.7] - 2026-11-21
+
+### Added
+
+- 课时工作台：单页两栏——左栏打开 `data/profile/<course>/lessonN-*/` 正本目录写课时 Markdown，右栏按与 qtclass-lite 相同的块模型实时预览学员端形态，保存写回正本，不留副本
+- 课时 Markdown 解析 `lesson_md.dart`：`#` / `##` 分节 + 五种围栏块（note / copy / code / link / image）+ `tip` / `foot`，规则唯一；缺标题、围栏未闭合、块悬空、未知类型均当场报错
+- 站点部署链路：`studio/*` tag → `.github/workflows/deploy-studio.yml`（Terraform 建站点桶 / CDN / DNS → 构建 web → 分段上传 OSS → 刷 CDN），域名 `studio.course.cloud.quanttide.com`
+
+### Changed
+
+- 收敛旧多屏（ProgramScreen / SceneEditorScreen / PreviewScreen、Sidebar、卡片与状态组件）与 Program / Phase / Scene / enums 模型——服务端 0.1.1-alpha.4 已删 Program 与 Phase，编辑器不再维护第二棵树；对应测试同步删除
+- README 由 Flutter 脚手架样板改为工作台说明；ROADMAP / TODO 对齐本次改动
+
+### Testing
+
+- `flutter analyze` 零告警；`flutter test` 19 个全通过（解析器、预览、正本读写、工作台交互）；`flutter build web` 通过
 
 ## [0.1.0] - 2026-08-01
 
