@@ -33,7 +33,7 @@ void main() {
   setUp(() {
     tempDir = Directory.systemTemp.createTempSync('workbench_test');
     File('${tempDir.path}/01-hello-world.md').writeAsStringSync(_md);
-    store = LessonStore(tempDir);
+    store = openLessonStore(tempDir.path);
   });
 
   tearDown(() => tempDir.deleteSync(recursive: true));

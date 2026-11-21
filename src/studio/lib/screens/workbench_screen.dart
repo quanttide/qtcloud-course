@@ -1,15 +1,17 @@
 /// 课时工作台：单页两栏——左侧写课时 Markdown，右侧实时预览学员端形态。
 ///
 /// 形态照 qtcloud-media 的 studio（左内容右预览）：
-/// - 左栏直接打开 `data/profile/<course>/lessonN-*/` 正本目录，保存即写回正本
+/// - 桌面端左栏直接打开 `data/profile/<course>/lessonN-*/` 正本目录，保存即写回正本；
+///   浏览器端没有文件系统，打开本机 .md 装进内存，保存另存为下载文件
 /// - 右栏按与 qtclass-lite 相同的块模型渲染，改一句当场看到学员看到的字
 /// - 解析当场报错（缺标题、围栏未闭合、块悬空），不静默吞掉
 library;
 
 import 'dart:async';
-import 'dart:io';
+import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../models/lesson.dart';
@@ -17,7 +19,7 @@ import '../services/lesson_md.dart';
 import '../services/lesson_store.dart';
 import '../widgets/lesson_preview.dart';
 
-/// 打开目录的入口，测试注入假实现即可（file_picker 是平台插件）
+/// 桌面端打开目录的入口，测试注入假实现即可（file_picker 是平台插件）
 typedef PickDirectory = Future<String?> Function();
 
 class WorkbenchScreen extends StatefulWidget {
@@ -31,7 +33,7 @@ class WorkbenchScreen extends StatefulWidget {
 }
 
 class _WorkbenchScreenState extends State<WorkbenchScreen> {
-  late LessonStore _store;
+  LessonStore? _store;
   late TextEditingController _editor;
   PickDirectory get _pick =>
       widget.pickDirectory ?? () => FilePicker.platform.getDirectoryPath();
@@ -41,17 +43,19 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
   String? _parseError;
   Lesson? _lesson;
   var _dirty = false;
-  var _savedFlash = false;
+  String? _savedMessage;
   Timer? _flashTimer;
 
   @override
   void initState() {
     super.initState();
-    _store = widget.initialStore ??
-        LessonStore(Directory('${Directory.systemTemp.path}/qtcloud-course-studio'));
     _editor = TextEditingController()..addListener(_onEdited);
-    _files = _store.listMarkdown();
-    if (_files.isNotEmpty) _openFile(_files.first);
+    final store = widget.initialStore;
+    if (store != null) {
+      _store = store;
+      _files = store.listMarkdown();
+      if (_files.isNotEmpty) _openFile(_files.first);
+    }
   }
 
   @override
@@ -87,49 +91,97 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
   void _openFile(String name) {
     setState(() {
       _currentFile = name;
-      _editor.text = _store.read(name);
+      _editor.text = _store!.read(name);
       _dirty = false;
-      _savedFlash = false;
+      _savedMessage = null;
     });
     _parse();
   }
 
-  Future<void> _openDirectory() async {
-    final path = await _pick();
-    if (path == null) return;
+  void _adopt(LessonStore store) {
     setState(() {
-      _store = LessonStore(Directory(path));
-      _files = _store.listMarkdown();
+      _store = store;
+      _files = store.listMarkdown();
       _currentFile = null;
       _editor.clear();
+      _lesson = null;
+      _parseError = null;
       _dirty = false;
+      _savedMessage = null;
     });
     if (_files.isNotEmpty) {
       _openFile(_files.first);
     } else {
-      setState(() {
-        _lesson = null;
-        _parseError = '这个目录里没有 .md 文件';
-      });
+      setState(() => _parseError = '这里没有 .md 文件');
     }
   }
 
-  void _save() {
-    if (_currentFile == null) return;
-    _store.write(_currentFile!, _editor.text);
+  Future<void> _openSource() async {
+    if (kIsWeb) {
+      final result = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        type: FileType.custom,
+        allowedExtensions: ['md'],
+        withData: true,
+      );
+      if (result == null) return;
+      final files = <String, String>{};
+      for (final file in result.files) {
+        final bytes = file.bytes;
+        if (bytes == null) continue;
+        files[file.name] = utf8.decode(bytes, allowMalformed: true);
+      }
+      if (files.isEmpty) return;
+      final store = openLessonStore('');
+      store.loadFiles(files);
+      _adopt(store);
+      return;
+    }
+
+    final path = await _pick();
+    if (path == null) return;
+    _adopt(openLessonStore(path));
+  }
+
+  void _flash(String message) {
     setState(() {
       _dirty = false;
-      _savedFlash = true;
+      _savedMessage = message;
     });
     _flashTimer?.cancel();
-    _flashTimer = Timer(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _savedFlash = false);
+    _flashTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _savedMessage = null);
     });
+  }
+
+  Future<void> _save() async {
+    final store = _store;
+    final name = _currentFile;
+    if (store == null || name == null) return;
+    store.write(name, _editor.text);
+
+    if (!kIsWeb) {
+      _flash('已写回正本');
+      return;
+    }
+
+    // 浏览器内存不是正本：另存一份给用户带走
+    try {
+      final saved = await FilePicker.platform.saveFile(
+        fileName: name,
+        bytes: utf8.encode(_editor.text),
+      );
+      _flash(saved == null ? '已存到浏览器内存' : '已下载 $name');
+    } catch (_) {
+      _flash('已存到浏览器内存');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final store = _store;
+    final saved = _savedMessage;
 
     return Scaffold(
       appBar: AppBar(
@@ -140,7 +192,10 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
             child: FilledButton.icon(
               onPressed: _currentFile == null ? null : _save,
               icon: const Icon(Icons.save_outlined),
-              label: Text(_savedFlash ? '已写回正本' : _dirty ? '保存' : '已保存'),
+              label: Text(
+                saved ??
+                    (_dirty ? '保存' : store == null ? '保存' : '已保存'),
+              ),
             ),
           ),
         ],
@@ -148,7 +203,7 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 左栏：目录 + 文件 + Markdown 编辑器
+          // 左栏：来源 + 文件 + Markdown 编辑器
           Expanded(
             flex: 5,
             child: Column(
@@ -160,15 +215,15 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          _store.dir.path,
+                          store?.path ?? '未打开',
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodySmall,
                         ),
                       ),
                       OutlinedButton.icon(
-                        onPressed: _openDirectory,
+                        onPressed: _openSource,
                         icon: const Icon(Icons.folder_open_outlined, size: 18),
-                        label: const Text('打开课时目录'),
+                        label: Text(kIsWeb ? '打开 .md 文件' : '打开课时目录'),
                       ),
                     ],
                   ),
@@ -222,9 +277,11 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
                 ? LessonPreview(lesson: _lesson!)
                 : Center(
                     child: Text(
-                      _parseError == null
-                          ? '左侧写课时，这里就是学员看到的样子'
-                          : '解析失败，右侧不出预览——报错在左栏下方',
+                      store == null
+                          ? '先打开一个课时，这里就是学员看到的样子'
+                          : _parseError == null
+                              ? '左侧写课时，这里就是学员看到的样子'
+                              : '解析失败，右侧不出预览——报错在左栏下方',
                       style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.outline),
                     ),
                   ),

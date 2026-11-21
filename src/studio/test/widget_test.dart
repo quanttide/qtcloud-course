@@ -17,6 +17,6 @@ void main() {
     expect(find.text('打开课时目录'), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
     // 右栏空态提示
-    expect(find.text('左侧写课时，这里就是学员看到的样子'), findsOneWidget);
+    expect(find.text('先打开一个课时，这里就是学员看到的样子'), findsOneWidget);
   });
 }

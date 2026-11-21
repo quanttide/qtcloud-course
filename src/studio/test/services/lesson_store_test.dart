@@ -9,7 +9,7 @@ void main() {
 
   setUp(() {
     tempDir = Directory.systemTemp.createTempSync('lesson_store_test');
-    store = LessonStore(tempDir);
+    store = openLessonStore(tempDir.path);
   });
 
   tearDown(() => tempDir.deleteSync(recursive: true));
@@ -28,7 +28,7 @@ void main() {
   });
 
   test('不存在的目录列出空', () {
-    final missing = LessonStore(Directory('${tempDir.path}/nope'));
+    final missing = openLessonStore('${tempDir.path}/nope');
     expect(missing.listMarkdown(), isEmpty);
   });
 

@@ -1,49 +1,28 @@
-/// 课时目录读写：Studio 直接打开 `data/profile/<course>/lessonN-*/` 这样的正本目录，
+/// 课时内容读写：Studio 直接打开 `data/profile/<course>/lessonN-*/` 正本，
 /// 读写其中的 Markdown。没有私有副本——Studio 存的就是正本，保存即落盘。
+///
+/// 桌面端走文件系统（`lesson_store_io.dart`），浏览器端没有文件系统，
+/// 走内存（`lesson_store_web.dart`）：打开 .md 装进来、保存回内存并可下载。
+/// 平台分叉只在这一层，编辑器与预览两边共用。
 library;
 
-import 'dart:io';
+import 'lesson_store_web.dart'
+    if (dart.library.io) 'lesson_store_io.dart' as impl;
 
-class LessonStore {
-  /// 课时目录，如 `data/profile/vibe-creating/lesson1-hello-world`
-  final Directory dir;
-
-  const LessonStore(this.dir);
+abstract class LessonStore {
+  /// 展示用的来源路径：桌面端是目录，浏览器端是「浏览器内存」
+  String get path;
 
   /// 目录里的 Markdown 文件，按文件名排序
-  List<String> listMarkdown() {
-    if (!dir.existsSync()) return const [];
-    final files = dir
-        .listSync()
-        .whereType<File>()
-        .map((f) => f.uri.pathSegments.last)
-        .where((name) => name.endsWith('.md'))
-        .toList()
-      ..sort();
-    return files;
-  }
+  List<String> listMarkdown();
 
-  File _file(String name) {
-    if (name.isEmpty || name.contains('/') || name.contains('\\') || name.contains('..')) {
-      throw ArgumentError('非法文件名：$name');
-    }
-    final file = File('${dir.path}${Platform.pathSeparator}$name');
-    if (!file.existsSync()) {
-      throw FileSystemException('文件不存在', file.path);
-    }
-    return file;
-  }
+  String read(String name);
 
-  String read(String name) => _file(name).readAsStringSync();
+  void write(String name, String content);
 
-  void write(String name, String content) {
-    if (!dir.existsSync()) {
-      dir.createSync(recursive: true);
-    }
-    // 文件名只允许是目录内的 basename，先校验再落盘
-    if (name.isEmpty || name.contains('/') || name.contains('\\') || name.contains('..')) {
-      throw ArgumentError('非法文件名：$name');
-    }
-    File('${dir.path}${Platform.pathSeparator}$name').writeAsStringSync(content);
-  }
+  /// 浏览器端装入选中的 .md；桌面端是空操作
+  void loadFiles(Map<String, String> files) {}
 }
+
+/// 按平台打开一个存储：桌面端给目录路径，浏览器端参数只作占位
+LessonStore openLessonStore(String path) => impl.createLessonStore(path);

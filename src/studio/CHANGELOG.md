@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.0-alpha.1] - 2026-11-21
+
+### Fixed
+
+- 灰屏：`dart:io` 的 `Directory.systemTemp` 在浏览器端直接抛错，App 起不来——读写层按平台拆成 `lesson_store_io.dart`（文件系统）与 `lesson_store_web.dart`（内存），编辑器与预览两边共用
+
+### Changed
+
+- 浏览器端可用：「打开 .md 文件」装进内存编辑与预览，保存另存为下载文件；来源栏显示「浏览器内存」
+- 站点标题改为「量潮课程云 Studio」（原为脚手架名 `qtcloud_course_studio`）
+
+### Testing
+
+- `flutter analyze` 零告警；`flutter test` 21 个全通过（含浏览器端存储）；`flutter build web` 通过并用无头 Chrome 截图确认页面渲染
+
 ## [0.0.8] - 2026-11-21
 
 ### Fixed

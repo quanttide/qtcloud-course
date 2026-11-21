@@ -13,7 +13,7 @@ class QtCloudCourseApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '量潮课程云',
+      title: '量潮课程云 Studio',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
