@@ -1,33 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
-import 'package:qtcloud_course_studio/services/program_service.dart';
 import 'package:qtcloud_course_studio/main.dart';
 
 void main() {
-  testWidgets('app smoke test - renders main shell', (tester) async {
-    tester.view.physicalSize = const Size(1280, 800);
+  testWidgets('app smoke test - 工作台两栏渲染', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
       tester.view.resetPhysicalSize();
       tester.view.resetDevicePixelRatio();
     });
 
-    final ps = ProgramService();
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider.value(value: ps),
-        ],
-        child: const QtCloudCourseApp(),
-      ),
-    );
+    await tester.pumpWidget(const QtCloudCourseApp());
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
-    ps.markLoaded();
-    await tester.pumpAndSettle();
-
-    expect(find.text('课程研发'), findsWidgets);
+    expect(find.text('课时工作台'), findsOneWidget);
+    expect(find.text('打开课时目录'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
+    // 右栏空态提示
+    expect(find.text('左侧写课时，这里就是学员看到的样子'), findsOneWidget);
   });
 }

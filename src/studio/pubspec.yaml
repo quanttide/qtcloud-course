@@ -60,9 +60,6 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  assets:
-    - assets/programs.json
-    - assets/lesson1.json
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

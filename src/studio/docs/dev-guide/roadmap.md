@@ -2,6 +2,25 @@
 
 > Studio 定位：课程制作工具。LMS 能力（考核、班级 / 学员）已迁移至 `qtcloud-learn`，本 scope 聚焦课程制作。
 
+## [v0.3] — 课时工作台（2026-11-21 落地）
+
+> 单页两栏：左写课时 Markdown、右预览学员端形态。起因是课时内容三份手抄、改一句要发一个 patch（AI创意第 3 步连发 0.2.4/0.2.5/0.2.6）——把对齐挪到发版之前。
+
+### Added
+- [x] `WorkbenchScreen`：打开 `data/profile/<course>/lessonN-*/` 正本目录，编辑 + 保存写回
+- [x] `lesson_md.dart`：Markdown → Lesson 解析，规则唯一，五种块（note/copy/code/link/image）+ tip/foot
+- [x] `lesson_preview.dart`：学员端形态渲染，结构照 qtclass-lite 的 `LessonDetail.tsx`
+- [x] 解析失败当场报错（缺标题 / 围栏未闭合 / 块悬空 / 未知类型）
+
+### Changed
+- [x] 收敛旧多屏（ProgramScreen / SceneEditorScreen / PreviewScreen、Sidebar）与 Program / Phase / Scene 模型——服务端 0.1.1-alpha.4 已删这两级，编辑器不再维护第二棵树
+- [x] README 由 Flutter 脚手架样板改为工作台说明
+
+### 下一步
+- [ ] `index.json` 同步与 steps ↔ scenes 对应
+- [ ] 三门新课在 profile 补课时目录
+- [ ] 远程推送 + `studio/*` 部署 workflow
+
 ## [v0.1] — 课程制作（进行中）
 
 > Scene 编辑器 + 分支选项 + 本地持久化。Studio 作为独立本地软件，不依赖 Provider/CLI。
