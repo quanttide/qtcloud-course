@@ -1,5 +1,6 @@
-/// 课时 Markdown → [Lesson] 解析器。规则只此一份：Studio 预览按它渲染，
-/// 学员端（qtclass-lite）按同一份 Lesson 形状渲染，两边不许各写一套。
+/// 课时 Markdown → [Lesson] 解析器：只管分节与落位（标题、步骤、段落）；
+/// directive 的语义在 [DirectiveRegistry] 里，本文件只查表分发。
+/// 预览按它渲染，学员端（qtclass-lite）按同一份 Lesson 形状渲染，两边不许各写一套。
 ///
 /// 约定：
 /// ```md
@@ -26,8 +27,17 @@
 library;
 
 import '../models/lesson.dart';
+import 'directive.dart';
 
-Lesson parseLessonMd(String source, {String name = '', String course = ''}) {
+/// [directives] 不给时用课时默认的七种；要加自定义语法就传自己的注册表
+/// （`DirectiveRegistry.lesson()..register('video', …)`）。
+Lesson parseLessonMd(
+  String source, {
+  String name = '',
+  String course = '',
+  DirectiveRegistry? directives,
+}) {
+  final registry = directives ?? DirectiveRegistry.lesson();
   final lines = source.split('\n');
   String? title;
   String? lede;
@@ -67,52 +77,27 @@ Lesson parseLessonMd(String source, {String name = '', String course = ''}) {
       );
     }
     final kind = match.group(1)!.toLowerCase();
-    final labelText = match.group(2)!.trim();
-    final label = labelText.isEmpty ? null : labelText;
-    final body = fenceBody.toList();
+    final directive = Directive(
+      name: kind,
+      args: match.group(2)!.trim(),
+      body: fenceBody.toList(),
+    );
     fenceBody.clear();
 
-    const stepKinds = {'note', 'copy', 'code', 'link', 'image'};
-    if (stepKinds.contains(kind) && current == null) {
-      throw FormatException('$kind 块必须出现在某个 ## 步骤之后');
-    }
-
-    switch (kind) {
-      case 'tip':
-        tip = body.join('\n').trim();
-      case 'foot':
-        foot = body.join('\n').trim();
-      case 'note':
-        current!.blocks.add(NoteBlock(
-          label: label,
-          lines: body.map((l) => l.trimRight()).toList(),
-        ));
-      case 'copy':
-        current!.blocks.add(CopyBlock(label: label, text: body.join('\n').trim()));
-      case 'code':
-        current!.blocks.add(CodeBlock(
-          label: label,
-          lines: body
-              .map((l) => CodeLine(l, ok: l.trimLeft().startsWith('✓')))
-              .toList(),
-        ));
-      case 'link':
-        final url = body.firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
-        final rest = body.where((l) => l.trim().isNotEmpty && l != url).join(' ');
-        current!.blocks.add(LinkBlock(label: label, url: url.trim(), tip: rest.isEmpty ? null : rest));
-      case 'image':
-        final nonEmpty = body.where((l) => l.trim().isNotEmpty).toList();
-        if (nonEmpty.length < 2) {
-          throw const FormatException('image 块至少要有 src 与 alt 两行');
+    // 语义在注册表里，这里只管分发与落位
+    switch (registry.resolve(directive)) {
+      case FieldOutcome(:final field, :final value):
+        if (field == 'tip') {
+          tip = value;
+        } else {
+          foot = value;
         }
-        current!.blocks.add(ImageBlock(
-          label: label,
-          src: nonEmpty[0].trim(),
-          alt: nonEmpty[1].trim(),
-          tip: nonEmpty.length > 2 ? nonEmpty.sublist(2).join(' ') : null,
-        ));
-      default:
-        throw FormatException('未知的 directive：{$kind}');
+      case BlockOutcome(:final block):
+        final draft = current;
+        if (draft == null) {
+          throw FormatException('$kind 块必须出现在某个 ## 步骤之后');
+        }
+        draft.blocks.add(block);
     }
   }
 

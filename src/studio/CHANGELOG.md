@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.0-alpha.4] - 2026-11-21
+
+### Changed
+
+- 解析器改为注册表分发：新增 `lib/services/directive.dart`（`Directive` / `DirectiveRegistry` / `BlockOutcome` / `FieldOutcome`），`lesson_md.dart` 只管分节与落位；七种课时 directive 注册在 `DirectiveRegistry.lesson()`
+- 自定义语法的扩展点是注册表：`parseLessonMd(md, directives: DirectiveRegistry.lesson()..register('hint', …))`，加语法不用改库
+- 注：Studio 自己实现一份，**不依赖 quanttide-docs-toolkit**——两套并行演化，架构稳了再谈依赖
+
 ## [0.1.0-alpha.3] - 2026-11-21
 
 ### Changed

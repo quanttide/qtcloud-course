@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qtcloud_course_studio/models/lesson.dart';
+import 'package:qtcloud_course_studio/services/directive.dart';
 import 'package:qtcloud_course_studio/services/lesson_md.dart';
 
 /// AI创意第 1 课的课时正文，形态与 lite 的 creative-hello-world 对应
@@ -129,6 +130,22 @@ void main() {
         () => parseLessonMd('# 标题\n\n## 步骤\n\n```copy 标签\n行\n```\n'),
         throwsFormatException,
       );
+    });
+
+    test('调用方可注册自定义 directive，不必改库', () {
+      final registry = DirectiveRegistry.lesson()
+        ..register('hint', (d) => BlockOutcome(
+              NoteBlock(label: d.label, lines: d.body),
+            ));
+
+      final lesson = parseLessonMd(
+        '# 标题\n\n## 步骤\n\n动作\n\n```{hint} 小提示\n记这一句\n```\n',
+        directives: registry,
+      );
+
+      final note = lesson.steps.single.blocks.whereType<NoteBlock>().single;
+      expect(note.label, '小提示');
+      expect(note.lines, ['记这一句']);
     });
   });
 }
