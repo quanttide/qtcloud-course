@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [Unreleased]
+## [0.1.0-beta.1] - 2026-11-25
 
 ### Added
 
