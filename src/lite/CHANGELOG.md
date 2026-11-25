@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [Unreleased]
+
+### Changed
+
+- AI教学改研发中：课时已从学员端下线，计划上线到本清单（`lite.course.cloud.quanttide.com`）——卡片撤掉「去上课」入口，通识注释改「三门在学员端，AI教学研发中」
+- 测试：已上线 3 / 研发中 5，补 AI教学卡无入口断言
+
+
 ## [0.1.0-alpha.3] - 2026-11-21
 
 ### Added

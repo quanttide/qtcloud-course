@@ -19,8 +19,8 @@ describe('课程清单', () => {
   it('每门课都标上线状态', () => {
     render(<App />)
 
-    expect(screen.getAllByText('已上线')).toHaveLength(4)
-    expect(screen.getAllByText('研发中')).toHaveLength(4)
+    expect(screen.getAllByText('已上线')).toHaveLength(3)
+    expect(screen.getAllByText('研发中')).toHaveLength(5)
   })
 
   it('通识顺序：AI创意 → AI办公 → AI编程 → AI教学', () => {
@@ -35,10 +35,15 @@ describe('课程清单', () => {
     render(<App />)
 
     const links = screen.getAllByRole('link', { name: /去上课/ })
-    expect(links).toHaveLength(4)
+    expect(links).toHaveLength(3)
     for (const link of links) {
       expect(link).toHaveAttribute('href', 'https://lite.class.quanttide.com/')
     }
+
+    // AI教学在研发中，计划上线到本清单，学员端还没课时——不给入口
+    const teachingCard = screen.getByText('AI教学').closest('article') as HTMLElement
+    expect(within(teachingCard).queryByRole('link')).toBeNull()
+    expect(within(teachingCard).getByText('研发中')).toBeInTheDocument()
 
     const wipCard = screen
       .getByText('大数据导论')

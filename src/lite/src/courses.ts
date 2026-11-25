@@ -26,7 +26,7 @@ export const LITE_URL = 'https://lite.class.quanttide.com/'
 
 /** 分级：通识在前、领域在后 */
 export const tracks: { track: Track; stage: string; note: string }[] = [
-  { track: '通识', stage: '大一', note: '先把 AI 当成顺手的工具：四门通识课，都在学员端了。' },
+  { track: '通识', stage: '大一', note: '先把 AI 当成顺手的工具：三门在学员端，AI教学研发中。' },
   { track: '领域', stage: '大三', note: '对齐具体领域的课程，还在研发，上线一门搬一门。' },
 ]
 
@@ -72,8 +72,7 @@ export const courses: Course[] = [
     summary:
       '不用教龄不用证书：挑一件你熟的事，拆成几步，每步写清「做完你会看到」，生成自己的课程闯关图——做一遍就做出来了。',
     modules: ['想一件事', '拆成几步', '做完你会看到', '生成课程图'],
-    online: true,
-    url: LITE_URL,
+    online: false,
   },
   {
     name: '知识工作',
