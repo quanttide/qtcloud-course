@@ -12,15 +12,16 @@ describe('课程清单', () => {
     expect(headings.map((h) => h.textContent)).toEqual([
       '通识课程 · 大一',
       '领域课程 · 大三',
+      '职业发展课程 · 大四',
     ])
-    expect(tracks.map((t) => t.track)).toEqual(['通识', '领域'])
+    expect(tracks.map((t) => t.track)).toEqual(['通识', '领域', '职业发展'])
   })
 
   it('每门课都标上线状态', () => {
     render(<App />)
 
     expect(screen.getAllByText('已上线')).toHaveLength(3)
-    expect(screen.getAllByText('研发中')).toHaveLength(5)
+    expect(screen.getAllByText('研发中')).toHaveLength(6)
   })
 
   it('通识顺序：AI创意 → AI办公 → AI编程 → AI教学', () => {
@@ -52,14 +53,17 @@ describe('课程清单', () => {
     expect(within(wipCard).getByText('研发中')).toBeInTheDocument()
   })
 
-  it('领域四门都在清单里，没有被藏掉', () => {
+  it('领域三门都在清单里，生产实习已移到职业发展', () => {
     const domain = courses.filter((course) => course.track === '领域')
 
     expect(domain.map((course) => course.name)).toEqual([
       '知识工作',
       '大数据导论',
       '数据工程',
-      '生产实习',
     ])
+
+    // 大四接轨社会：职业发展是前置，生产实习是毕业论文
+    const senior = courses.filter((course) => course.track === '职业发展')
+    expect(senior.map((course) => course.name)).toEqual(['职业发展', '生产实习'])
   })
 })
