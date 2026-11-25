@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [Unreleased]
+## [0.1.0-alpha.4] - 2026-11-25
 
 ### Changed
 
