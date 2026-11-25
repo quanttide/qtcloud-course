@@ -31,6 +31,16 @@ function CourseCard({ course }: { course: Course }) {
           去上课 →
         </a>
       )}
+      {course.material && (
+        <a
+          className="preview"
+          href={`preview/${course.material}`}
+          target="_blank"
+          rel="noopener"
+        >
+          预览课件 →
+        </a>
+      )}
     </article>
   )
 }

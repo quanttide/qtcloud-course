@@ -104,6 +104,10 @@ jobs:
         working-directory: src/lite
         run: npm ci
 
+      # 课件预览：从 profile 仓搬课件进 public/preview（单一事实源在 profile，本步只搬运）
+      - name: Sync course material
+        run: ./scripts/sync-material.sh
+
       - name: Build
         working-directory: src/lite
         run: npm run build
@@ -130,6 +134,18 @@ jobs:
           for f in index.html; do
             ossutil cp dist/$f oss://${{ env.OSS_BUCKET }}/$f -f --meta "Cache-Control:no-cache"
           done
+
+      # 课件预览是固定名（preview/<dir>/xxx.html）但内容会变，长缓存会让新版课件发不出来——重传一遍覆盖缓存头
+      - name: Upload material files（no-cache）
+        working-directory: src/lite
+        run: |
+          if [ -d dist/preview ]; then
+            find dist/preview -type f | while read -r f; do
+              ossutil cp "$f" "oss://${{ env.OSS_BUCKET }}/$f" -f --meta "Cache-Control:no-cache"
+            done
+          else
+            echo "dist/preview 不存在（courses.ts 无 material？），跳过"
+          fi
 
       - name: Refresh CDN
         run: |

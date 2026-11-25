@@ -19,6 +19,8 @@ export interface Course {
   online: boolean
   /** 已上线课程的入口 */
   url?: string
+  /** 课件预览：data/profile 下的相对路径，构建时由 scripts/sync-material.sh 搬进 public/preview */
+  material?: string
 }
 
 /** 学员端入口：已上线课程都从这里进 */
@@ -44,6 +46,7 @@ export const courses: Course[] = [
     modules: ['读懂原文', '替你写提示词', '生成图片', '教你写'],
     online: true,
     url: LITE_URL,
+    material: 'vibe-creating/hello-world.html',
   },
   {
     name: 'AI办公',
@@ -55,6 +58,7 @@ export const courses: Course[] = [
     modules: ['一句话指令', 'AI 采集', '现状报告', '验收核对'],
     online: true,
     url: LITE_URL,
+    material: 'vibe-working/hello-world.html',
   },
   {
     name: 'AI编程',
@@ -66,6 +70,7 @@ export const courses: Course[] = [
     modules: ['照着做', '换个壳', '自己设计', '拿出去'],
     online: true,
     url: LITE_URL,
+    material: 'vibe-coding/phase1-intro/lesson1-hello-world/lesson-1-plan.html',
   },
   {
     name: 'AI教学',
@@ -113,6 +118,7 @@ export const courses: Course[] = [
       '打开 WorkBuddy 答一次职业探索访谈，10 分钟拿到协作名片与简介短签，挂进飞书简介和公共索引——先被找到，再去做交付。',
     modules: ['职业探索访谈', '协作名片', '简介短签', '挂进公共索引'],
     online: false,
+    material: 'course-development/hello-world.html',
   },
   {
     name: '生产实习',

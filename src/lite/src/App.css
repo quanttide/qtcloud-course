@@ -134,3 +134,20 @@ section + section {
 .go:hover {
   background: #1a4a92;
 }
+
+/* 课件预览：次级动作，与「去上课」区分——它不进学员端，只看这门课长什么样 */
+.preview {
+  margin-top: 8px;
+  align-self: flex-start;
+  color: #10356b;
+  background: #eef3fb;
+  border: 1px solid #c9d8f0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.preview:hover {
+  background: #dde8f8;
+}

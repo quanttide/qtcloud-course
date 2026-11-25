@@ -55,6 +55,20 @@ describe('课程清单', () => {
     expect(within(wipCard).getByText('研发中')).toBeInTheDocument()
   })
 
+  it('有课件的课程给预览链接，指向 public/preview', () => {
+    render(<App />)
+
+    const previews = screen.getAllByRole('link', { name: /预览课件/ })
+    expect(previews).toHaveLength(4)
+    for (const link of previews) {
+      expect(link.getAttribute('href')).toMatch(/^preview\//)
+    }
+
+    // AI教学没有课件，不出预览
+    const teaching = screen.getByText('AI教学').closest('article') as HTMLElement
+    expect(within(teaching).queryByRole('link', { name: /预览课件/ })).toBeNull()
+  })
+
   it('领域三门都在清单里，生产实习已移到职业发展', () => {
     const domain = courses.filter((course) => course.track === '领域')
 
