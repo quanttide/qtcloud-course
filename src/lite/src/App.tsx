@@ -40,7 +40,7 @@ export default function App() {
     <main className="page">
       <header className="hero">
         <h1>量潮课程云 · 课程清单</h1>
-        <p>通识课程先行、领域课程在后、职业发展收尾，三段是先后关系；每门课标着上线状态。</p>
+        <p>通识、学科、领域、职业四段依次推进，段与段是先后关系；每门课标着上线状态。</p>
       </header>
 
       {tracks.map((group) => (

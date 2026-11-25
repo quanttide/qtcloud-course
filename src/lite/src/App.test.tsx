@@ -11,10 +11,12 @@ describe('课程清单', () => {
     const headings = screen.getAllByRole('heading', { level: 2 })
     expect(headings.map((h) => h.textContent)).toEqual([
       '通识课程 · 大一',
+      '学科课程 · 大二',
       '领域课程 · 大三',
-      '职业发展课程 · 大四',
+      '职业课程 · 大四',
     ])
-    expect(tracks.map((t) => t.track)).toEqual(['通识', '领域', '职业发展'])
+    expect(tracks.map((t) => t.track)).toEqual(['通识', '学科', '领域', '职业'])
+    expect(tracks.map((t) => t.stage)).toEqual(['大一', '大二', '大三', '大四'])
   })
 
   it('每门课都标上线状态', () => {
@@ -63,7 +65,7 @@ describe('课程清单', () => {
     ])
 
     // 大四接轨社会：职业发展是前置，生产实习是毕业论文
-    const senior = courses.filter((course) => course.track === '职业发展')
+    const senior = courses.filter((course) => course.track === '职业')
     expect(senior.map((course) => course.name)).toEqual(['职业发展', '生产实习'])
   })
 })

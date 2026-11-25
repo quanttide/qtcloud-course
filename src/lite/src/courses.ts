@@ -5,7 +5,7 @@
  * 大致对应大一与大三。学员端只放已上线的课，其余留在这本清单里标状态。
  */
 
-export type Track = '通识' | '领域' | '职业发展'
+export type Track = '通识' | '学科' | '领域' | '职业'
 
 export interface Course {
   name: string
@@ -25,14 +25,12 @@ export interface Course {
 export const LITE_URL = 'https://lite.class.quanttide.com/'
 
 /** 分级：通识在前、领域在后 */
+// 四段课程轴，先后关系：通识(大一) → 学科(大二) → 领域(大三) → 职业(大四)
 export const tracks: { track: Track; stage: string; note: string }[] = [
   { track: '通识', stage: '大一', note: '先把 AI 当成顺手的工具：三门在学员端，AI教学研发中。' },
+  { track: '学科', stage: '大二', note: '学科基础课，还在建设。' },
   { track: '领域', stage: '大三', note: '对齐具体领域的课程，还在研发，上线一门搬一门。' },
-  {
-    track: '职业发展',
-    stage: '大四',
-    note: '接轨社会的两级：职业发展是前置，生产实习是毕业论文。',
-  },
+  { track: '职业', stage: '大四', note: '接轨社会的两级：职业发展是前置，生产实习是毕业论文。' },
 ]
 
 export const courses: Course[] = [
@@ -108,7 +106,7 @@ export const courses: Course[] = [
   },
   {
     name: '职业发展',
-    track: '职业发展',
+    track: '职业',
     level: '入门',
     audience: '即将接轨社会、想让对的搭档找到自己的成员',
     summary:
@@ -118,7 +116,7 @@ export const courses: Course[] = [
   },
   {
     name: '生产实习',
-    track: '职业发展',
+    track: '职业',
     level: '实训',
     audience: '公司内部培训、实训基地学员',
     summary: '以微型创业和真实交付为牵引，完成学习、Demo、进度和立项闭环。',
