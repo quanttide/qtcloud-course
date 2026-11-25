@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [Unreleased]
+
+### Fixed
+
+- 职业发展的课件预览指错目录：`course-development`（原 vibe-teaching 改名，讲「把一件你熟的事做成一门课」）→ `career-development`（职业发展入门任务：配置个人 AI、挂协作名片），两者只差一个字母，卡了
+
+
 ## [0.1.0-beta.1] - 2026-11-25
 
 ### Added

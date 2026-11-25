@@ -118,7 +118,7 @@ export const courses: Course[] = [
       '打开 WorkBuddy 答一次职业探索访谈，10 分钟拿到协作名片与简介短签，挂进飞书简介和公共索引——先被找到，再去做交付。',
     modules: ['职业探索访谈', '协作名片', '简介短签', '挂进公共索引'],
     online: false,
-    material: 'course-development/hello-world.html',
+    material: 'career-development/hello-world.html',
   },
   {
     name: '生产实习',
