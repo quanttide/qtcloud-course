@@ -42,7 +42,7 @@ export function materialHref(material: string): string {
 /** 分级：通识在前、领域在后 */
 // 四段课程轴，先后关系：通识(大一) → 学科(大二) → 领域(大三) → 职业(大四)
 export const tracks: { track: Track; stage: string; note: string }[] = [
-  { track: '通识', stage: '大一', note: '先把 AI 当成顺手的工具：三门在学员端，AI教学研发中。' },
+  { track: '通识', stage: '大一', note: '先把 AI 当成顺手的工具：三门都在学员端。' },
   { track: '学科', stage: '大二', note: '学科基础课，还在建设。' },
   { track: '领域', stage: '大三', note: '对齐具体领域的课程，还在研发，上线一门搬一门。' },
   { track: '职业', stage: '大四', note: '接轨社会的两级：职业发展是前置，生产实习是毕业论文。' },
@@ -86,16 +86,6 @@ export const courses: Course[] = [
     material: 'vibe-coding/phase1-intro/lesson1-hello-world/lesson-1-plan.html',
   },
   {
-    name: 'AI教学',
-    track: '通识',
-    level: '入门',
-    audience: '会做一件事、有人想学，但没学过教学法的成员',
-    summary:
-      '不用教龄不用证书：挑一件你熟的事，拆成几步，每步写清「做完你会看到」，生成自己的课程闯关图——做一遍就做出来了。',
-    modules: ['想一件事', '拆成几步', '做完你会看到', '生成课程图'],
-    online: false,
-  },
-  {
     name: '知识工作',
     track: '领域',
     level: '入门',
@@ -121,6 +111,17 @@ export const courses: Course[] = [
     summary: '面向真实项目的数据建模、管道、质量和交付规范。',
     modules: ['数据建模', '工程管道', '质量与运维'],
     online: false,
+  },
+  {
+    name: '课程研发',
+    track: '领域',
+    level: '入门',
+    audience: '会做一件事、有人想学，但没学过教学法的成员',
+    summary:
+      '不用教龄不用证书：挑一件你熟的事，拆成几步，每步写清「做完你会看到」，生成自己的课程闯关图——做一遍就做出来了。',
+    modules: ['想一件事', '拆成几步', '做完你会看到', '生成课程图'],
+    online: false,
+    material: 'course-development/hello-world.html',
   },
   {
     name: '职业发展',

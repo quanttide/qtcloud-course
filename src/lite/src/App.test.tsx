@@ -26,12 +26,12 @@ describe('课程清单', () => {
     expect(screen.getAllByText('研发中')).toHaveLength(6)
   })
 
-  it('通识顺序：AI创意 → AI办公 → AI编程 → AI教学', () => {
+  it('通识顺序：AI创意 → AI办公 → AI编程（AI教学已改课程研发，移到领域）', () => {
     const names = courses
       .filter((course) => course.track === '通识')
       .map((course) => course.name)
 
-    expect(names).toEqual(['AI创意', 'AI办公', 'AI编程', 'AI教学'])
+    expect(names).toEqual(['AI创意', 'AI办公', 'AI编程'])
   })
 
   it('已上线给学员端入口，研发中的不给', () => {
@@ -43,10 +43,10 @@ describe('课程清单', () => {
       expect(link).toHaveAttribute('href', 'https://lite.class.quanttide.com/')
     }
 
-    // AI教学在研发中，计划上线到本清单，学员端还没课时——不给入口
-    const teachingCard = screen.getByText('AI教学').closest('article') as HTMLElement
-    expect(within(teachingCard).queryByRole('link')).toBeNull()
-    expect(within(teachingCard).getByText('研发中')).toBeInTheDocument()
+    // 课程研发（原 AI教学）在研发中：有课件可预览，但学员端没课时——不给去上课
+    const devCard = screen.getByText('课程研发').closest('article') as HTMLElement
+    expect(within(devCard).queryByRole('link', { name: /去上课/ })).toBeNull()
+    expect(within(devCard).getByText('研发中')).toBeInTheDocument()
 
     const wipCard = screen
       .getByText('大数据导论')
@@ -59,7 +59,7 @@ describe('课程清单', () => {
     render(<App />)
 
     const previews = screen.getAllByRole('link', { name: /预览课件/ })
-    expect(previews).toHaveLength(4)
+    expect(previews).toHaveLength(5)
     const hrefs = previews.map((link) => link.getAttribute('href'))
     for (const href of hrefs) {
       expect(href).toMatch(/^courses\/[^/]+\/lessons\/[^/]+\.html$/)
@@ -69,9 +69,8 @@ describe('课程清单', () => {
     // 嵌套课时取课时目录名，不带 phase 层
     expect(hrefs).toContain('courses/vibe-coding/lessons/lesson1-hello-world.html')
 
-    // AI教学没有课件，不出预览
-    const teaching = screen.getByText('AI教学').closest('article') as HTMLElement
-    expect(within(teaching).queryByRole('link', { name: /预览课件/ })).toBeNull()
+    // 课程研发的课件是原 vibe-teaching 改名的 course-development
+    expect(hrefs).toContain('courses/course-development/lessons/hello-world.html')
   })
 
   it('领域三门都在清单里，生产实习已移到职业发展', () => {
@@ -81,6 +80,7 @@ describe('课程清单', () => {
       '知识工作',
       '大数据导论',
       '数据工程',
+      '课程研发',
     ])
 
     // 大四接轨社会：职业发展是前置，生产实习是毕业论文

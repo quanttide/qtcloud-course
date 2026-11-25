@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [Unreleased]
+
+### Changed
+
+- AI教学改名**课程研发**，从通识 · 大一移到**领域 · 大三**：内容本就是「把一件你熟的事做成一门课」，与 `course-development` 课件（原 vibe-teaching 改名）对上，卡片挂预览
+- 通识注记改「三门都在学员端」；README 分级表同步
+
+
 ## [0.1.0-beta.2] - 2026-11-25
 
 ### Changed
