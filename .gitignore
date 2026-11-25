@@ -19,4 +19,4 @@ manifests/terraform/.terraform.lock.hcl
 # Node（src/lite）
 node_modules/
 dist/
-src/lite/public/preview/
+src/lite/public/courses/

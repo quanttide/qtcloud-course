@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#6b4423">
+<title>AI 创意课 Hello World · 用 AI 生成你的第一张图</title>
+<style>
+  :root{
+    --coffee:#6b4423; --caramel:#b4793a; --accent:#a8562f; --gold:#b4793a;
+    --cream:#fffdf8; --ink:#3a271c; --sub:#8a7358; --green:#3f8c63;
+    --paper:#fffdf8; --night:#2f261c;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh;min-height:100dvh;
+    background:linear-gradient(170deg,#f6e8d2 0%,#efe0c8 48%,#e2cdae 100%);
+    background-attachment:fixed;
+    font-family:"PingFang SC","Microsoft YaHei","Noto Serif CJK SC",serif;
+    color:var(--ink);padding:22px 14px 44px;line-height:1.7;
+  }
+  .wrap{max-width:600px;margin:0 auto}
+
+  .hero{text-align:center;padding:12px 6px 24px}
+  .kicker{display:inline-block;font-size:12px;letter-spacing:.18em;color:var(--accent);
+    border:1px solid rgba(168,86,47,.4);border-radius:999px;padding:5px 14px;margin-bottom:14px;font-weight:800}
+  .hero h1{font-size:28px;line-height:1.35;margin:0 0 8px;font-weight:900;color:var(--coffee)}
+  .hero p{margin:0;font-size:14px;color:var(--sub)}
+
+  .flow{display:flex;align-items:center;gap:5px;background:var(--paper);border:1px solid rgba(107,68,35,.14);
+    border-radius:12px;padding:11px 12px;margin-bottom:14px;flex-wrap:wrap;justify-content:center;
+    box-shadow:0 3px 14px rgba(107,68,35,.06)}
+  .flow .it{font-size:11.5px;color:#a08a6f;white-space:nowrap}
+  .flow .it b{font-weight:700}
+  .flow .arw{color:#c9b49a;font-size:13px}
+
+  .card{background:var(--cream);border-radius:20px;padding:4px 18px;
+    box-shadow:0 16px 40px rgba(107,68,35,.18);margin-bottom:14px}
+
+  .step{padding:18px 2px;border-bottom:1px dashed rgba(138,111,92,.28)}
+  .step:last-child{border-bottom:none}
+  .head{display:flex;gap:12px;align-items:flex-start}
+  .num{flex:0 0 34px;height:34px;border-radius:50%;background:var(--caramel);color:#fff;
+    font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 0 #8c5a2a;font-family:sans-serif}
+  .head h2{font-size:17.5px;margin:1px 0 5px;font-weight:900;color:var(--coffee)}
+  .head .do{font-size:13.5px;color:var(--sub);line-height:1.65}
+  .head .do b{color:var(--accent)}
+
+  .result{margin:13px 0 0 46px;background:#fff;border:1px solid rgba(138,111,92,.18);
+    border-left:4px solid var(--gold);border-radius:10px;padding:12px 13px}
+  .result .lab{font-size:11px;font-weight:800;letter-spacing:.05em;color:#b07d1f;margin-bottom:8px}
+  .mock-input{background:#faf3e6;border:1px solid #e8d9c1;border-radius:8px;
+    padding:10px 12px;font-size:13px;color:#5a4634;line-height:1.7}
+  .mock-input .q{color:var(--accent);font-weight:700}
+  .mock-step{font-size:12.5px;color:#6b5a48;line-height:1.95;font-family:"SFMono-Regular",Consolas,monospace}
+  .mock-step .run{color:var(--caramel)}
+  .mock-step .ok{color:var(--green);font-weight:700}
+
+  .source{background:#faf3e6;border:1px solid #e8d9c1;border-radius:8px;
+    padding:11px 13px;font-size:12.5px;color:#6b5641;line-height:1.9;margin-top:12px;max-height:150px;overflow:auto}
+  .source .t{font-weight:800;color:var(--coffee);display:block;margin-bottom:4px}
+
+  .copybox{margin-top:12px;background:#fff;border:2px dashed var(--caramel);border-radius:12px;padding:13px}
+  .copybox .label{font-size:12px;color:var(--accent);font-weight:800;margin-bottom:9px}
+  .code-real{background:var(--night);color:#f3e7d2;border-radius:10px;padding:12px 13px;
+    font-size:12.8px;line-height:1.8;white-space:pre-wrap;word-break:break-word;
+    font-family:"PingFang SC","Microsoft YaHei",monospace;max-height:230px;overflow:auto}
+  .btn{display:block;width:100%;margin-top:11px;border:none;border-radius:11px;
+    background:var(--caramel);color:#fff;font-size:15px;font-weight:800;padding:12px;
+    cursor:pointer;box-shadow:0 5px 0 #8c5a2a;transition:transform .08s,box-shadow .08s}
+  .btn:active{transform:translateY(4px);box-shadow:0 1px 0 #8c5a2a}
+  .btn.done{background:var(--green);box-shadow:0 5px 0 #2f7a4b}
+
+  .tip{background:rgba(255,255,255,.55);border:1px solid rgba(107,68,35,.12);border-radius:14px;
+    padding:14px 16px;color:#5a4634;font-size:13px;line-height:1.7;margin-top:4px}
+  .tip b{color:var(--accent)}
+  .foot{text-align:center;color:#a08a6f;font-size:12.5px;margin-top:24px;line-height:1.8}
+  .foot strong{color:var(--coffee)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="kicker">AI 创意课 · Hello World</span>
+    <h1>用 AI 生成你的第一张图</h1>
+    <p>四步做完，你就学会一套「让 AI 教自己」的方法。每步都告诉你「做完会看到什么」</p>
+  </div>
+
+  <div class="flow">
+    <span class="it"><b>① 提供背景</b></span><span class="arw">›</span>
+    <span class="it"><b>② 制作提示词</b></span><span class="arw">›</span>
+    <span class="it"><b>③ 生成图片</b></span><span class="arw">›</span>
+    <span class="it"><b>④ 反推结构</b></span>
+  </div>
+
+  <div class="card">
+
+    <!-- 第 1 步 -->
+    <div class="step">
+      <div class="head">
+        <div class="num">1</div>
+        <div>
+          <h2>把背景交给 AI，让它教你读懂</h2>
+          <div class="do">复制下面整段，连同原文一起发给 AI。<b>别自己硬读——让 AI 当老师，反过来问你问题。</b></div>
+        </div>
+      </div>
+      <div class="source">
+        <span class="t">原文片段 · 递毛巾那一刻（会连同指令一起复制）</span>
+        看着行李箱的轮子上沾着的泥土，看着她湿漉漉的衣服和头发，一股心疼涌上来。手比脑子更快，他从背包里掏出刚在超市买的毛巾拆封，拆到一半突然发现自己没有理由给她。他看着她的湿漉漉的眼神，又着了魔，忘记了自己在做什么。不知不觉间，他的手已经伸了出去，用毛巾轻轻地擦了擦她的头发上的水珠。她像一个洋娃娃一样呆呆地任由他擦着。擦了两下，他回过神来。赶忙停下来，把毛巾递给她。她不舍地回过神，慢慢伸手接过毛巾。手指不经意间碰到他修长的手指，她的心弦被狠狠地拨动了一下。她递出毛巾想还给他。"你拿着吧，我等会再买一条。"他笑着摆了摆手。"谢谢亭神！"她轻轻地说。
+      </div>
+      <div class="copybox">
+        <div class="label">点按钮一键复制（指令 + 原文）</div>
+        <div class="code-real" id="p1">下面是一段小说原文。请当我的老师，帮我读懂它——不要直接给结论，而是带着我理解：
+
+1. 先用三句话讲清：这一刻发生了什么、两人是什么关系、为什么"递毛巾"这个动作重要；
+2. 挑出文中 3 个作者刻意安排的细节，每处都先问我"你觉得它为什么重要？"，等我回答；
+3. 听完我的回答再纠正、补充我没看出来的地方。
+
+原文：（见上方片段，已随这条一并复制）</div>
+        <button class="btn" type="button" onclick="copyPrompt('p1','source',this)">复制这段，发给 AI</button>
+      </div>
+      <div class="result">
+        <div class="lab">做完你会看到</div>
+        <div class="mock-input">AI 没有直接把答案塞给你。它先用三句话讲清"这是十年暗恋的第一次面对面"，然后挑出一个细节反问你：<span class="q">"手比脑子更快——你觉得作者为什么这么写？"</span>你在回答里，慢慢就读懂了这个情境。</div>
+      </div>
+    </div>
+
+    <!-- 第 2 步 -->
+    <div class="step">
+      <div class="head">
+        <div class="num">2</div>
+        <div>
+          <h2>让 AI 把故事变成提示词</h2>
+          <div class="do">接着对 AI 说这句话。它已经懂了这个故事，现在让它把<b>情绪</b>变成一段能画出画面的文字。</div>
+        </div>
+      </div>
+      <div class="copybox">
+        <div class="label">点按钮一键复制</div>
+        <div class="code-real" id="p2">刚才我们读懂了这个情境。现在把它变成一段图片生成提示词：
+
+1. 写一段能直接拿去生图的提示词，包含：主体人物、场景环境、光线氛围、关键动作、镜头语言、画面风格；
+2. 每个要素都要用原文里的具体细节，不要用"唯美""好看"这类空话；
+3. 写完后，逐条告诉我每个要素是从原文哪里来的、为什么这么选。</div>
+        <button class="btn" type="button" onclick="copyPrompt('p2',null,this)">复制这段，发给 AI</button>
+      </div>
+      <div class="result">
+        <div class="lab">做完你会看到</div>
+        <div class="mock-input">一段提示词：常去的暖光咖啡馆、窗外下雨、男人半蹲着用新拆的毛巾轻擦女孩湿发、女孩呆呆看着他、桌面爵士乐氛围、近景特写、电影感写实风格——<b>每一条都能对回原文</b>。</div>
+      </div>
+    </div>
+
+    <!-- 第 3 步 -->
+    <div class="step">
+      <div class="head">
+        <div class="num">3</div>
+        <div>
+          <h2>把提示词贴进生图工具</h2>
+          <div class="do">打开任意 AI 生图工具（即梦、通义万相、Midjourney 都行），把上一步的提示词贴进去，点生成。</div>
+        </div>
+      </div>
+      <div class="result">
+        <div class="lab">做完你会看到</div>
+        <div class="mock-step">
+          <span class="run">›</span> 正在理解提示词…<br>
+          <span class="run">›</span> 正在绘制画面…<br>
+          <span class="ok">✓</span> <span class="ok">生成完成：雨天咖啡馆里，递毛巾的那一刻</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第 4 步 -->
+    <div class="step">
+      <div class="head">
+        <div class="num">4</div>
+        <div>
+          <h2>让 AI 反推出提示词的结构</h2>
+          <div class="do">把第 2 步的提示词发回去，让 AI <b>倒着拆</b>——这一步你才真正学会一套能反复用的方法。</div>
+        </div>
+      </div>
+      <div class="copybox">
+        <div class="label">点按钮一键复制</div>
+        <div class="code-real" id="p4">这是我们刚才用的图片提示词。请你反过来拆解它：
+
+1. 把它抽象成一个可复用的结构框架，用【要素】的形式列出来；
+2. 告诉我这个框架里，哪几个要素是"情绪的关键"，换任何故事都不能丢；
+3. 给我一个空白模板，我下次换个故事直接往里填。</div>
+        <button class="btn" type="button" onclick="copyPrompt('p4',null,this)">复制这段，发给 AI</button>
+      </div>
+      <div class="result">
+        <div class="lab">做完你会看到</div>
+        <div class="mock-input">AI 交给你一套公式：<b>【主体】+【场景】+【光线】+【关键动作】+【镜头】+【风格】</b>，并指出最关键的是"关键动作"和"光线"——它们决定了这张图有没有情绪。还附一个空白模板，下次换个故事直接填。这就是你的 Hello World。</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="tip">
+    <b>想换故事？再说一句话就行。</b><br>把一段新原文发给 AI，让它"按刚才那套结构再来一遍"。结构是你的，故事可以随便换——这就是你真正学会的东西。
+  </div>
+
+  <div class="foot">做出来，就是胜利 · <strong>理解情境，是你要反复做的事；先做起来，别管为什么</strong></div>
+
+</div>
+
+<script>
+function copyPrompt(mainId, extraId, btn){
+  var main = document.getElementById(mainId).textContent.trim();
+  var extra = extraId ? document.getElementById(extraId).innerText.trim() : '';
+  var text = extra ? main + '\n\n' + extra : main;
+  function ok(){
+    btn.textContent = '已复制，去粘贴吧';
+    btn.classList.add('done');
+    setTimeout(function(){
+      btn.textContent = mainId==='p1' ? '复制这段，发给 AI' : '复制这段，发给 AI';
+      btn.classList.remove('done');
+    }, 2500);
+  }
+  function fallback(){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try{ document.execCommand('copy'); ok(); }
+    catch(e){ btn.textContent = '请长按上面文字复制'; }
+    document.body.removeChild(ta);
+  }
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(ok).catch(fallback);
+  }else{ fallback(); }
+}
+</script>
+</body>
+</html>

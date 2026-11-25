@@ -1,4 +1,4 @@
-import { courses, tracks, type Course } from './courses'
+import { courses, tracks, materialHref, type Course } from './courses'
 import './App.css'
 
 function StatusBadge({ online }: { online: boolean }) {
@@ -34,7 +34,7 @@ function CourseCard({ course }: { course: Course }) {
       {course.material && (
         <a
           className="preview"
-          href={`preview/${course.material}`}
+          href={materialHref(course.material)}
           target="_blank"
           rel="noopener"
         >

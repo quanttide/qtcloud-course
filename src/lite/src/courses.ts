@@ -19,12 +19,25 @@ export interface Course {
   online: boolean
   /** 已上线课程的入口 */
   url?: string
-  /** 课件预览：data/profile 下的相对路径，构建时由 scripts/sync-material.sh 搬进 public/preview */
+  /** 课件预览：data/profile 下的相对路径，构建时由 scripts/sync-material.sh 搬进 public/courses */
   material?: string
 }
 
 /** 学员端入口：已上线课程都从这里进 */
 export const LITE_URL = 'https://lite.class.quanttide.com/'
+
+/**
+ * 课件路径：material 是 profile 仓里的相对路径，站内按 courses/<目录>/lessons/<课时> 落位。
+ * 嵌套课时（如 vibe-coding/phase1-intro/lesson1-hello-world/x.html）取课时目录名，
+ * 平铺课件（如 vibe-working/hello-world.html）取文件名——与 scripts/sync-material.sh 同一套规则。
+ */
+export function materialHref(material: string): string {
+  const parts = material.split('/')
+  const dir = parts[0]
+  const lesson =
+    parts.length > 2 ? parts[parts.length - 2] : parts[parts.length - 1].replace(/\.html$/, '')
+  return `courses/${dir}/lessons/${lesson}.html`
+}
 
 /** 分级：通识在前、领域在后 */
 // 四段课程轴，先后关系：通识(大一) → 学科(大二) → 领域(大三) → 职业(大四)

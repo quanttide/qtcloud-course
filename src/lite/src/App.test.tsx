@@ -55,14 +55,19 @@ describe('课程清单', () => {
     expect(within(wipCard).getByText('研发中')).toBeInTheDocument()
   })
 
-  it('有课件的课程给预览链接，指向 public/preview', () => {
+  it('有课件的课程给预览链接，按 courses/<目录>/lessons/<课时> 落位', () => {
     render(<App />)
 
     const previews = screen.getAllByRole('link', { name: /预览课件/ })
     expect(previews).toHaveLength(4)
-    for (const link of previews) {
-      expect(link.getAttribute('href')).toMatch(/^preview\//)
+    const hrefs = previews.map((link) => link.getAttribute('href'))
+    for (const href of hrefs) {
+      expect(href).toMatch(/^courses\/[^/]+\/lessons\/[^/]+\.html$/)
     }
+    expect(hrefs).toContain('courses/vibe-working/lessons/hello-world.html')
+    expect(hrefs).toContain('courses/career-development/lessons/hello-world.html')
+    // 嵌套课时取课时目录名，不带 phase 层
+    expect(hrefs).toContain('courses/vibe-coding/lessons/lesson1-hello-world.html')
 
     // AI教学没有课件，不出预览
     const teaching = screen.getByText('AI教学').closest('article') as HTMLElement

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f1622">
+<title>课时 3 教案 · 这回，你说了不算</title>
+<style>
+  :root{
+    --night:#0f1622; --night2:#263b5e; --blue:#3f6fb0; --blue-l:#7fc0ff;
+    --gold:#f2b84b; --cream:#eef3f9; --ink:#1e2b3d; --sub:#62748c; --green:#3a9d6e;
+    --red:#d9534f;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh;min-height:100dvh;
+    background:linear-gradient(170deg,var(--night) 0%,#182842 55%,#37527d 100%);
+    background-attachment:fixed;
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--ink);padding:22px 14px 44px;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+
+  .hero{text-align:center;color:var(--cream);padding:12px 6px 22px}
+  .kicker{display:inline-block;font-size:12px;letter-spacing:.2em;color:var(--gold);
+    border:1px solid rgba(242,184,75,.5);border-radius:999px;padding:5px 14px;margin-bottom:14px}
+  .hero h1{font-size:30px;line-height:1.3;margin:0 0 8px;font-weight:800}
+  .hero .sub{font-size:14px;color:rgba(238,243,249,.8);margin:0}
+
+  .card{background:var(--cream);border-radius:18px;padding:20px 22px;
+    box-shadow:0 18px 44px rgba(0,0,0,.32);margin-bottom:14px}
+  .card h2{font-size:19px;margin:0 0 14px;font-weight:800;display:flex;align-items:center;gap:9px}
+  .card h2 .idx{display:inline-flex;align-items:center;justify-content:center;
+    flex:0 0 26px;height:26px;border-radius:8px;background:var(--blue);color:#fff;font-size:14px}
+  .card h3{font-size:15px;margin:18px 0 8px;color:var(--blue);font-weight:800}
+
+  /* 核心论断 */
+  .thesis{background:linear-gradient(135deg,#fff8e6,#fdecc4);
+    border:1px solid rgba(242,184,75,.5);border-left:5px solid var(--gold);
+    border-radius:14px;padding:16px 18px}
+  .thesis .big{font-size:21px;font-weight:800;color:#6b4b12;line-height:1.5;margin-bottom:10px}
+  .thesis .big em{color:#c8861a;font-style:normal}
+  .thesis p{font-size:14px;color:#7a5a24;line-height:1.75;margin:6px 0 0}
+
+  .compare{display:flex;gap:10px;margin-top:6px}
+  .compare .side{flex:1;border-radius:12px;padding:13px 14px;font-size:13.5px;line-height:1.7}
+  .compare .l{background:#eef2f8;border:1px solid #d8e2ef}
+  .compare .r{background:#e8f2fc;border:1px solid #bcd7f2}
+  .compare .side b{display:block;font-size:14px;margin-bottom:6px}
+  .compare .l b{color:#7a8aa0}
+  .compare .r b{color:var(--blue)}
+  .compare .side .tag{display:inline-block;font-size:11px;border-radius:5px;padding:1px 7px;margin-bottom:5px;font-weight:800}
+  .compare .l .tag{background:#dfe6f0;color:#6c7c92}
+  .compare .r .tag{background:var(--blue);color:#fff}
+
+  /* 对比表 */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px}
+  th,td{border:1px solid #dfe6f0;padding:9px 11px;text-align:left;line-height:1.6;vertical-align:top}
+  thead th{background:#eaf1fa;color:#33547f;font-weight:800;font-size:12.5px}
+  tbody td:first-child{font-weight:800;color:#41536b;background:#f7f9fc;width:112px}
+  tbody td:nth-child(2){color:#7d8b9e}
+  tbody td:nth-child(3){color:#1e2b3d;font-weight:700;background:#f6fafe}
+
+  /* 流程时间轴 */
+  .flow{counter-reset:t}
+  .phase{position:relative;padding:0 0 18px 42px;border-left:2px solid #d5e0ee;margin-left:13px}
+  .phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .phase::before{content:counter(t);counter-increment:t;
+    position:absolute;left:-14px;top:-2px;width:26px;height:26px;border-radius:50%;
+    background:var(--blue);color:#fff;font-size:13px;font-weight:800;
+    display:flex;align-items:center;justify-content:center}
+  .phase h3{margin:0 0 4px;font-size:15.5px;color:var(--ink)}
+  .phase .time{font-size:12px;color:var(--gold);font-weight:800;margin-left:8px}
+  .phase p{font-size:13.5px;line-height:1.7;margin:5px 0;color:#4a5b70}
+  .phase .say{background:#f4f8fd;border-left:3px solid var(--blue-l);border-radius:0 8px 8px 0;
+    padding:9px 12px;font-size:13px;color:#33547f;line-height:1.7;margin:8px 0}
+  .phase .say b{color:var(--blue)}
+  .phase .stu{font-size:12.5px;color:var(--green);font-weight:700}
+
+  ul.pts{margin:6px 0 0;padding-left:20px}
+  ul.pts li{font-size:13.5px;line-height:1.85;color:#4a5b70;margin-bottom:3px}
+  ul.pts li b{color:var(--ink)}
+
+  .chk{background:#eaf7f0;border:1px solid #bfe3ce;border-radius:12px;padding:13px 15px}
+  .chk .t{font-size:13px;font-weight:800;color:#2a7a55;margin-bottom:7px}
+  .chk ul{margin:0;padding-left:19px}
+  .chk li{font-size:13.5px;line-height:1.8;color:#33624c}
+
+  .warn{background:#fdf0ee;border:1px solid #f0c4bd;border-left:4px solid var(--red);
+    border-radius:10px;padding:12px 14px;font-size:13px;color:#8a4239;line-height:1.75;margin-top:10px}
+  .warn b{color:#b03a2e}
+
+  .quote{background:var(--night);border-radius:12px;padding:16px 18px;color:#cfe8ff;
+    font-size:14px;line-height:1.8;text-align:center;margin-top:4px}
+  .quote b{color:var(--gold)}
+  .foot{text-align:center;color:rgba(238,243,249,.72);font-size:12.5px;margin-top:22px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="kicker">氛围编程课 · 教师教案</span>
+    <h1>课时 3 · 这回，你说了不算</h1>
+    <p class="sub">核心：让学生用 AI 辅助设计思路</p>
+  </div>
+
+  <!-- 1. 核心论断 -->
+  <div class="card">
+    <h2><span class="idx">1</span>本课与课时 2 的最大不同（本课之本）</h2>
+    <div class="thesis">
+      <div class="big">课时 2 是「<em>AI 替你执行</em>」，<br>课时 3 是「<em>AI 帮你设计</em>」。</div>
+      <p><b>课时 2</b>：想法是现成的（老师告诉你改成咖啡店）。学生是<b>操作员</b>，照着说一句话；AI 是<b>施工队</b>，只换壳、不动玩法。<br>
+      <b>课时 3</b>：想法是模糊的（学生自己想要「打工人视角」，但说不清怎么落地）。学生升格为<b>出题人</b>；AI 升格为<b>设计师</b>——先出方案，再动手，连玩法规则本身都重新设计。</p>
+    </div>
+    <div class="compare">
+      <div class="side l"><span class="tag">课时 2</span><b>填空</b>
+        想法现成 → 下指令 → AI 执行<br>学生：照着做
+      </div>
+      <div class="side r"><span class="tag">课时 3</span><b>创作</b>
+        想法模糊 → AI 出设计 → 再实现<br>学生：提想法、做决定
+      </div>
+    </div>
+    <div class="warn"><b>为什么这个转变重要：</b>课时 2 只让学生相信「软件是个壳，换壳很容易」；课时 3 要让学生相信「<b>我也能创造</b>」——我出想法，AI 帮我把想法变成能玩的游戏。这是信心建立的顶点：<b>会用 → 会改 → 会创造</b>。整节课都要围绕这个角色反转来讲。</div>
+  </div>
+
+  <!-- 2. 对比表 -->
+  <div class="card">
+    <h2><span class="idx">2</span>两课逐项对照（讲给学生听的要点）</h2>
+    <table>
+      <thead><tr><th>维度</th><th>课时 2 · 换个壳</th><th>课时 3 · 自己设计</th></tr></thead>
+      <tbody>
+        <tr><td>想法从哪来</td><td>现成的，老师给</td><td>模糊的，学生自己的</td></tr>
+        <tr><td>学生角色</td><td>操作员：照着说一句话</td><td>出题人：说清想要什么</td></tr>
+        <tr><td>AI 角色</td><td>施工队：按指令换皮</td><td>设计师：出方案再实现</td></tr>
+        <tr><td>改的对象</td><td>壳：外观/文案/配色，玩法数值全不动</td><td>核：玩法规则/决策语义全变（卖咖啡→接老板派的活）</td></tr>
+        <tr><td>学生说的话</td><td>「把它改成咖啡店，玩法别改」</td><td>「我想要打工人视角，你帮我设计玩法，细节你定」</td></tr>
+        <tr><td>本质动作</td><td>填空</td><td>创作</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3. 教学目标 -->
+  <div class="card">
+    <h2><span class="idx">3</span>教学目标</h2>
+    <ul class="pts">
+      <li><b>知识目标</b>：能说出课时 2 和课时 3 的不同——一个是「给指令让 AI 执行」，一个是「给想法让 AI 设计」。</li>
+      <li><b>技能目标</b>：能把一个模糊想法，用「说清方向 + 让 AI 出方案 + 别来问我」的方式交给 AI，得到一套能玩的玩法。</li>
+      <li><b>认知目标</b>：看懂 AI 的设计过程——它是怎么把「打工人」这个模糊词，翻译成「猜派活、备方案、摆姿态」这些具体规则的。</li>
+      <li><b>情感目标</b>：建立「我也能创造软件」的信心——不是学会写代码，而是学会「提想法」。</li>
+    </ul>
+    <h3>教学重点与难点</h3>
+    <ul class="pts">
+      <li><b>重点</b>：让学生体会「提想法」比「下指令」更值钱，理解 AI 是设计搭档而非执行工具。</li>
+      <li><b>难点</b>：学生被前两课训练成「照着做」，不敢提模糊想法。要打消「我得先想清楚才能说」的顾虑——<b>想法越模糊，越要让 AI 来设计</b>。</li>
+    </ul>
+  </div>
+
+  <!-- 4. 教学流程 -->
+  <div class="card">
+    <h2><span class="idx">4</span>教学流程（约 40 分钟）</h2>
+    <div class="flow">
+
+      <div class="phase">
+        <h3>开场：抛出对比<span class="time">5 分钟</span></h3>
+        <p>直接问学生：「前两课，我们是怎么让 AI 干活的？」引导学生答出「照着做」「给一句现成的话」。然后亮出本课论断。</p>
+        <div class="say"><b>教师话术：</b>「前两课，想法都是别人给好的——第 1 课照抄网站，第 2 课我告诉你改成咖啡店。<b>今天反过来：想法你自己出，而且可以很模糊，AI 负责把它设计清楚。</b>」</div>
+        <p class="stu">学生活动：回想前两课，说出「我们一直是照着说」。</p>
+      </div>
+
+      <div class="phase">
+        <h3>提出模糊想法<span class="time">5 分钟</span></h3>
+        <p>展示本课的想法，刻意不写清楚，让学生感受「就这么一句能行吗？」的悬念。</p>
+        <div class="say"><b>展示：</b>「我想把咖啡店改成打工人视角，就是个办公室白领，每天要面对老板和同事的各种不确定……」<br><b>追问：</b>「这句话够清楚吗？换成昨天，AI 没法动手——因为没说改哪里、改成什么样。但今天，我们要的就是让它自己设计。」</div>
+        <p class="stu">学生活动：讨论这句话「太模糊」，产生好奇。</p>
+      </div>
+
+      <div class="phase">
+        <h3>学生实操：把想法交给 AI<span class="time">12 分钟</span></h3>
+        <p>学生打开配套讲义 <b>lesson-3.html</b>，点一键复制设计型提示词，粘贴发送。提示词的关键是三件事：</p>
+        <ul class="pts">
+          <li>说清<b>想法</b>：打工人、上下级不确定</li>
+          <li>明确要 AI <b>出方案</b>：「你先帮我设计玩法」</li>
+          <li>告诉它<b>别来问你</b>：「数值细节你定，不用问我」</li>
+        </ul>
+        <p class="stu">学生活动：复制 → 粘贴 → 发送 → 等待，观察 AI 先设计再实现。</p>
+      </div>
+
+      <div class="phase">
+        <h3>拆解 AI 的设计思路（本课高潮）<span class="time">8 分钟</span></h3>
+        <p>这是「理解 AI 怎么辅助设计」的关键环节。对照讲义里的映射表，带学生看懂 AI 把模糊想法翻译成了什么：</p>
+        <ul class="pts">
+          <li>店主卖咖啡给客人 <b>→</b> 白领接老板派的活</li>
+          <li>猜今晚来多少客人 <b>→</b> 猜今天老板派多少活</li>
+          <li>备几杯 / 定价格 <b>→</b> 备几套方案 / 摆什么要价姿态</li>
+          <li>街坊、军师、老店长 <b>→</b> 同事、老油条、老主管</li>
+          <li>咖啡豆、满堂彩 <b>→</b> 绩效分、完美拿捏</li>
+        </ul>
+        <div class="say"><b>教师话术：</b>「注意！AI 不只是换了名字——它把<b>整个玩法逻辑</b>都重新设计了一遍，但每一条都扣着『打工人』这个主题。这就是设计：从一个词，长出一整套规则。」</div>
+        <p class="stu">学生活动：对照映射表，说说自己最欣赏哪条设计、为什么扣题。</p>
+      </div>
+
+      <div class="phase">
+        <h3>成果体验 + 自己先玩到结局<span class="time">8 分钟</span></h3>
+        <p>学生点开新链接，<b>用手机从头玩一局，一直玩到结局</b>（不是玩两下就收），对照讲义里的成果图确认。对着四条检查：</p>
+        <ul class="pts">
+          <li><b>结局能达成吗</b>：存款 2000、跑路要 5000，钱到底怎么来？永远达不到，等于游戏没有结局</li>
+          <li><b>扣掉的数值有用吗</b>：精力扣完会怎样？没影响就是假的</li>
+          <li><b>手机能不能玩</b>：按 390×844 试，按钮点得到、字看得清</li>
+          <li><b>有没有声音</b>：没有就让 AI 加一段</li>
+        </ul>
+        <div class="say"><b>教师话术：</b>「AI 不会替你玩，它只会说已完成。上面四条它一条都不会自己发现——你们下一课要拿给真人，真人只给你两三分钟，别让他先撞这些。」</div>
+        <div class="quote">你负责<b>想要什么</b>，AI 负责<b>怎么实现</b>。<br>前两课你是操作员，今天你第一次当了自己的产品经理。</div>
+        <p class="stu">学生活动：玩到结局、逐条检查，发现问题就贴回 AI 改，改完把链接发到群里。</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 5. 验收 -->
+  <div class="card">
+    <h2><span class="idx">5</span>学生验收清单</h2>
+    <div class="chk">
+      <div class="t">下课时，每个学生应当：</div>
+      <ul>
+        <li>手机里有一个自己「设计」出来的打工人版游戏链接，能发给朋友玩</li>
+        <li>能说出这句话和课时 2 的那句有什么不同（一个给指令，一个给想法）</li>
+        <li>能指出 AI 至少一条「把想法变成玩法」的设计（如客流→派活）</li>
+        <li>已经从开局玩到过结局，并能说出结局怎么达成（说不出来就是数值没打通）</li>
+      </ul>
+    </div>
+    <div class="warn"><b>常见问题预判：</b><br>
+    · 「我不知道该怎么说想法」——告诉他们：把脑子里那句最粗糙的话原样打进去就行，AI 会追问和补足。<br>
+    · 「AI 做出来的跟我想要的不一样」——这正是下一句的入口：「继续改，把 XX 换成 YY」，继续让它设计。<br>
+    · 「这不还是那个游戏吗」——引导对比：玩法规则已经全变了（卖咖啡→接活），只是底层的数值和运转方式没变，这正是「万变不离其宗」的继续。<br>
+    · 「手机上打不开 / 按钮点不动」——让他直接说「按 390×844 的手机尺寸重新排版」，电脑上看着好不等于手机上能玩。<br>
+    · 「不知道该检查什么，玩起来好像都正常」——拿四条硬指标问：玩到结局了吗？结局金额对得上吗？精力扣完有区别吗？有声音吗？学生自己发现的 bug，比老师指出的值钱十倍。</div>
+  </div>
+
+  <div class="foot">教师备课用 · 配合学生讲义 lesson-3.html 与打工人版游戏使用</div>
+
+</div>
+</body>
+</html>

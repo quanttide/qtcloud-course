@@ -2,7 +2,7 @@
 
 量潮课程云的**课程清单**——正在研发的那本清单，与学员端（qtclass-lite）分工：
 
-- **这里**：全部课程，标上线状态，**带课件预览**——研发中的课也能点开看正文
+- **这里**：全部课程，标上线状态，**带课件预览**——研发中的课也能点开看正文（路径 `courses/<目录>/lessons/<课时>.html`）
 - **学员端**：只放已上线的课，从这里点「去上课」进去
 
 ## 分级
@@ -24,14 +24,14 @@ npm test        # vitest
 npm run lint    # eslint
 npm run build   # tsc -b && vite build
 
-../../scripts/sync-material.sh   # 从 profile 仓搬课件进 public/preview（预览链接要用就先跑）
+../../scripts/sync-material.sh   # 从 profile 仓搬课件进 public/courses（预览链接要用就先跑）
 ```
 
 ## 结构
 
 ```
 src/
-├── courses.ts     # 课程清单数据（分级、状态、学员端入口、课件 material）
+├── courses.ts     # 课程清单数据（分级、状态、学员端入口、课件 material 与 materialHref）
 ├── App.tsx        # 分级展示 + 上线状态
 └── App.test.tsx   # 顺序、状态计数、入口断言
 ```

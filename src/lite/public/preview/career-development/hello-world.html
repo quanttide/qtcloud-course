@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>入门任务 · 配置你的个人 AI 并挂出协作名片</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--ink:#1a2740;--gold:#f2b84b;--gold-d:#d99a2b;--blue:#5aa9ff;--cream:#fffaf0;--line:rgba(255,255,255,.16)}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+    background:radial-gradient(1200px 700px at 15% -5%,#2b3f66 0%,#1a2740 45%,#121b2e 100%);
+    color:var(--cream);min-height:100vh;padding:34px 16px 56px;line-height:1.75}
+  .wrap{max-width:720px;margin:0 auto}
+  .kicker{color:var(--gold);font-size:13px;font-weight:800;letter-spacing:4px;margin-bottom:10px}
+  h1{font-size:29px;color:#fff;font-weight:900;margin-bottom:8px;letter-spacing:1px}
+  .sub{color:#b9c9e0;font-size:14px;margin-bottom:24px}
+  .path{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;margin-bottom:20px;flex-wrap:wrap}
+  .path .it{display:flex;align-items:center;gap:8px;font-size:13px;color:#8fa3c4}
+  .path .it b{color:var(--gold)}
+  .path .arw{color:#5c7196;font-size:16px}
+  .card{background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:18px}
+  .card h2{font-size:18px;color:var(--gold);margin-bottom:10px;font-weight:800}
+  .role{display:inline-block;background:linear-gradient(135deg,#f2b84b,#d99a2b);color:#3a2600;
+    font-size:12px;font-weight:900;padding:4px 12px;border-radius:12px;margin-bottom:12px}
+  .lead{font-size:14.5px;color:#e6edf8;margin-bottom:6px}
+  .lead b{color:var(--gold)}
+  .scene{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap}
+  .scene .pop{flex:1;min-width:200px;background:rgba(90,169,255,.1);border:1px solid rgba(90,169,255,.28);
+    border-radius:12px;padding:12px 14px;font-size:13px;color:#cfe0f8}
+  .scene .pop .t{font-weight:800;color:var(--blue);margin-bottom:4px}
+  .step{display:flex;gap:13px;margin-bottom:16px;align-items:flex-start}
+  .snap{flex-shrink:0;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#f2b84b,#d99a2b);
+    color:#3a2600;font-weight:900;font-size:15px;display:flex;align-items:center;justify-content:center}
+  .sbody{flex:1}
+  .sbody h3{font-size:15.5px;color:#fff;margin-bottom:4px}
+  .sbody p{font-size:13.5px;color:#b9c9e0}
+  .sbody .see{margin-top:8px;background:rgba(127,224,163,.08);border-left:3px solid #7fe0a3;
+    border-radius:0 10px 10px 0;padding:9px 12px;font-size:13px;color:#cfeeda}
+  .sbody .see b{color:#7fe0a3}
+  .promptbox{background:rgba(0,0,0,.28);border:1px solid rgba(242,184,75,.35);border-radius:12px;
+    padding:14px 16px;font-size:13.5px;color:#f5e6c8;line-height:1.8;margin:12px 0;word-break:break-all}
+  .copy{display:block;width:100%;background:linear-gradient(135deg,#f2b84b,#d99a2b);border:none;
+    border-radius:10px;padding:12px;color:#3a2600;font-size:15px;font-weight:900;cursor:pointer;
+    transition:transform .15s,filter .15s}
+  .copy:hover{filter:brightness(1.08)}
+  .copy:active{transform:scale(.98)}
+  .report{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:8px}
+  .report .rh{background:linear-gradient(135deg,#2b3f66,#1f3050);padding:12px 16px;font-weight:800;color:#fff;font-size:15px}
+  .report .rh span{float:right;font-size:11px;color:#8fa3c4;font-weight:500}
+  .report .rb{background:rgba(0,0,0,.2);padding:14px 16px;font-size:13px;color:#d5e0f0}
+  .report .rb h4{color:var(--gold);font-size:13px;margin:10px 0 5px}
+  .report .rb h4:first-child{margin-top:0}
+  .report .rb ul{margin-left:18px}
+  .report .rb li{margin-bottom:3px}
+  .report .rb table{width:100%;border-collapse:collapse;margin:6px 0;font-size:12.5px}
+  .report .rb th,.report .rb td{border:1px solid rgba(255,255,255,.14);padding:5px 8px;text-align:left}
+  .report .rb th{background:rgba(242,184,75,.12);color:#f5d98a}
+  .tag-yes{color:#7fe0a3;font-weight:700}.tag-no{color:#ffab8a;font-weight:700}
+  .img{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:10px}
+  .img img{width:100%;display:block}
+  .img .cap{font-size:11.5px;color:#8fa3c4;padding:6px 12px;background:rgba(0,0,0,.2);text-align:center}
+  .note{background:rgba(255,138,92,.08);border-left:3px solid #ff8a5c;border-radius:0 10px 10px 0;
+    padding:11px 14px;font-size:13px;color:#ffd0b8;margin-top:12px}
+  .note b{color:#ffab8a}
+  .sum{background:linear-gradient(135deg,rgba(242,184,75,.14),rgba(90,169,255,.1));
+    border:1px solid rgba(242,184,75,.3);border-radius:14px;padding:16px 18px;margin-top:6px}
+  .sum .big{font-size:16px;color:var(--gold);font-weight:800;margin-bottom:8px}
+  .sum p{font-size:13.5px;color:#e6edf8;margin-bottom:6px}
+  .sum b{color:var(--gold)}
+  a{color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+  .goal{margin-top:8px;background:rgba(90,169,255,.1);border-left:3px solid #5aa9ff;
+    border-radius:0 10px 10px 0;padding:9px 12px;font-size:13px;color:#cfe0f8}
+  .goal b{color:#8fc7ff}
+  a:hover{color:#9fd0ff}
+  .foot{text-align:center;color:#7f93b5;font-size:12px;margin-top:30px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">职业发展 · 入门任务</div>
+  <h1>配置你的个人 AI，挂出协作名片</h1>
+  <p class="sub">2 天内完成 · 约 10 分钟 · 全程只需复制 2 句话<br>
+  访谈对话与个人档案只留在你自己电脑本地，公开的只有你本人确认过的名片链接。</p>
+
+  <div class="card">
+    <span class="role">你的身份：基地成员</span>
+    <p class="lead">在量潮实训基地，<b>「个人 + 个人 AI」是最基础的协作单元</b>。<br>
+    这是<b>生产实习的前置</b>：先认识自己、被找到，再去谈交付。<br>这一关你不用装任何东西——打开 WorkBuddy，答完一次访谈，拿到你的协作名片。</p>
+    <div class="scene">
+      <div class="pop"><div class="t">要交什么</div>一张<b>协作名片</b> + 一句<b>简介短签</b>（含固定名片链接）</div>
+      <div class="pop"><div class="t">怎么交</div>贴进飞书头像 → 个人简介，名片链接同步到<b>公共索引</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>四步挂出名片</h2>
+
+    <div class="step">
+      <div class="snap">1</div>
+      <div class="sbody">
+        <h3>打开 WorkBuddy，复制下面这句话</h3>
+        <p><a href="https://xxxx.app.workbuddy.host/?sharecode=XXXXXXXX" target="_blank" rel="noopener">打开 WorkBuddy</a>（手机 App 或网页版）。这是你的第一句指令——让它一次一个问题地访谈你，不用准备，照实答就行。</p>
+        <div class="promptbox">我们做一次职业探索访谈，帮我生成一张协作名片。规则：一次只问我一个问题，我答完你再问下一个，总共不超过 8 个问题，从「你现在在做什么」问到「别人最常来找你帮什么」。答不上来的我直说「还没想好」，你就接着往下问。问完给我两样东西：① 协作名片，四行——我在做什么 / 我能帮什么 / 找我最合适的时候 / 怎么联系我；② 一句放进飞书个人简介的短签，15 字以内。都用大白话，别写成简历腔，名片里至少有一句是我刚才的原话。</div>
+        <button class="copy" id="copyBtn" onclick="copyPrompt()">一键复制这句话</button>
+        <div class="see"><b>做完你会看到：</b>输入框里出现上面那段话（不用手打），按回车，它开始问第一个问题。</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snap">2</div>
+      <div class="sbody">
+        <h3>它问，你答</h3>
+        <p>一次只有一个问题，你答完它才问下一个——像聊天，不像填表。</p>
+        <div class="code"><div class="clabel">进度长这样（示例）</div><div class="cbody">
+          <div class="run">› 第 1/8 问：你现在在做什么？</div>
+          <div class="run">› 第 4/8 问：别人最常来找你帮什么？</div>
+          <div class="ok">✓ 访谈完成，正在生成名片…</div>
+        </div></div>
+        <div class="see"><b>做完你会看到：</b>最多 8 个问题，全程大白话。答不上来就直说「还没想好」，它会接着问，不会卡住。</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snap">3</div>
+      <div class="sbody">
+        <h3>拿到协作名片和简介短签</h3>
+        <p>两样东西一次给你：一张名片、一句短签。</p>
+        <div class="see"><b>做完你会看到：</b>名片四行——<b>我在做什么 / 我能帮什么 / 找我最合适的时候 / 怎么联系我</b>；短签 15 字以内。<b>贴出去之前，至少有一句改成你自己的话</b>——那是你的名片，不是它的。</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snap">4</div>
+      <div class="sbody">
+        <h3>挂出去，入门任务就算完成</h3>
+        <p>名片先给管理员，拿回固定链接，再挂到你的飞书简介上。</p>
+        <div class="see"><b>做完你会看到：</b>把<b>短签 + 固定链接</b>贴进 飞书头像 → 个人简介；名片链接进公共索引。只有你确认过的链接会被公开。</div>
+        <div class="note"><b>这是第 1 步，不是全部：</b>飞书工具箱、lark-cli、四个 skill 是<b>第 2 阶段</b>的事——等你真需要自动化再装，不挡在名片前面。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sum">
+      <div class="big">完成后你得到什么</div>
+      <p>一个<b>能被找到的你</b>：谁会什么、什么时候该找他，公共索引里一眼清楚。</p>
+      <p>下一次接活，先去索引里找互补的搭档——<b>组队从这张名片开始</b>。</p>
+      <p>遇到卡壳，直接在群里问或私聊反馈。</p>
+    </div>
+  </div>
+
+  <div class="foot">职业发展 · 入门任务<br>个人 + 个人 AI，是基地最基础的协作单元</div>
+</div>
+
+<script>
+function copyPrompt(){
+  const text='我们做一次职业探索访谈，帮我生成一张协作名片。规则：一次只问我一个问题，我答完你再问下一个，总共不超过 8 个问题，从「你现在在做什么」问到「别人最常来找你帮什么」。答不上来的我直说「还没想好」，你就接着往下问。问完给我两样东西：① 协作名片，四行——我在做什么 / 我能帮什么 / 找我最合适的时候 / 怎么联系我；② 一句放进飞书个人简介的短签，15 字以内。都用大白话，别写成简历腔，名片里至少有一句是我刚才的原话。';
+  const btn=document.getElementById('copyBtn');
+  const done=()=>{btn.textContent='已复制，去粘贴吧';btn.style.filter='brightness(1.15)';setTimeout(()=>{btn.textContent='一键复制这句话';btn.style.filter=''},2200)};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done).catch(()=>fallback(text,done))}
+  else{fallback(text,done)}
+}
+function fallback(text,done){
+  const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');done()}catch(e){alert('复制失败，请手动复制')}
+  document.body.removeChild(ta);
+}
+</script>
+</body>
+</html>

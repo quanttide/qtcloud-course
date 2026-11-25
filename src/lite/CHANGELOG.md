@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## [Unreleased]
+## [0.1.0-beta.2] - 2026-11-25
+
+### Changed
+
+- 课件路径从 `preview/<profile 相对路径>` 改为两段式 **`courses/<目录>/lessons/<课时>.html`**：嵌套课时取课时目录名（`vibe-coding/phase1-intro/lesson1-hello-world/…` → `courses/vibe-coding/lessons/lesson1-hello-world.html`），平铺取文件名；`materialHref()` 与 `sync-material.sh` 用同一套规则，`public/courses`、no-cache 上传与 gitignore 同步改
 
 ### Fixed
 

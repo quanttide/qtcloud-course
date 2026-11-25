@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f1622">
+<title>vibe-coding 与后续课程 · 关系图</title>
+<style>
+  :root{
+    --night:#0f1622; --night2:#263b5e; --blue:#3f6fb0; --blue-l:#7fc0ff;
+    --gold:#f2b84b; --cream:#eef3f9; --ink:#1e2b3d; --sub:#62748c; --green:#3a9d6e;
+    --red:#d9534f; --line:#a9bcd4; --panel-b:#e2eaf4;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh;min-height:100dvh;
+    background:linear-gradient(170deg,var(--night) 0%,#182842 55%,#37527d 100%);
+    background-attachment:fixed;
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--ink);padding:22px 14px 44px;font-size:15px;line-height:1.7;
+  }
+  .wrap{max-width:860px;margin:0 auto}
+
+  .hero{text-align:center;color:var(--cream);padding:6px 6px 18px}
+  .kicker{display:inline-block;font-size:12.5px;letter-spacing:.2em;color:var(--gold);
+    border:1px solid rgba(242,184,75,.5);border-radius:999px;padding:5px 14px;margin-bottom:12px}
+  .hero h1{font-size:30px;line-height:1.3;margin:0 0 8px;font-weight:800}
+  .hero .sub{font-size:15px;color:rgba(238,243,249,.85);margin:0;line-height:1.75}
+
+  .card{background:var(--cream);border-radius:18px;padding:20px 22px;
+    box-shadow:0 18px 44px rgba(0,0,0,.32);margin-bottom:14px}
+  .card h2{font-size:19px;margin:0 0 14px;font-weight:800;display:flex;align-items:center;gap:9px}
+  .card h2 .idx{display:inline-flex;align-items:center;justify-content:center;
+    flex:0 0 26px;height:26px;border-radius:8px;background:var(--blue);color:#fff;font-size:14px}
+
+  /* ===== 关系图 ===== */
+  .diagram{
+    position:relative;background:#fff;border:1px solid var(--panel-b);border-radius:16px;
+    padding:22px 18px 18px;display:grid;row-gap:0;
+    grid-template-columns:1fr;
+    grid-template-areas:"start" "edge1" "gate" "edge2" "fork" "note" "grow" "legend";
+  }
+  @media (min-width:860px){
+    .diagram{
+      grid-template-columns:minmax(0,1fr) 280px;column-gap:26px;
+      grid-template-areas:
+        "start  grow"
+        "edge1  grow"
+        "gate   grow"
+        "edge2  grow"
+        "fork   grow"
+        "note   note"
+        "legend legend";
+    }
+  }
+  .d-start{grid-area:start}
+  .d-e1{grid-area:edge1}
+  .d-gate{grid-area:gate}
+  .d-e2{grid-area:edge2}
+  .d-fork{grid-area:fork}
+  .d-note{grid-area:note}
+  .d-grow{grid-area:grow}
+  .d-legend{grid-area:legend}
+
+  .node{background:#fff;border:1.5px solid var(--panel-b);border-radius:14px;
+    padding:14px 16px;text-align:center}
+  .tag{display:inline-block;font-size:13px;font-weight:800;letter-spacing:.05em;
+    border-radius:999px;padding:2px 12px;margin-bottom:8px}
+  .t-gold{color:#8a6a1e;background:#fdf3dd;border:1px solid #f2d9a0}
+  .t-blue{color:#2e5488;background:#e7f0fb;border:1px solid #c4d9f2}
+  .t-green{color:#2a7a55;background:#e9f6ef;border:1px solid #bfe3ce}
+  .t-gray{color:#5a6b82;background:#eef2f7;border:1px solid #d7e0ec}
+  .t-dark{color:#ffd98a;background:rgba(242,184,75,.14);border:1px solid rgba(242,184,75,.45)}
+
+  .d-start .node{max-width:500px;margin:0 auto;border:2px solid var(--gold);
+    padding:18px 18px 16px;box-shadow:0 10px 26px rgba(242,184,75,.18)}
+  .d-start h3{font-size:20px;margin:0;font-weight:800;color:var(--ink)}
+  .d-start .lede{font-size:15.5px;color:#41536b;margin:9px 0 0;line-height:1.75}
+  .d-start .lede b{color:#b97f12}
+  .d-start .dim{font-size:14px;color:var(--sub);margin:7px 0 0;line-height:1.7}
+
+  /* 竖向连接线：实线=必经，虚线=可选 */
+  .edge{position:relative;height:54px}
+  .edge::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:0;
+    transform:translateX(-1px)}
+  .edge::after{content:"";position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+    border-left:6px solid transparent;border-right:6px solid transparent}
+  .edge.solid::before{border-left:2px solid var(--line)}
+  .edge.solid::after{border-top:8px solid var(--line)}
+  .edge.dash::before{border-left:2px dashed var(--line)}
+  .edge.dash::after{border-top:8px solid var(--line)}
+  .elabel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    background:#fff;border:1px solid #d5e0ee;border-radius:999px;padding:4px 13px;
+    font-size:13px;color:#33547f;font-weight:700;white-space:nowrap;z-index:1}
+
+  .d-gate{justify-self:center}
+  .gate{background:var(--night);border-color:var(--night);min-width:270px;
+    padding:13px 20px;box-shadow:0 10px 26px rgba(15,22,34,.35)}
+  .gate .g-title{font-size:22px;font-weight:800;color:var(--gold);line-height:1.4}
+  .gate .g-sub{font-size:14px;color:rgba(238,243,249,.8);margin-top:2px}
+
+  /* 分叉 */
+  .d-fork{position:relative;display:grid;grid-template-columns:repeat(3,1fr);
+    gap:14px;padding-top:44px}
+  .d-fork::before{content:"";position:absolute;top:0;height:0;
+    left:calc((100% - 28px)/6);right:calc((100% - 28px)/6);
+    border-top:2px dashed var(--line)}
+  .branch{position:relative}
+  .branch::before{content:"";position:absolute;top:0;left:50%;width:0;height:44px;
+    border-left:2px dashed var(--line);transform:translateX(-1px)}
+  .branch::after{content:"";position:absolute;top:36px;left:50%;transform:translateX(-50%);
+    border-left:5px solid transparent;border-right:5px solid transparent;
+    border-top:7px solid var(--line)}
+  .path{padding:12px 8px 14px;border-radius:12px}
+  .path.p-game{border-top:3px solid var(--blue)}
+  .path.p-product{border-top:3px solid var(--green)}
+  .path.p-more{border-top:3px solid #9aa9bd}
+  .path .p-title{font-size:15.5px;font-weight:800;color:var(--ink);line-height:1.5}
+  .path .p-desc{font-size:14px;color:var(--sub);margin-top:6px;line-height:1.6}
+
+  .d-note{margin-top:18px;background:#f4f8fd;border-left:3px solid var(--blue-l);
+    border-radius:0 10px 10px 0;padding:12px 15px;font-size:15px;color:#33547f;
+    line-height:1.8}
+  .d-note b{color:var(--blue)}
+
+  /* 内生加课（右侧栏 / 窄屏末尾） */
+  .d-grow{position:relative;margin-top:18px;background:#fffaf0;
+    border:2px dashed #e8b34b;border-radius:14px;padding:14px 15px}
+  .g-head{font-size:15px;font-weight:800;color:#8a6a1e}
+  .g-body{font-size:14.5px;color:#7a5a24;margin:7px 0 0;line-height:1.75}
+  .g-ex{margin-top:9px;background:#fff;border:1px solid #f2d9a0;border-radius:10px;
+    padding:10px 12px;font-size:14.5px;color:#6b4b12;line-height:1.8}
+  .g-ex b{color:#c8861a}
+  .g-dim{font-size:14px;color:#9a7c46;margin:8px 0 0;line-height:1.7}
+  @media (min-width:860px){
+    .d-grow{margin-top:0;align-self:start}
+    .d-grow::before{content:"";position:absolute;top:74px;right:100%;width:26px;height:0;
+      border-top:2px dashed #e8b34b}
+    .d-grow::after{content:"";position:absolute;top:70px;right:100%;
+      border-left:7px solid #e8b34b;border-top:5px solid transparent;
+      border-bottom:5px solid transparent}
+  }
+
+  .d-legend{margin-top:16px;padding-top:13px;border-top:1px dashed #d5e0ee;
+    display:flex;flex-wrap:wrap;gap:10px 22px;justify-content:center;
+    font-size:14px;color:var(--sub)}
+  .lg i{display:inline-block;width:26px;height:0;vertical-align:middle;
+    margin-right:7px;position:relative;top:-2px}
+  .lg i.solid{border-top:2px solid var(--line)}
+  .lg i.dash{border-top:2px dashed var(--line)}
+
+  /* ===== 关系速查表 ===== */
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th,td{border:1px solid #dfe6f0;padding:10px 12px;text-align:left;line-height:1.7;
+    vertical-align:top}
+  thead th{background:#eaf1fa;color:#33547f;font-weight:800;font-size:14px}
+  tbody td:first-child{font-weight:800;color:#41536b;background:#f7f9fc;width:190px}
+  tbody td:nth-child(2){color:#4a5b70}
+  tbody td b{color:#33547f}
+
+  .foot{text-align:center;color:rgba(238,243,249,.72);font-size:14px;margin-top:20px;
+    line-height:1.8}
+
+  @media (max-width:560px){
+    .card{padding:16px 14px}
+    .diagram{padding:16px 10px 14px}
+    .hero h1{font-size:26px}
+    tbody td:first-child{width:120px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="kicker">氛围编程 · 体系总览</span>
+    <h1>vibe-coding 与后续课程</h1>
+    <p class="sub">vibe-coding 的本质是<b>教人怎么用 AI</b>——所以它是根；<br>游戏与产品，是从它长出来的路径，不是它的外壳。</p>
+  </div>
+
+  <!-- 1. 关系图 -->
+  <div class="card">
+    <h2><span class="idx">1</span>关系图</h2>
+
+    <div class="diagram">
+
+      <div class="d-start">
+        <div class="node">
+          <span class="tag t-gold">根 · 全体系入口</span>
+          <h3>vibe-coding 氛围编程</h3>
+          <p class="lede">本质是<b>教人怎么用 AI</b>——让人觉得「原来 AI 还能这样用」。</p>
+          <p class="dim">它是独立的根，不挂在游戏项目下面；游戏只是它下游的一条路径。</p>
+        </div>
+      </div>
+
+      <div class="d-e1 edge solid">
+        <span class="elabel">前置 · 毕业 = 会编程</span>
+      </div>
+
+      <div class="d-gate">
+        <div class="node gate">
+          <span class="tag t-dark">唯一必经</span>
+          <div class="g-title">会编程</div>
+          <div class="g-sub">从 vibe-coding 毕业，拿到的就是这个</div>
+        </div>
+      </div>
+
+      <div class="d-e2 edge dash">
+        <span class="elabel">会编程之后 · 路自己选</span>
+      </div>
+
+      <div class="d-fork">
+        <div class="branch">
+          <div class="node path p-game">
+            <span class="tag t-blue">路径 1</span>
+            <div class="p-title">game 游戏</div>
+            <div class="p-desc">想做，当然可以继续做</div>
+          </div>
+        </div>
+        <div class="branch">
+          <div class="node path p-product">
+            <span class="tag t-green">路径 2</span>
+            <div class="p-title">product 企业产品</div>
+            <div class="p-desc">不想做游戏？这条路照样走</div>
+          </div>
+        </div>
+        <div class="branch">
+          <div class="node path p-more">
+            <span class="tag t-gray">更多路径</span>
+            <div class="p-title">etc.</div>
+            <div class="p-desc">体系可以继续往外长</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-note">
+        <b>会编程是做游戏的前置</b>——但会编程以后，不一定非要继续做游戏；想做，当然也可以继续做。三条路都成立，选哪条是自己的事。
+      </div>
+
+      <div class="d-grow">
+        <div class="g-head">↻ vibe-coding 内部可持续加课</div>
+        <p class="g-body">不封顶：不换路径，vibe-coding 自己也能继续往下长。</p>
+        <div class="g-ex">
+          例：把<b>游戏里的玩法和页面</b>抽出来，做一个真实的<br>
+          <b>打工人看板</b> / <b>门店运营看板</b>
+        </div>
+        <p class="g-dim">素材就来自游戏路径的课时——游戏反过来喂养 vibe-coding。</p>
+      </div>
+
+      <div class="d-legend">
+        <span class="lg"><i class="solid"></i>实线 = 必经前置</span>
+        <span class="lg"><i class="dash"></i>虚线 = 自选路径 / 内生加课</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 2. 关系速查 -->
+  <div class="card">
+    <h2><span class="idx">2</span>关系速查</h2>
+    <table>
+      <thead>
+        <tr><th>关系</th><th>一句话说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>vibe-coding → 会编程</td>
+          <td><b>必经前置</b>：vibe-coding 毕业 = 会编程。做游戏之前，先过这一关。</td>
+        </tr>
+        <tr>
+          <td>会编程 → game 游戏</td>
+          <td><b>自选路径 1</b>：做游戏的前置就是会编程；想做，随时可以继续做。</td>
+        </tr>
+        <tr>
+          <td>会编程 → product 企业产品</td>
+          <td><b>自选路径 2</b>：会编程以后不一定非要继续做游戏——换这条路照样成立。</td>
+        </tr>
+        <tr>
+          <td>vibe-coding 内部加课</td>
+          <td><b>内生增长</b>：vibe-coding 内部可持续加课，例如把游戏里的玩法和页面抽取出来，做真实的打工人看板 / 门店运营看板。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="foot">
+    量潮课程研发档案 · vibe-coding 与后续课程关系图<br>
+    本图只画 vibe-coding 主干关系；课时细节见 vibe-coding/ 目录。
+  </div>
+
+</div>
+</body>
+</html>

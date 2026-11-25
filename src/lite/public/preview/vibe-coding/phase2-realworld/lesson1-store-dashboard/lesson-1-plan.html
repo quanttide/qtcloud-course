@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f1622">
+<title>第二章 第 1 课 教案 · 从游戏出发，做一个真实的门店经营看板</title>
+<style>
+  :root{
+    --night:#0f1622; --night2:#263b5e; --blue:#3f6fb0; --blue-l:#7fc0ff;
+    --gold:#f2b84b; --cream:#eef3f9; --ink:#1e2b3d; --sub:#62748c; --green:#3a9d6e;
+    --red:#d9534f;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh;min-height:100dvh;
+    background:linear-gradient(170deg,var(--night) 0%,#182842 55%,#37527d 100%);
+    background-attachment:fixed;
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--ink);padding:22px 14px 44px;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+
+  .hero{text-align:center;color:var(--cream);padding:12px 6px 22px}
+  .kicker{display:inline-block;font-size:12px;letter-spacing:.2em;color:var(--gold);
+    border:1px solid rgba(242,184,75,.5);border-radius:999px;padding:5px 14px;margin-bottom:14px}
+  .hero h1{font-size:28px;line-height:1.35;margin:0 0 8px;font-weight:800}
+  .hero .sub{font-size:14px;color:rgba(238,243,249,.8);margin:0}
+
+  .card{background:var(--cream);border-radius:18px;padding:20px 22px;
+    box-shadow:0 18px 44px rgba(0,0,0,.32);margin-bottom:14px}
+  .card h2{font-size:19px;margin:0 0 14px;font-weight:800;display:flex;align-items:center;gap:9px}
+  .card h2 .idx{display:inline-flex;align-items:center;justify-content:center;
+    flex:0 0 26px;height:26px;border-radius:8px;background:var(--blue);color:#fff;font-size:14px}
+  .card h3{font-size:15px;margin:18px 0 8px;color:var(--blue);font-weight:800}
+
+  .thesis{background:linear-gradient(135deg,#fff8e6,#fdecc4);
+    border:1px solid rgba(242,184,75,.5);border-left:5px solid var(--gold);
+    border-radius:14px;padding:16px 18px}
+  .thesis .big{font-size:20px;font-weight:800;color:#6b4b12;line-height:1.55;margin-bottom:10px}
+  .thesis .big em{color:#c8861a;font-style:normal}
+  .thesis p{font-size:14px;color:#7a5a24;line-height:1.75;margin:6px 0 0}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px}
+  th,td{border:1px solid #dfe6f0;padding:9px 11px;text-align:left;line-height:1.6;vertical-align:top}
+  thead th{background:#eaf1fa;color:#33547f;font-weight:800;font-size:12.5px}
+  tbody td:first-child{font-weight:800;color:#41536b;background:#f7f9fc;width:112px}
+  tbody td:nth-child(2){color:#1e2b3d;font-weight:700;background:#f6fafe}
+
+  .flow{counter-reset:t}
+  .phase{position:relative;padding:0 0 18px 42px;border-left:2px solid #d5e0ee;margin-left:13px}
+  .phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .phase::before{content:counter(t);counter-increment:t;
+    position:absolute;left:-14px;top:-2px;width:26px;height:26px;border-radius:50%;
+    background:var(--blue);color:#fff;font-size:13px;font-weight:800;
+    display:flex;align-items:center;justify-content:center}
+  .phase h3{margin:0 0 4px;font-size:15.5px;color:var(--ink)}
+  .phase .time{font-size:12px;color:var(--gold);font-weight:800;margin-left:8px}
+  .phase p{font-size:13.5px;line-height:1.7;margin:5px 0;color:#4a5b70}
+  .phase .say{background:#f4f8fd;border-left:3px solid var(--blue-l);border-radius:0 8px 8px 0;
+    padding:9px 12px;font-size:13px;color:#33547f;line-height:1.7;margin:8px 0}
+  .phase .say b{color:var(--blue)}
+  .phase .stu{font-size:12.5px;color:var(--green);font-weight:700}
+
+  ul.pts{margin:6px 0 0;padding-left:20px}
+  ul.pts li{font-size:13.5px;line-height:1.85;color:#4a5b70;margin-bottom:3px}
+  ul.pts li b{color:var(--ink)}
+
+  .chk{background:#eaf7f0;border:1px solid #bfe3ce;border-radius:12px;padding:13px 15px}
+  .chk .t{font-size:13px;font-weight:800;color:#2a7a55;margin-bottom:7px}
+  .chk ul{margin:0;padding-left:19px}
+  .chk li{font-size:13.5px;line-height:1.8;color:#33624c}
+
+  .warn{background:#fdf0ee;border:1px solid #f0c4bd;border-left:4px solid var(--red);
+    border-radius:10px;padding:12px 14px;font-size:13px;color:#8a4239;line-height:1.75;margin-top:10px}
+  .warn b{color:#b03a2e}
+
+  .quote{background:var(--night);border-radius:12px;padding:16px 18px;color:#cfe8ff;
+    font-size:14px;line-height:1.8;text-align:center;margin-top:4px}
+  .quote b{color:var(--gold)}
+  .foot{text-align:center;color:rgba(238,243,249,.72);font-size:12.5px;margin-top:22px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="kicker">氛围编程课 · 教师教案 · 第二章</span>
+    <h1>第 1 课 · 从游戏出发，做一个真实的门店经营看板</h1>
+    <p class="sub">核心：把游戏换成真实看板——游戏的数字，就是生意的数字</p>
+  </div>
+
+  <!-- 1. 核心论断 -->
+  <div class="card">
+    <h2><span class="idx">1</span>本课之本</h2>
+    <div class="thesis">
+      <div class="big">游戏里你天天盯的那几个数，<br>就是真实老板天天盯的那几个数。<br><em>换个名字，游戏就成了生意。</em></div>
+      <p>把上一章的咖啡店游戏从「能玩」改成「能用」——<b>去掉玩法</b>，换成今日营业额、客流、库存这些真实指标。学生亲眼看到：同一批数字，游戏里叫「得分」，看板里叫「营业额」。<br>
+      由此建立本课的信息：<b>游戏不是玩具，是真实世界的练习场</b>——你早就在游戏里做过一遍经营了。</p>
+    </div>
+    <table>
+      <thead><tr><th>维度</th><th>本课定位</th></tr></thead>
+      <tbody>
+        <tr><td>学生角色</td><td>经营者视角：一句话把游戏换成看板</td></tr>
+        <tr><td>AI 角色</td><td>施工队：拆玩法、装指标、配示例数据</td></tr>
+        <tr><td>改的对象</td><td>从「玩」到「用」：玩法 → 真实经营指标</td></tr>
+        <tr><td>核心能力</td><td>会迁移（游戏 → 真实）</td></tr>
+        <tr><td>产出</td><td>门店经营看板链接</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 2. 教学目标 -->
+  <div class="card">
+    <h2><span class="idx">2</span>教学目标</h2>
+    <ul class="pts">
+      <li><b>知识目标</b>：理解「游戏 ↔ 真实」——看板的指标（营业额 / 客流 / 客单价 / 库存 / 趋势）和游戏里的数值一一对应。</li>
+      <li><b>技能目标</b>：学会带用途下指令：「去掉玩法，说清给谁用、要哪几个指标」。</li>
+      <li><b>认知目标</b>：对照映射表确认同一批数字只是换了名字，建立「游戏是真实世界的练习场」的认知。</li>
+      <li><b>情感目标</b>：建立「我做的东西开始有用了」的成就感——从做玩具到做工具。</li>
+    </ul>
+    <h3>教学重点与难点</h3>
+    <ul class="pts">
+      <li><b>重点</b>：让学生自己对照出「数字没变，只是名字变了」，而不是直接告诉他们结论。</li>
+      <li><b>难点</b>：学生以为要从零做一个新东西，要引导发现看板的指标全来自他自己的游戏。</li>
+    </ul>
+  </div>
+
+  <!-- 3. 教学流程 -->
+  <div class="card">
+    <h2><span class="idx">3</span>教学流程（约 30 分钟）</h2>
+    <div class="flow">
+
+      <div class="phase">
+        <h3>开场：回到你的咖啡店<span class="time">3 分钟</span></h3>
+        <p>让大家打开上一章自己做的咖啡店游戏，玩两局。</p>
+        <div class="say"><b>教师话术：</b>「先开你上一章做的咖啡店。数一数——你一直在盯哪几个数？」</div>
+        <p class="stu">学生活动：打开咖啡店游戏，说出自己盯着的数。</p>
+      </div>
+
+      <div class="phase">
+        <h3>点破映射<span class="time">5 分钟</span></h3>
+        <p>打开讲义开头的映射表，带学生逐行对照：</p>
+        <ul class="pts">
+          <li>今天赚了多少钱 → <b>今日营业额</b>；来了多少客人 → <b>客流量</b>。</li>
+          <li>货卖光了没 → <b>库存预警</b>；关卡、得分 → <b>近 7 天趋势</b>。</li>
+        </ul>
+        <div class="say"><b>教师话术：</b>「游戏里叫『得分』的，真实门店叫『营业额』；叫『来客』的，叫『客流量』。<b>数字还是那批数字，只是从玩具换成了生意。</b>」</div>
+        <p class="stu">学生活动：对照映射表，说出至少 3 组「游戏名 → 真实名」。</p>
+      </div>
+
+      <div class="phase">
+        <h3>学生实操：一句话换用途<span class="time">12 分钟</span></h3>
+        <p>学生打开讲义 <b>realworld/lesson-1.html</b>，复制提示词发送：</p>
+        <ul class="pts">
+          <li>提示词说了三件事：<b>① 去掉玩法 ② 点名真实指标 ③ 数据先用示例</b>。</li>
+          <li>指标不是凭空想的，<b>全是游戏里就有的</b>。</li>
+        </ul>
+        <div class="say"><b>教师话术：</b>「注意这句里没有『从零设计』——指标全是你游戏里<b>早就在看的数</b>，AI 只是把它们搬到看板上。」</div>
+        <p class="stu">学生活动：复制 → 粘贴 → 发送 → 等待 → 拿链接。</p>
+      </div>
+
+      <div class="phase">
+        <h3>对比验证（本课高潮）<span class="time">7 分钟</span></h3>
+        <p>游戏和看板两个页面对照着看，让学生自己找答案：</p>
+        <ul class="pts">
+          <li><b>没变的</b>：营业额、客流、库存——同一批数。</li>
+          <li><b>变了的</b>：从「点着玩」变成「一眼看」。</li>
+        </ul>
+        <div class="say"><b>追问：</b>「看板上的数，你在游戏里见过吗？」——等学生说出「见过，就是我天天看的那几个」。<br><b>教师话术：</b>「你没有发明任何新东西——你把<b>已经会看的数</b>搬到了真实场景。这就是从游戏到现实世界。」</div>
+        <p class="stu">学生活动：对照游戏与看板，确认指标同源。</p>
+      </div>
+
+      <div class="phase">
+        <h3>收束<span class="time">3 分钟</span></h3>
+        <div class="quote">你没写一行代码，就把游戏变成了真实门店会用的看板。<br><b>你做的东西，开始有用了。</b></div>
+        <p class="stu">学生活动：把看板链接发到群里。</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 4. 验收 -->
+  <div class="card">
+    <h2><span class="idx">4</span>学生验收清单</h2>
+    <div class="chk">
+      <div class="t">下课时，每个学生应当：</div>
+      <ul>
+        <li>有一个门店经营看板链接，能打开</li>
+        <li>能指出看板上的指标在游戏里叫什么（至少 3 个）</li>
+        <li>能说出一句话：游戏的数字，就是生意的数字</li>
+      </ul>
+    </div>
+    <div class="warn"><b>常见问题预判：</b><br>
+    · 「看板跟我的游戏没关系了」——带学生逐行对照讲义的映射表，确认指标同源。<br>
+    · 「AI 没去掉玩法」——补一句具体指令：「把游戏玩法去掉，只留数据看板」。<br>
+    · 「数据是假的，能不能换成真的」——换成真数据是后面课时的事；本课先把看板用示例数据做出来。</div>
+  </div>
+
+  <div class="foot">教师备课用 · 配合学生讲义 assets/tutorials/vibe-coding/docs/realworld/lesson-1.html</div>
+
+</div>
+</body>
+</html>
